@@ -21,8 +21,9 @@ export function useExplanations(views: BookingView[]): Map<string, Explanation> 
     const todo = views.map((v, i) => ({ v, key: keys[i] })).filter((x) => !cache.has(x.key) && !inflight.has(x.key));
     if (!todo.length) return;
     todo.forEach((x) => inflight.add(x.key));
-    let alive = true;
-    (async () => {
+    // No cancel-on-cleanup: `views` changes identity when the upload is saved (row ids added),
+    // and the keys are already in flight, so this request must still trigger the re-render.
+    void (async () => {
       for (let i = 0; i < todo.length; i += CHUNK) {
         const chunk = todo.slice(i, i + CHUNK);
         try {
@@ -38,10 +39,9 @@ export function useExplanations(views: BookingView[]): Map<string, Explanation> 
           /* fallback text stays */
         }
         chunk.forEach((x) => inflight.delete(x.key));
-        if (alive) bump((n) => n + 1);
+        bump((n) => n + 1);
       }
     })();
-    return () => { alive = false; };
   }, [views, keys]);
 
   const out = new Map<string, Explanation>();

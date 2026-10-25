@@ -26,8 +26,7 @@ export const EXPLAIN_TASK = `Return JSON only, matching the response schema:
 - tradeoff: one sentence comparing with the runner-up, or null if there is none.
 - exclusions: one short sentence per carrier that was not eligible, using its reasons. Empty list if none.
 - caveat: one sentence ("recommended once the issues are fixed", deadline/past-date notes), or null.
-- confirmation: the plain-English booking confirmation, rewritten from "confirmationDraft" without changing any number, date, name or place.
-- issueSummaries: for each issue in "issues", { "code": its code, "summary": one plain-English sentence based only on its whatIsWrong }.
+- confirmation: the plain-English booking confirmation, rewritten from draft.confirmation without changing any number, date, name or place.
 Copy every number, money amount and date exactly as written in the input. Never add a number that is not in the input.`;
 
 export const R06_SYSTEM_PROMPT = `You review product descriptions for a UK road-freight service that cannot carry lithium batteries,

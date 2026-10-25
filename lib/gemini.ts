@@ -4,7 +4,7 @@
  * the server and is never logged.
  */
 import "server-only";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel, type ThinkingConfig } from "@google/genai";
 
 export const GEMINI_TIMEOUT_MS = 8000;
 const FALLBACK_MODEL = "gemini-2.5-flash";
@@ -56,6 +56,13 @@ export function resolveModel(): Promise<string> {
   return modelPromise;
 }
 
+/**
+ * Keep thinking low so calls fit the 8 s time-box: these are rephrasing and yes/no tasks.
+ * Gemini 3+ takes a thinking level; 2.x takes a token budget.
+ */
+const thinkingFor = (model: string): ThinkingConfig =>
+  /^gemini-[3-9]/.test(model) ? { thinkingLevel: ThinkingLevel.LOW } : { thinkingBudget: 0 };
+
 /** One JSON-mode call. Returns the parsed JSON or null (timeout, HTTP error, bad JSON, no key). */
 export async function generateJson(opts: { system: string; prompt: string; schema: unknown; timeoutMs?: number }): Promise<unknown | null> {
   const ai = getClient();
@@ -72,6 +79,7 @@ export async function generateJson(opts: { system: string; prompt: string; schem
           responseMimeType: "application/json",
           responseJsonSchema: opts.schema,
           temperature: 0.2,
+          thinkingConfig: thinkingFor(model),
           abortSignal: ctl.signal,
         },
       }),

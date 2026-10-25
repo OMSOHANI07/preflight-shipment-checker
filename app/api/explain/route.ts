@@ -8,7 +8,7 @@ import { formatDDMMYYYY, type BookingResult } from "@/lib/calculations";
 import { explanationKey, fallbackExplanation, numbersAreGrounded } from "@/lib/explain";
 import { generateJson } from "@/lib/gemini";
 import { EXPLAIN_SYSTEM_PROMPT, EXPLAIN_TASK } from "@/lib/prompts";
-import { BookingSchema, ExplanationSchema, ItemSchema, type Explanation } from "@/lib/schema";
+import { AiExplanationSchema, BookingSchema, ItemSchema, type Explanation } from "@/lib/schema";
 
 export const maxDuration = 60;
 
@@ -28,12 +28,8 @@ const RESPONSE_JSON_SCHEMA = {
     exclusions: { type: "array", items: { type: "string" } },
     caveat: { type: ["string", "null"] },
     confirmation: { type: "string" },
-    issueSummaries: {
-      type: "array",
-      items: { type: "object", properties: { code: { type: "string" }, summary: { type: "string" } }, required: ["code", "summary"] },
-    },
   },
-  required: ["headline", "reason", "tradeoff", "exclusions", "caveat", "confirmation", "issueSummaries"],
+  required: ["headline", "reason", "tradeoff", "exclusions", "caveat", "confirmation"],
 };
 
 const cache = new Map<string, Explanation>();
@@ -71,17 +67,18 @@ async function explainOne({ booking, items, result }: Entry): Promise<{ key: str
   };
   const facts = JSON.stringify(payload);
   const raw = await generateJson({ system: EXPLAIN_SYSTEM_PROMPT, prompt: `${EXPLAIN_TASK}\n\nInput JSON:\n${facts}`, schema: RESPONSE_JSON_SCHEMA });
-  const parsed = ExplanationSchema.safeParse(raw);
+  const parsed = AiExplanationSchema.safeParse(raw);
 
   let explanation: Explanation = { ...draft, source: "fallback" };
   if (parsed.success) {
     const ai = parsed.data;
-    const texts = [ai.headline, ai.reason, ai.tradeoff ?? "", ai.caveat ?? "", ai.confirmation, ...ai.exclusions, ...ai.issueSummaries.map((s) => s.summary)];
-    const sameIssues = ai.issueSummaries.length === result.issues.length && ai.issueSummaries.every((s, i) => s.code === result.issues[i].code);
-    if (texts.every((t) => numbersAreGrounded(t, facts))) {
-      explanation = { ...ai, issueSummaries: sameIssues ? ai.issueSummaries : draft.issueSummaries, source: "ai" };
-    }
-  }
+    const texts = [ai.headline, ai.reason, ai.tradeoff ?? "", ai.caveat ?? "", ai.confirmation, ...ai.exclusions];
+    const ungrounded = texts.find((t) => !numbersAreGrounded(t, facts));
+    if (ungrounded === undefined) {
+      // Issue wording stays the engine's own (it already carries the numbers).
+      explanation = { ...ai, issueSummaries: draft.issueSummaries, source: "ai" };
+    } else console.warn(`[explain] ${booking.bookingId}: AI text used a number not in the facts — fallback used: "${ungrounded.slice(0, 160)}"`);
+  } else if (raw !== null) console.warn(`[explain] ${booking.bookingId}: AI output failed validation — fallback used: ${parsed.error.issues[0]?.path.join(".")} ${parsed.error.issues[0]?.message}`);
   // Only cache AI text: a fallback should be retried next time Gemini is reachable.
   if (explanation.source === "ai") remember(key, explanation);
   return { key, explanation };

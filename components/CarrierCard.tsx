@@ -47,7 +47,7 @@ export function CarrierCard({ booking, result, ex }: { booking: Booking; result:
 
       <div className="mt-5 space-y-2 text-[15px]">
         <p><span className="font-semibold">Why: </span>{ex.reason}</p>
-        {ex.tradeoff && <p><span className="font-semibold">Runner-up: </span>{ex.tradeoff}</p>}
+        {ex.tradeoff && <p><span className="font-semibold">Trade-off: </span>{ex.tradeoff}</p>}
         {ex.exclusions.length > 0 && (
           <ul className="list-disc space-y-1 pl-5 text-muted">{ex.exclusions.map((e) => <li key={e}>{e}</li>)}</ul>
         )}

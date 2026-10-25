@@ -45,6 +45,8 @@ export const ExplanationSchema = z.object({
   issueSummaries: z.array(z.object({ code: z.string(), summary: z.string().max(400) })).max(40),
 });
 export type ExplanationText = z.infer<typeof ExplanationSchema>;
+/** What Gemini returns. Issue text stays the engine's own wording (keeps calls inside the 8 s time-box). */
+export const AiExplanationSchema = ExplanationSchema.omit({ issueSummaries: true });
 export type Explanation = ExplanationText & { source: "ai" | "fallback" };
 
 /** R-06 second opinion. */
