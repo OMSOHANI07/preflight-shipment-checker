@@ -1277,6 +1277,12 @@ export function pickR05Carrier(b: Booking, rec: Recommendation): CarrierEval | n
 export interface RunOptions {
   now?: Date; // inject in tests
   geminiR06Verdicts?: Record<number, boolean | undefined>;
+  /**
+   * runFile() only: R-06 verdicts per Booking ID (item index → verdict). Item
+   * indexes restart at 0 for every booking, so one file-wide index map would
+   * apply a verdict to the same index in every booking.
+   */
+  geminiR06VerdictsByBooking?: Record<string, Record<number, boolean | undefined>>;
   allBookingIds?: string[];
 }
 
@@ -1323,7 +1329,10 @@ export function runAll(b: Booking, items: Item[], opts: RunOptions = {}): Bookin
 export function runFile(bookings: Booking[], items: Item[], opts: RunOptions = {}) {
   const { byId, orphans } = groupItems(bookings, items);
   const ids = bookings.map((b) => b.bookingId);
-  const results = bookings.map((b) => runAll(b, byId.get(b.bookingId) ?? [], { ...opts, allBookingIds: ids }));
+  const results = bookings.map((b) => runAll(b, byId.get(b.bookingId) ?? [], {
+    ...opts, allBookingIds: ids,
+    geminiR06Verdicts: opts.geminiR06VerdictsByBooking?.[b.bookingId] ?? opts.geminiR06Verdicts,
+  }));
   const summary = {
     total: results.length,
     red: results.filter((r) => r.status === "RED").length,

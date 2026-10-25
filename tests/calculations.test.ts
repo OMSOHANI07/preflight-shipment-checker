@@ -101,6 +101,15 @@ describe("status & data", () => {
     const f = C.runFile([base], [mug, { ...mug, bookingId: "BK-999" }], { now });
     expect(f.fileIssues[0].code).toBe("V-11");
   });
+  it("runFile applies R-06 AI verdicts per booking, not to the same item index in every booking", () => {
+    const speaker = { ...mug, bookingId: "BK-002", sku: "SPK-01", description: "Bluetooth speaker" };
+    const f = C.runFile([base, { ...base, bookingId: "BK-002" }], [mug, speaker], {
+      now, geminiR06VerdictsByBooking: { "BK-002": { 0: true } },
+    });
+    expect(f.results[0].status).toBe("GREEN"); // the mug in BK-001 is untouched
+    expect(f.results[1].status).toBe("RED");
+    expect(codes(f.results[1])).toContain("R-06");
+  });
 });
 
 describe("mid-way change", () => {
