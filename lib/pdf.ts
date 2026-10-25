@@ -13,7 +13,9 @@ import { STATUS_LABEL, STATUS_MEANING } from "@/lib/ui";
 /** Standard PDF fonts are WinAnsi: swap characters they can't draw. */
 const pdfText = (s: string) =>
   s.replace(/→/g, "->").replace(/×/g, "x").replace(/÷/g, "/").replace(/≠/g, "!=").replace(/≤/g, "<=").replace(/≥/g, ">=")
-    .replace(/…/g, "...").replace(/[✓✔]/g, "pass").replace(/[✕✗]/g, "fail").replace(/[^\x09\x0A\x0D\x20-\x7E -ÿ–—‘’“”•€]/g, "");
+    .replace(/…/g, "...").replace(/[✓✔]/g, "pass").replace(/[✕✗]/g, "fail")
+    .replace(/[–—]/g, "-").replace(/•/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, "\"")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E\u00A0-\u00FF]/g, "");
 
 const STATUS_RGB: Record<string, [number, number, number]> = { RED: [215, 0, 21], INCOMPLETE: [99, 99, 102], AMBER: [160, 90, 0], GREEN: [31, 122, 53] };
 
@@ -65,11 +67,11 @@ function bookingSection(ctx: Ctx, v: BookingView, ex: Explanation) {
   heading(ctx, main.length ? `Issues (${main.length})` : "Issues");
   if (main.length) {
     table(ctx, ["Rule", "Severity", "What is wrong", "How to fix"],
-      main.map((i) => [i.code, i.severity, i.whatIsWrong, i.howToFix.map((f) => `• ${f}`).join("\n")]), [40, 50, 200, 225]);
+      main.map((i) => [i.code, i.severity, i.whatIsWrong, i.howToFix.map((f) => `• ${f}`).join("\n")]), [40, 50, 200, 224]);
   } else para(ctx, "No problems found against the 10 rules.");
 
   heading(ctx, "Rule results");
-  table(ctx, ["Rule", "Check", "Result"], (Object.keys(RULES) as RuleId[]).map((id) => [id, RULES[id].text, r.ruleResults[id] === "not_evaluable" ? "not evaluable" : r.ruleResults[id]]), [40, 395, 80]);
+  table(ctx, ["Rule", "Check", "Result"], (Object.keys(RULES) as RuleId[]).map((id) => [id, RULES[id].text, r.ruleResults[id] === "not_evaluable" ? "not evaluable" : r.ruleResults[id]]), [40, 394, 80]);
 
   heading(ctx, `Carrier — ${rec.label}`);
   if (rec.recommended) {
@@ -86,7 +88,7 @@ function bookingSection(ctx: Ctx, v: BookingView, ex: Explanation) {
     tips.forEach((t) => para(ctx, `${t.code} ${t.title}: ${t.whatIsWrong}`, 9));
   }
   heading(ctx, "Commercial invoice checklist (A-08)");
-  table(ctx, ["Invoice element", "Status", "Detail"], invoiceChecklist(b, v.items, r).map((c) => [c.element, c.status, c.detail]), [170, 55, 290]);
+  table(ctx, ["Invoice element", "Status", "Detail"], invoiceChecklist(b, v.items, r).map((c) => [c.element, c.status, c.detail]), [170, 55, 289]);
 }
 
 async function newDoc(): Promise<Ctx> {
@@ -127,7 +129,7 @@ export async function downloadFullReportPdf(file: CheckedFile, explanationFor: (
   const s = file.summary;
   header(ctx, "Pre-Flight full report", `${file.fileName} · ${s.total} bookings · checked against ${formatDDMMYYYY(file.views[0]?.result.checkedAgainstDate ?? null)}`);
   table(ctx, ["Total", "Red", "Incomplete", "Amber", "Green"], [[String(s.total), String(s.red), String(s.incomplete), String(s.amber), String(s.green)]]);
-  table(ctx, ["Rule", "Bookings failing"], (Object.keys(RULES) as RuleId[]).map((id) => [`${id} ${RULES[id].text}`, String(s.ruleFailCounts[id] ?? 0)]), [430, 85]);
+  table(ctx, ["Rule", "Bookings failing"], (Object.keys(RULES) as RuleId[]).map((id) => [`${id} ${RULES[id].text}`, String(s.ruleFailCounts[id] ?? 0)]), [430, 84]);
   if (file.fileIssues.length) {
     heading(ctx, "File-level problems");
     file.fileIssues.forEach((i) => para(ctx, `${i.code}: ${i.whatIsWrong} ${i.howToFix.join(" ")}`));
