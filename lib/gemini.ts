@@ -1,0 +1,87 @@
+/**
+ * Server-only Gemini access. Every call is time-boxed (8 s) and returns null on
+ * any failure so callers fall back to deterministic text. The key never leaves
+ * the server and is never logged.
+ */
+import "server-only";
+import { GoogleGenAI } from "@google/genai";
+
+export const GEMINI_TIMEOUT_MS = 8000;
+const FALLBACK_MODEL = "gemini-2.5-flash";
+
+let client: GoogleGenAI | null = null;
+let modelPromise: Promise<string> | null = null;
+
+export const geminiConfigured = () => !!process.env.GEMINI_API_KEY;
+
+function getClient() {
+  if (!process.env.GEMINI_API_KEY) return null;
+  client ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  return client;
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number, ctl?: AbortController): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => { ctl?.abort(); reject(new Error("timeout")); }, ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
+/**
+ * GEMINI_MODEL if set; otherwise the newest stable "gemini-X.Y-flash" model the key can see
+ * (from the official model list — no preview/experimental/lite variants).
+ */
+export function resolveModel(): Promise<string> {
+  const fromEnv = process.env.GEMINI_MODEL?.trim();
+  if (fromEnv) return Promise.resolve(fromEnv);
+  modelPromise ??= (async () => {
+    const ai = getClient();
+    if (!ai) return FALLBACK_MODEL;
+    try {
+      const pager = await withTimeout(ai.models.list({ config: { pageSize: 200 } }), GEMINI_TIMEOUT_MS);
+      let best: { name: string; v: number } | null = null;
+      for await (const m of pager) {
+        const name = (m.name ?? "").replace(/^models\//, "");
+        const match = name.match(/^gemini-(\d+(?:\.\d+)?)-flash$/);
+        if (!match || !m.supportedActions?.includes("generateContent")) continue;
+        const v = parseFloat(match[1]);
+        if (!best || v > best.v) best = { name, v };
+      }
+      return best?.name ?? FALLBACK_MODEL;
+    } catch {
+      modelPromise = null; // retry discovery on the next request
+      return FALLBACK_MODEL;
+    }
+  })();
+  return modelPromise;
+}
+
+/** One JSON-mode call. Returns the parsed JSON or null (timeout, HTTP error, bad JSON, no key). */
+export async function generateJson(opts: { system: string; prompt: string; schema: unknown; timeoutMs?: number }): Promise<unknown | null> {
+  const ai = getClient();
+  if (!ai) return null;
+  const ctl = new AbortController();
+  try {
+    const model = await resolveModel();
+    const res = await withTimeout(
+      ai.models.generateContent({
+        model,
+        contents: [{ role: "user", parts: [{ text: opts.prompt }] }],
+        config: {
+          systemInstruction: opts.system,
+          responseMimeType: "application/json",
+          responseJsonSchema: opts.schema,
+          temperature: 0.2,
+          abortSignal: ctl.signal,
+        },
+      }),
+      opts.timeoutMs ?? GEMINI_TIMEOUT_MS,
+      ctl,
+    );
+    const text = res.text;
+    return text ? JSON.parse(text) : null;
+  } catch (e) {
+    console.warn(`[gemini] call failed: ${e instanceof Error ? e.message.slice(0, 120) : "unknown error"}`);
+    return null;
+  }
+}
