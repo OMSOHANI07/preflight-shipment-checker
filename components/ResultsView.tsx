@@ -39,7 +39,8 @@ export function ResultsView({ file, saveState }: { file: CheckedFile; saveState:
     if (i < 0) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-off sync from the URL hash on mount
     setOpen((s) => new Set(s).add(i));
-    window.setTimeout(() => document.getElementById(hash)?.scrollIntoView({ block: "start" }), 120);
+    // Scroll after the card has expanded (and again once layout settles).
+    [150, 700].forEach((ms) => window.setTimeout(() => document.getElementById(hash)?.scrollIntoView({ block: "start" }), ms));
   }, [file]);
 
   const s = file.summary;
