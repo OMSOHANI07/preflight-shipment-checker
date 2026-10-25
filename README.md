@@ -78,7 +78,7 @@ npm run dev
 | Name | Required | Purpose |
 |---|---|---|
 | `GEMINI_API_KEY` | No (fallback text without it) | Google AI Studio key. Used server-side only. |
-| `GEMINI_MODEL` | No | Overrides the model. If empty, the newest stable `gemini-X.Y-flash` from the key's model list is used. |
+| `GEMINI_MODEL` | No | Overrides the model (production uses `gemini-3.8-flash`, the newest stable Flash on the key, with thinking set to low so calls fit the 8 s time-box). If empty, the newest stable `gemini-X.Y-flash` from the key's model list is used. |
 | `DATABASE_URL` | No (no share links without it) | Neon Postgres connection string |
 
 ### Scripts

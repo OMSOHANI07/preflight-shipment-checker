@@ -15,18 +15,22 @@ test("sample file → summary, RED card blocked, AMBER card needs acknowledgemen
   const summary = page.getByTestId("summary");
   await expect(summary).toBeVisible({ timeout: 30_000 });
   await expect(summary.getByText("Total bookings").locator("..")).toContainText("16", { timeout: 10_000 });
-  await expect(summary.getByText("Red", { exact: true }).locator("..")).toContainText("8");
   await expect(summary.getByText("Incomplete", { exact: true }).locator("..")).toContainText("1");
   await expect(summary.getByText("Amber", { exact: true }).locator("..")).toContainText("5");
-  await expect(summary.getByText("Green", { exact: true }).locator("..")).toContainText("2");
+  // BK-T16 "Bluetooth speaker" is RED when the AI R-06 check confirms a lithium battery,
+  // GREEN (with an A-09 tip) when the AI is unavailable: 8 Red + 2 Green, or 9 Red + 1 Green.
+  const red = Number((await summary.getByText("Red", { exact: true }).locator("..").innerText()).match(/\d+/)?.[0]);
+  const green = Number((await summary.getByText("Green", { exact: true }).locator("..").innerText()).match(/\d+/)?.[0]);
+  expect([8, 9]).toContain(red);
+  expect(red + green).toBe(10);
   await expect(page.getByText(/Checked against \d{2}-\d{2}-\d{4}/)).toBeVisible();
 
   // RED card: R-05 overweight pallets
-  const red = page.locator("article#BK-T06");
-  await red.locator("button[aria-expanded]").first().click();
-  await expect(red.getByText("R-05", { exact: true }).first()).toBeVisible();
-  await expect(red.getByText("Recommended once fixed").first()).toBeVisible();
-  await expect(red.getByRole("button", { name: /Confirm booking/ })).toBeDisabled();
+  const redCard = page.locator("article#BK-T06");
+  await redCard.locator("button[aria-expanded]").first().click();
+  await expect(redCard.getByText("R-05", { exact: true }).first()).toBeVisible();
+  await expect(redCard.getByText("Recommended once fixed").first()).toBeVisible();
+  await expect(redCard.getByRole("button", { name: /Confirm booking/ })).toBeDisabled();
 
   // AMBER card: confirm only after ticking the acknowledgement
   const amber = page.locator("article#BK-T08");
