@@ -13,7 +13,12 @@ const time = (iso: string) => new Date(iso).toLocaleTimeString("en-GB", { hour: 
 export function MessageList({ history, busy }: { history: Turn[]; busy: boolean }) {
   const box = useRef<HTMLDivElement>(null);
   // keep the newest message in view inside the list (not by scrolling the whole page)
-  useEffect(() => { const b = box.current; if (b) b.scrollTo({ top: b.scrollHeight, behavior: "smooth" }); }, [history.length, busy]);
+  const first = useRef(true);
+  useEffect(() => {
+    const b = box.current;
+    if (b) b.scrollTo({ top: b.scrollHeight, behavior: first.current ? "auto" : "smooth" });
+    first.current = false;
+  }, [history.length, busy]);
   return (
     <div ref={box} role="log" aria-live="polite" aria-label="Conversation" tabIndex={0} className="-mx-2 max-h-[60vh] min-h-48 space-y-3 overflow-y-auto px-2 outline-none" data-testid="messages">
       {history.map((t, i) => (

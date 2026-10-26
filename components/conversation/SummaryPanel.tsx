@@ -3,6 +3,7 @@
 import { Check, ChevronUp, Circle, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { formatDDMMYYYY, gbp, kg, type BookingResult } from "@/lib/calculations";
+import { itemComplete } from "@/lib/conversation/state";
 import type { ConversationState } from "@/lib/conversation/types";
 import { cx, severityClass } from "@/lib/ui";
 import { StatusBadge, StatusRing } from "../Motion";
@@ -40,9 +41,12 @@ export function SummaryPanel({ state, result, changed }: { state: ConversationSt
     { key: "totalGrossWeightKg", label: "Gross weight", value: b.totalGrossWeightKg != null ? kg(b.totalGrossWeightKg) : null, changeKey: "gross weight" },
     { key: "deliveryAppointmentBooked", label: "Appointment", value: b.deliveryAppointmentBooked == null ? null : b.deliveryAppointmentBooked ? "Booked" : "Not booked", changeKey: "delivery appointment" },
   ];
-  const missing = rows.filter((r) => r.value == null).length + state.items.reduce((n, it) => n + ["sku", "description", "quantity", "unitsPerCarton", "cartons", "unitPrice", "unitWeightKg"].filter((f) => (it as unknown as Record<string, unknown>)[f] == null).length, 0) + (state.items.length ? 0 : 1);
-  const issues = result?.issues.filter((i) => i.severity === "Red" || i.severity === "Amber" || (i.severity === "Data" && missing === 0)) ?? [];
-  const best = result?.recommendation.recommended;
+  const missing = rows.filter((r) => r.value == null && !(r.key === "deliveryAppointmentBooked" && b.destinationType && b.destinationType !== "Warehouse")).length + state.items.reduce((n, it) => n + ["sku", "description", "quantity", "unitsPerCarton", "cartons", "unitPrice", "unitWeightKg"].filter((f) => (it as unknown as Record<string, unknown>)[f] == null).length, 0) + (state.items.length ? 0 : 1);
+  // while details are still coming in, missing HS code / origin aren't "issues" yet — they're questions to come
+  const gathering = missing > 0 && !state.confirmed && !["review", "blocked", "amber", "done"].includes(state.pending?.kind ?? "");
+  const issues = result?.issues.filter((i) => (i.severity === "Red" || i.severity === "Amber" || (i.severity === "Data" && !gathering)) && !(gathering && (i.code === "R-01" || i.code === "R-09"))) ?? [];
+  const best = state.items.some(itemComplete) ? result?.recommendation.recommended : null;
+  const shown = gathering ? null : result;
 
   const body = (
     <div className="space-y-5">
@@ -95,10 +99,10 @@ export function SummaryPanel({ state, result, changed }: { state: ConversationSt
       {/* desktop: sticky side panel */}
       <aside className="card sticky top-32 hidden max-h-[calc(100vh-9rem)] overflow-y-auto p-4 lg:block" aria-label="Booking summary">
         <div className="mb-4 flex items-center gap-3">
-          {result ? <StatusRing status={result.status} size={44} /> : <span className="size-11 rounded-full border-4 hairline" aria-hidden />}
+          {shown ? <StatusRing status={shown.status} size={44} /> : <span className="size-11 rounded-full border-4 hairline" aria-hidden />}
           <div>
             <p className="text-[15px] font-semibold">Booking summary</p>
-            <p className="text-[12px] text-muted">{result ? <StatusBadge status={result.status} /> : "Waiting for details"} <span className="ml-1">{missing} missing · {issues.length} issue{issues.length === 1 ? "" : "s"}</span></p>
+            <p className="text-[12px] text-muted">{shown ? <StatusBadge status={shown.status} /> : state.history.length > 1 ? "In progress" : "Waiting for details"} <span className="ml-1">{missing} missing · {issues.length} issue{issues.length === 1 ? "" : "s"}</span></p>
           </div>
         </div>
         {body}
@@ -107,7 +111,7 @@ export function SummaryPanel({ state, result, changed }: { state: ConversationSt
       <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="mx-auto max-w-[640px] rounded-t-3xl border hairline bg-surface shadow-[var(--shadow-lg)]">
           <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center gap-3 px-4 py-3 text-left">
-            {result ? <StatusRing status={result.status} size={34} /> : <span className="size-8 rounded-full border-4 hairline" aria-hidden />}
+            {shown ? <StatusRing status={shown.status} size={34} /> : <span className="size-8 rounded-full border-4 hairline" aria-hidden />}
             <span className="flex-1 text-[14px]"><span className="font-semibold">Summary</span> <span className="text-muted">· {missing} missing · {issues.length} issue{issues.length === 1 ? "" : "s"}</span></span>
             <ChevronUp size={18} className={cx("text-muted transition-transform", !open && "rotate-180")} aria-hidden />
           </button>

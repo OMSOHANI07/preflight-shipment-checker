@@ -90,8 +90,9 @@ export function VoiceTab({ api, onSwitchToChat }: { api: ConversationApi; onSwit
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "en-GB"; if (voice) u.voice = voice; u.rate = 1.02;
-    u.onend = () => setPhase("idle");
-    u.onerror = () => setPhase("idle");
+    // some browsers never fire onend (no voices installed) — don't leave the mic stuck on "Speaking"
+    const guard = window.setTimeout(() => setPhase((p) => (p === "speaking" ? "idle" : p)), 2000 + text.length * 90);
+    u.onend = u.onerror = () => { window.clearTimeout(guard); setPhase("idle"); };
     setPhase("speaking");
     window.speechSynthesis.speak(u);
   }, [voice]);
