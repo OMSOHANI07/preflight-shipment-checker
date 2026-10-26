@@ -35,6 +35,29 @@
   --grey-tint: rgba(142, 142, 147, 0.14);
   --blue-tint: rgba(10, 132, 255, 0.1);
 
+  /* hero scene: golden-hour sunset */
+  --scene-sky-top: #24326e;
+  --scene-sky-mid: #6f5aa6;
+  --scene-sky-low: #e9798a;
+  --scene-horizon: #ffbf7a;
+  --scene-sun: #fff2c9;
+  --scene-sun-glow: rgba(255, 196, 120, 0.6);
+  --scene-cloud: rgba(255, 214, 196, 0.55);
+  --scene-sea-top: #c76f86;
+  --scene-sea-deep: #2c2c62;
+  --scene-wave-1: #8a5a8c;
+  --scene-wave-2: #4b3f7c;
+  --scene-wave-3: #2a2a5c;
+  --scene-far: #3b2c58;
+  --scene-silhouette: #2a1d3f;
+  --scene-hull: #1e1b3a;
+  --scene-hull-top: #2d2850;
+  --scene-window: #ffd98a;
+  --scene-smoke: rgba(255, 230, 220, 0.5);
+  --scene-foam: #ffe9e0;
+  --scene-plane: #2a2346;
+  --scene-stars: 0.15;
+  --scene-ink: #ffffff;
   --nav-bg: rgba(251, 251, 253, 0.72);
   color-scheme: light;
 }
@@ -63,6 +86,28 @@
     --green-tint: rgba(48, 209, 88, 0.18);
     --grey-tint: rgba(142, 142, 147, 0.22);
     --blue-tint: rgba(10, 132, 255, 0.2);
+    /* hero scene: dusk turning to night */
+    --scene-sky-top: #03040f;
+    --scene-sky-mid: #15113a;
+    --scene-sky-low: #4d1f52;
+    --scene-horizon: #d0583c;
+    --scene-sun: #ffb46b;
+    --scene-sun-glow: rgba(255, 112, 60, 0.5);
+    --scene-cloud: rgba(140, 90, 150, 0.35);
+    --scene-sea-top: #4a1d40;
+    --scene-sea-deep: #05060f;
+    --scene-wave-1: #2b1838;
+    --scene-wave-2: #170f2b;
+    --scene-wave-3: #0a0918;
+    --scene-far: #12091e;
+    --scene-silhouette: #05040c;
+    --scene-hull: #07060f;
+    --scene-hull-top: #14112a;
+    --scene-window: #ffcf6e;
+    --scene-smoke: rgba(200, 170, 200, 0.3);
+    --scene-foam: #e8d6ef;
+    --scene-plane: #0d0b1c;
+    --scene-stars: 1;
     --nav-bg: rgba(22, 22, 23, 0.72);
     color-scheme: dark;
   }
@@ -323,9 +368,76 @@ body {
 .pallet { animation: pallet-move 9s linear infinite; }
 .scan-beam { animation: scan 1.8s ease-in-out infinite; }
 
+/* ---------- Hero scene ---------- */
+.hero-scene svg * { transform-box: fill-box; }
+.hero-scene .wave { animation: wave-roll linear infinite; transform-box: view-box; }
+.wave-back { animation-duration: 70s !important; }
+.wave-mid { animation-duration: 38s !important; animation-direction: reverse !important; }
+.wave-front { animation-duration: 26s !important; }
+.wave-page { animation-duration: 46s !important; animation-direction: reverse !important; }
+@keyframes wave-roll { from { transform: translateX(0); } to { transform: translateX(-1440px); } }
+
+.ship-sail { transform-box: view-box !important; animation: ship-sail 80s linear infinite; animation-delay: -34s; }
+@keyframes ship-sail { from { transform: translateX(-420px); } to { transform: translateX(1760px); } }
+.ship-bob { transform-origin: 50% 100%; animation: ship-bob 5.5s ease-in-out infinite alternate; }
+@keyframes ship-bob { from { transform: translateY(0) rotate(-0.9deg); } to { transform: translateY(4px) rotate(0.9deg); } }
+.ship-wake { animation: wake 2.8s ease-in-out infinite alternate; }
+@keyframes wake { from { opacity: 0.55; } to { opacity: 1; } }
+.ship-smoke { transform-origin: center; opacity: 0; animation: smoke 4.8s ease-out infinite; }
+@keyframes smoke { 0% { transform: translate(0, 0) scale(0.5); opacity: 0.7; } 100% { transform: translate(-46px, -54px) scale(2.4); opacity: 0; } }
+.ship-window { animation: window 3.5s ease-in-out infinite alternate; }
+@keyframes window { from { opacity: 0.6; } to { opacity: 1; } }
+.blink { animation: blink 1.8s steps(1) infinite; }
+@keyframes blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.1; } }
+
+.plane { transform-box: view-box !important; animation: plane 36s linear infinite; animation-delay: -9s; }
+@keyframes plane { from { transform: translate(-320px, 40px); } to { transform: translate(1800px, -70px); } }
+.birds { transform-box: view-box !important; animation: birds 52s linear infinite; animation-delay: -20s; }
+@keyframes birds { from { transform: translate(-80px, 330px); } to { transform: translate(1520px, 250px); } }
+.wing { transform-origin: center; animation: flap 0.9s ease-in-out infinite alternate; }
+@keyframes flap { from { transform: scaleY(1); } to { transform: scaleY(-0.4); } }
+.cloud { animation: cloud 48s ease-in-out infinite alternate; }
+.cloud-b { animation-duration: 64s; animation-delay: -20s; }
+.cloud-c { animation-duration: 56s; animation-delay: -8s; }
+@keyframes cloud { from { transform: translateX(-60px); } to { transform: translateX(90px); } }
+
+.sun { animation: sun-set 24s ease-in-out infinite alternate; }
+@keyframes sun-set { from { transform: translateY(-6px); } to { transform: translateY(16px); } }
+.sun-glow { transform-origin: center; animation: glow 7s ease-in-out infinite alternate; }
+@keyframes glow { from { transform: scale(0.92); opacity: 0.8; } to { transform: scale(1.08); opacity: 1; } }
+.glint { transform-origin: center; animation: glint 2.6s ease-in-out infinite alternate; }
+@keyframes glint { from { transform: scaleX(0.55); opacity: 0.25; } to { transform: scaleX(1.15); opacity: 0.85; } }
+.scene-stars { opacity: var(--scene-stars); }
+.star { animation: twinkle 3.2s ease-in-out infinite alternate; }
+@keyframes twinkle { from { opacity: 0.25; } to { opacity: 1; } }
+.lighthouse { animation: blink 2.4s steps(1) infinite; }
+
+/* hero type on the sky */
+.brand-word {
+  background: linear-gradient(100deg, #ffffff 20%, #ffd79a 40%, #ffffff 55%, #ffc4d0 75%, #ffffff 90%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: brand-shine 7s ease-in-out infinite;
+  filter: drop-shadow(0 4px 24px rgba(30, 10, 60, 0.35));
+}
+@keyframes brand-shine { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.hero-ink { color: var(--scene-ink, #fff); text-shadow: 0 2px 18px rgba(20, 10, 50, 0.45); }
+.btn-glass {
+  background: rgba(255, 255, 255, 0.16); color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.btn-glass:not(:disabled):hover { background: rgba(255, 255, 255, 0.28); }
+.scroll-cue { animation: cue 1.8s ease-in-out infinite; }
+@keyframes cue { 0%, 100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(6px); opacity: 1; } }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .pallet, .scan-beam, .cell-focus { animation: none !important; }
+  .hero-scene *, .brand-word, .scroll-cue { animation: none !important; }
+  .ship-sail { transform: translateX(560px); }
+  .plane { transform: translate(880px, -30px); }
+  .birds { transform: translate(420px, 300px); }
   .pallet { opacity: 1; }
   * { transition-duration: 0.01ms !important; }
 }
