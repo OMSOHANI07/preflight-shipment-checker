@@ -24,6 +24,10 @@ interface Props {
   open: boolean;
   onToggle: () => void;
   anchorId: string;
+  /** V2: confirm through the conversation instead of /api/confirm. */
+  onConfirm?: (acknowledgedAmber: boolean) => Promise<string | null>;
+  /** V2: reference of a booking already confirmed in the conversation. */
+  confirmedRef?: string | null;
 }
 
 /** Bold money, weights and plain numbers in a fix line so the corrected value stands out. */
@@ -85,7 +89,7 @@ function RuleTable({ results }: { results: Record<RuleId, "pass" | "fail" | "not
   );
 }
 
-export function BookingCard({ view, ex, uploadId, saveState, bookingHeaders, itemHeaders, r06, open, onToggle, anchorId }: Props) {
+export function BookingCard({ view, ex, uploadId, saveState, bookingHeaders, itemHeaders, r06, open, onToggle, anchorId, onConfirm, confirmedRef }: Props) {
   const { booking: b, result: r } = view;
   const reduce = useReducedMotion();
   const [focused, setFocused] = useState<Set<string>>(new Set());
@@ -110,11 +114,19 @@ export function BookingCard({ view, ex, uploadId, saveState, bookingHeaders, ite
   };
 
   const blocked = r.status === "RED" || r.status === "INCOMPLETE";
+  // V2: the conversation already confirmed this booking
+  if (confirmedRef && confirm.state !== "done") setConfirm({ state: "done", ref: confirmedRef, saved: true });
+  if (!confirmedRef && onConfirm && confirm.state === "done") setConfirm({ state: "idle" });
   const canClick = !blocked && (r.status === "GREEN" || ack) && confirm.state !== "busy" && confirm.state !== "done";
   const blockedWhy = r.status === "RED" ? "Fix the Red issues first — this shipment must not go until they're fixed." : "Add the missing information first — some rules can't be checked yet.";
 
   async function doConfirm() {
     setConfirm({ state: "busy" });
+    if (onConfirm) {
+      const ref = await onConfirm(ack).catch(() => null);
+      setConfirm(ref ? { state: "done", ref, saved: true } : { state: "error", msg: "Couldn't confirm — try again." });
+      return;
+    }
     try {
       const res = await fetch("/api/confirm", {
         method: "POST", headers: { "Content-Type": "application/json" },
