@@ -24,7 +24,7 @@ function ConversationTab() {
             className={cx("flex items-center gap-2 rounded-full px-5 py-2 text-[14px] font-medium text-muted", sub === t.id && "bg-surface shadow-[var(--shadow)]")}
           >
             <t.icon size={15} aria-hidden /> {t.label}
-            <span className="chip bg-[var(--hairline)] text-[11px] text-muted">Coming in V2</span>
+            <span className="chip bg-surface text-[11px] text-muted">Coming in V2</span>
           </button>
         ))}
       </div>
@@ -64,15 +64,14 @@ export function AppSection() {
                 className={cx(
                   "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium transition-all sm:px-4 sm:text-[14px]",
                   tab === t.id ? "bg-surface text-fg shadow-[var(--shadow)]" : "text-muted hover:text-fg",
-                  t.badge && "opacity-75",
                 )}
               >
-                <t.icon size={14} aria-hidden />{t.label}
-                {t.badge && <span className="chip bg-[var(--hairline)] px-1.5 py-0 text-[10px] text-muted" title="Coming in V2">{t.badge}</span>}
+                <t.icon size={14} aria-hidden className="hidden sm:block" />{t.label}
+                {t.badge && <span className="chip bg-surface px-1.5 py-0 text-[10px] text-muted" title="Coming in V2">{t.badge}</span>}
               </button>
             ))}
           </div>
-          <button type="button" onClick={goUpload} className="btn btn-primary btn-sm">Check a file</button>
+          <button type="button" onClick={goUpload} className="btn btn-primary btn-sm !px-3 sm:!px-4"><span className="sm:hidden">Check</span><span className="hidden sm:inline">Check a file</span></button>
         </div>
       </div>
 

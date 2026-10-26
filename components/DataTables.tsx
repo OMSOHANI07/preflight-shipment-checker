@@ -35,7 +35,7 @@ export function DataTables({ bookingHeaders, itemHeaders, raw, itemRaws, cellIss
     <div className="space-y-5">
       <div>
         <h4 className="mb-2 text-[13px] font-semibold text-muted">Bookings sheet · row {raw.rowNumber}</h4>
-        <div className="overflow-x-auto rounded-2xl border hairline">
+        <div className="relative overflow-x-auto rounded-2xl border hairline" tabIndex={0} role="region" aria-label="Bookings sheet row (scrolls sideways)">
           <table className="w-full text-left text-[13px]">
             <thead className="bg-surface-2 text-muted">
               <tr>{bookingHeaders.map((h) => <th key={h} scope="col" className="whitespace-nowrap px-3 py-2 font-medium">{h}</th>)}</tr>
@@ -45,7 +45,7 @@ export function DataTables({ bookingHeaders, itemHeaders, raw, itemRaws, cellIss
                 {bookingHeaders.map((h) => {
                   const f = fieldForHeader(h, "booking");
                   const k = f ? `b:${f}` : `b:?${h}`;
-                  return <Cell key={h} cellKey={k} text={raw.display[h] ?? ""} issues={cellIssues.get(k)} focused={focused.has(k)} idPrefix={idPrefix} />;
+                  return <Cell key={h} cellKey={k} text={raw.display?.[h] ?? ""} issues={cellIssues.get(k)} focused={focused.has(k)} idPrefix={idPrefix} />;
                 })}
               </tr>
             </tbody>
@@ -55,7 +55,7 @@ export function DataTables({ bookingHeaders, itemHeaders, raw, itemRaws, cellIss
       <div>
         <h4 className="mb-2 text-[13px] font-semibold text-muted">Items sheet · {itemRaws.length ? `rows ${itemRaws.map((r) => r.rowNumber).join(", ")}` : "no rows for this booking"}</h4>
         {itemRaws.length > 0 && (
-          <div className="overflow-x-auto rounded-2xl border hairline">
+          <div className="relative overflow-x-auto rounded-2xl border hairline" tabIndex={0} role="region" aria-label="Items sheet rows (scrolls sideways)">
             <table className="w-full text-left text-[13px]">
               <thead className="bg-surface-2 text-muted">
                 <tr>
@@ -65,12 +65,12 @@ export function DataTables({ bookingHeaders, itemHeaders, raw, itemRaws, cellIss
               </thead>
               <tbody>
                 {itemRaws.map((r, i) => (
-                  <tr key={r.rowNumber} className="border-t hairline">
-                    <td className="px-3 py-2 text-muted">{r.rowNumber}</td>
+                  <tr key={r.rowNumber ?? i} className="border-t hairline">
+                    <td className="px-3 py-2 text-muted">{r.rowNumber ?? "—"}</td>
                     {itemHeaders.map((h) => {
                       const f = fieldForHeader(h, "item");
                       const k = f ? `i:${i}:${f}` : `i:${i}:?${h}`;
-                      return <Cell key={h} cellKey={k} text={r.display[h] ?? ""} issues={cellIssues.get(k)} focused={focused.has(k)} idPrefix={idPrefix} />;
+                      return <Cell key={h} cellKey={k} text={r.display?.[h] ?? ""} issues={cellIssues.get(k)} focused={focused.has(k)} idPrefix={idPrefix} />;
                     })}
                   </tr>
                 ))}

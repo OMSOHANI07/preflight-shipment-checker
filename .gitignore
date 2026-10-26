@@ -45,3 +45,5 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 .claude/
+reports/*.log
+reports/tmp*.json

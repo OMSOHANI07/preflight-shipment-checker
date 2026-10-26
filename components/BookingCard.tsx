@@ -39,7 +39,7 @@ function IssueRow({ issue, summary, onFocus }: { issue: Issue; summary: string |
           <span className="chip sev-chip font-mono">{issue.code}</span>
           <span className="text-[12px] font-semibold" style={{ color: "var(--sev-text)" }}>{SEVERITY_LABEL[issue.severity]}</span>
           {issue.sku && <span className="chip bg-surface-2 text-muted">{issue.sku}</span>}
-          <span className="ml-auto text-[12px] text-accent-text opacity-80 group-hover:opacity-100">Show cells ↓</span>
+          <span className="ml-auto text-[12px] text-accent-text group-hover:underline">Show cells ↓</span>
         </div>
         <h5 className="mt-2 text-[17px] font-semibold tracking-tight">{issue.title}</h5>
         {summary && summary !== issue.whatIsWrong && <p className="mt-1 text-[15px]">{summary}</p>}

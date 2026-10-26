@@ -88,7 +88,7 @@ export function ResultsView({ file, saveState }: { file: CheckedFile; saveState:
           {file.fileIssues.map((iss, i) => (
             <div key={i} role="alert" className="sev-grey flex items-start gap-2 rounded-2xl p-3 text-[14px]" style={{ background: "var(--sev-tint)" }}>
               <AlertCircle size={16} className="mt-0.5 flex-none" aria-hidden />
-              <span><span className="font-mono font-semibold">{iss.code}</span> {iss.whatIsWrong}{file.orphanRows[i] ? ` (Items sheet row ${file.orphanRows[i].rowNumber})` : ""} <span className="text-muted">{iss.howToFix.join(" ")}</span></span>
+              <span><span className="font-mono font-semibold">{iss.code}</span> {iss.whatIsWrong}{file.orphanRows[i] ? ` (Items sheet row ${file.orphanRows[i].rowNumber})` : ""} {iss.howToFix.join(" ")}</span>
             </div>
           ))}
         </div>
@@ -127,7 +127,7 @@ export function ResultsView({ file, saveState }: { file: CheckedFile; saveState:
               return (
                 <li key={id} className={cx(cls, "tip")}>
                   <div tabIndex={0} className="rounded-xl p-2 text-center" style={{ background: n ? `color-mix(in srgb, var(--sev) ${12 + (n / maxFail) * 50}%, transparent)` : "var(--surface-2)" }} aria-label={`${id}: ${n} booking${n === 1 ? "" : "s"} failing — ${RULES[id].text}`}>
-                    <span className="block font-mono text-[11px] text-muted">{id}</span>
+                    <span className="block font-mono text-[11px] font-semibold">{id}</span>
                     <span className="block text-[18px] font-bold">{n}</span>
                   </div>
                   <span role="tooltip" className="tip-body">{RULES[id].text} ({RULES[id].severity})</span>

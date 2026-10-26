@@ -12,6 +12,9 @@
   --accent: #0071e3;
   --accent-hover: #0060c0;
   --accent-text: #0066cc;
+  /* Filled buttons: white text needs ≥ 4.5:1 in both themes */
+  --accent-fill: #0071e3;
+  --accent-fill-hover: #0060c0;
   --shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.05), 0 24px 60px rgba(0, 0, 0, 0.1);
 
@@ -74,6 +77,16 @@
   --muted: #a1a1a6;
   --hairline: rgba(255, 255, 255, 0.14);
   --accent-text: #4aa3ff;
+  --red-text: #ff6961;
+  --amber-text: #ffb340;
+  --green-text: #4cd964;
+  --grey-text: #aeaeb2;
+  --blue-text: #64b0ff;
+  --red-tint: rgba(255, 69, 58, 0.18);
+  --amber-tint: rgba(255, 159, 10, 0.2);
+  --green-tint: rgba(48, 209, 88, 0.18);
+  --grey-tint: rgba(142, 142, 147, 0.22);
+  --blue-tint: rgba(10, 132, 255, 0.2);
   background: var(--bg);
   color: var(--fg);
   color-scheme: dark;
@@ -90,6 +103,7 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-text: var(--accent-text);
+  --color-accent-fill: var(--accent-fill);
   --color-red: var(--red);
   --color-amber: var(--amber);
   --color-green: var(--green);
@@ -101,6 +115,12 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 120px;
+}
+/* Safety net: hidden tooltips and screen-reader text must never make the page scroll sideways.
+   `clip` (unlike `hidden`) doesn't create a scroll container, so sticky headers keep working. */
+html,
+body {
+  overflow-x: clip;
 }
 body {
   background: var(--bg);
@@ -177,11 +197,11 @@ body {
   opacity: 0.45;
 }
 .btn-primary {
-  background: var(--accent);
+  background: var(--accent-fill);
   color: #fff;
 }
 .btn-primary:not(:disabled):hover {
-  background: var(--accent-hover);
+  background: var(--accent-fill-hover);
 }
 .btn-secondary {
   background: transparent;
@@ -189,7 +209,7 @@ body {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 .btn-secondary:not(:disabled):hover {
-  background: var(--accent);
+  background: var(--accent-fill);
   color: #fff;
 }
 .btn-ghost {
@@ -266,18 +286,22 @@ body {
   padding: 6px 10px;
   border-radius: 10px;
   width: max-content;
-  max-width: 260px;
+  max-width: min(260px, calc(100vw - 32px));
   white-space: normal;
   text-align: left;
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s, transform 0.15s;
   z-index: 40;
+  /* Hidden tooltips take no layout space (they'd otherwise widen the page on phones). */
+  display: none;
 }
 .tip:hover > .tip-body,
 .tip:focus-within > .tip-body {
-  opacity: 1;
+  display: block;
   transform: translateX(-50%) translateY(0);
+  animation: tip-in 0.15s ease-out;
+}
+@keyframes tip-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
 }
 
 /* Hero illustration */

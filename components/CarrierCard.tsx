@@ -69,11 +69,11 @@ export function CarrierCard({ booking, result, ex }: { booking: Booking; result:
             {rec.allOptions.map((e) => {
               const isBest = best?.carrier.id === e.carrier.id;
               return (
-                <div key={e.carrier.id} className={cx("rounded-2xl border p-4 text-[13px] transition-opacity", isBest ? "border-accent" : "hairline", !e.eligible && "opacity-55")}>
+                <div key={e.carrier.id} className={cx("rounded-2xl border p-4 text-[13px]", isBest ? "border-accent" : "hairline", !e.eligible && "border-dashed bg-surface-2")}>
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-semibold">{e.carrier.carrier}</span>
-                    {isBest && <span className="chip bg-accent text-white">Pick</span>}
-                    {!e.eligible && <span className="chip bg-surface-2 text-muted">Not eligible</span>}
+                    {isBest && <span className="chip bg-accent-fill text-white">Pick</span>}
+                    {!e.eligible && <span className="chip sev-grey sev-chip">Not eligible</span>}
                   </div>
                   <p className="text-muted">{e.carrier.service}</p>
                   <dl className="mt-2 space-y-0.5">

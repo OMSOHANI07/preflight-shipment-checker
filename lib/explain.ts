@@ -37,10 +37,10 @@ export function fallbackExplanation(b: Booking, items: Item[], r: BookingResult)
   const c = best.carrier;
   const p = rec.priority ?? "Balanced";
   const reason =
-    p === "Cheapest" ? `It's the lowest price on this route for ${plural(b.pallets, "pallet")}.`
+    p === "Cheapest" ? (b.pallets ? `It's the lowest price on this route for ${plural(b.pallets, "pallet")}.` : "It has the lowest price per pallet on this route.")
     : p === "Fastest" ? `It's the quickest option: ${c.transitDays} working days.`
     : p === "Most reliable" ? `It has the best on-time record on this route: ${c.onTimePct}% of shipments arrive on the promised day.`
-    : `It's the best all-round balance of cost (${gbp(best.cost)}), speed (${c.transitDays} working days) and reliability (${c.onTimePct}% on time).`;
+    : `It's the best all-round balance of cost (${best.cost != null ? gbp(best.cost) : `${gbp(c.pricePerPallet)} per pallet`}), speed (${c.transitDays} working days) and reliability (${c.onTimePct}% on time).`;
   const runner = rec.reasonFacts.find((f) => f.startsWith("Runner-up"));
   const exclusions = rec.allOptions.filter((e) => !e.eligible).map((e) => `${carrierName(e)} can't be used: ${e.ineligibleReasons.join("; ")}.`);
   const caveats: string[] = [];
@@ -49,7 +49,9 @@ export function fallbackExplanation(b: Booking, items: Item[], r: BookingResult)
   if (b.readyToShipDate && isBefore(b.readyToShipDate, r.checkedAgainstDate)) caveats.push(`The ready date ${formatDDMMYYYY(b.readyToShipDate)} is in the past, so estimates assume collection from today.`);
   if (!rec.priority) caveats.push("No seller priority was given, so we used Balanced.");
   return {
-    headline: `${carrierName(best)} — ${gbp(best.cost)}, arriving ${longDate(best.etaDate)}`,
+    headline: best.cost != null
+      ? `${carrierName(best)} — ${gbp(best.cost)}, arriving ${longDate(best.etaDate)}`
+      : `${carrierName(best)} — arriving ${longDate(best.etaDate)} (priced once the pallet count is added)`,
     reason,
     tradeoff: runner ?? null,
     exclusions,
@@ -63,13 +65,16 @@ export function fallbackExplanation(b: Booking, items: Item[], r: BookingResult)
 export function confirmationDraft(b: Booking, items: Item[], r: BookingResult): string {
   const best = r.recommendation.recommended;
   const cartons = r.totals.sumItemCartons ?? b.cartons;
-  const what = `${plural(b.pallets, "pallet")} (${plural(cartons, "carton")} of ${goodsPhrase(items)}, ${gbp(b.totalDeclaredValue)})`;
+  // Never print "? pallets" or "Freight: —": say what's missing instead.
+  const what = `${b.pallets ? plural(b.pallets, "pallet") : "shipment"} (${plural(cartons, "carton")} of ${goodsPhrase(items)}, ${gbp(b.totalDeclaredValue)})`;
   const where = `the ${b.destinationCity ?? "destination"} ${b.destinationType === "Business address" ? "business address" : "warehouse"}`;
   if (!best) {
-    return `Your ${what} can't be booked yet: no carrier on the route to ${b.destinationCity ?? "the destination"} can take ${kg(r.totals.weightPerPalletKg)} per pallet. Spread the load over more pallets and check again.`;
+    return r.totals.weightPerPalletKg != null && r.recommendation.allOptions.length
+      ? `Your ${what} can't be booked yet: no carrier on the route to ${b.destinationCity ?? "the destination"} can take ${kg(r.totals.weightPerPalletKg)} per pallet. Spread the load over more pallets and check again.`
+      : `Your ${what} can't be booked yet: ${r.recommendation.fallbackReason ?? "carriers can't be compared until the booking is complete."}`;
   }
   const lead = r.status === "RED" || r.status === "INCOMPLETE" ? "Once the issues above are fixed, your" : "Your";
-  return `${lead} ${what} will be collected from ${b.originCity ?? "the origin"} on ${longDate(best.collectionDate)} by ${carrierName(best)} and should arrive at ${where} on ${longDate(best.etaDate)} (estimated delivery). Freight: ${gbp(best.cost)}.`;
+  return `${lead} ${what} will be collected from ${b.originCity ?? "the origin"} on ${longDate(best.collectionDate)} by ${carrierName(best)} and should arrive at ${where} on ${longDate(best.etaDate)} (estimated delivery). ${best.cost != null ? `Freight: ${gbp(best.cost)}.` : "Freight will be priced once the number of pallets is added."}`;
 }
 
 /** RULEBOOK §11.6 — what happens next. */
