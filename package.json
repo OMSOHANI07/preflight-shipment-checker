@@ -13,7 +13,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx db/seed.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "edge:report": "tsx scripts/run-edge-cases.ts && tsx scripts/edge-ai-check.ts && tsx scripts/build-edge-report.ts"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",
