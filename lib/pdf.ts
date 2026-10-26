@@ -8,7 +8,7 @@ import { formatDDMMYYYY, gbp, RULES, type RuleId } from "@/lib/calculations";
 import { invoiceChecklist, longDate, nextSteps } from "@/lib/explain";
 import type { Explanation } from "@/lib/schema";
 import type { BookingView, CheckedFile } from "@/lib/types";
-import { STATUS_LABEL, STATUS_MEANING } from "@/lib/ui";
+import { SEVERITY_LABEL, STATUS_LABEL, STATUS_MEANING } from "@/lib/ui";
 
 /**
  * Text goes into the PDF in an embedded Unicode font (Geist, OFL — public/fonts/Geist-Regular.ttf), so
@@ -33,7 +33,7 @@ function loadFont(): Promise<string | null> {
   return fontB64;
 }
 
-const STATUS_RGB: Record<string, [number, number, number]> = { RED: [215, 0, 21], INCOMPLETE: [99, 99, 102], AMBER: [160, 90, 0], GREEN: [31, 122, 53] };
+const STATUS_RGB: Record<string, [number, number, number]> = { RED: [215, 0, 21], INCOMPLETE: [99, 99, 102], AMBER: [122, 92, 0], GREEN: [31, 122, 53] };
 
 type AutoTable = (doc: JsPDF, opts: Record<string, unknown>) => void;
 interface Ctx { doc: JsPDF; autoTable: AutoTable; y: number }
@@ -82,8 +82,8 @@ function bookingSection(ctx: Ctx, v: BookingView, ex: Explanation) {
   const main = r.issues.filter((i) => i.severity !== "Advisory");
   heading(ctx, main.length ? `Issues (${main.length})` : "Issues");
   if (main.length) {
-    table(ctx, ["Rule", "Severity", "What is wrong", "How to fix"],
-      main.map((i) => [i.code, i.severity, i.whatIsWrong, i.howToFix.map((f) => `• ${f}`).join("\n")]), [40, 50, 200, 224]);
+    table(ctx, ["Rule", "Type", "What is wrong", "How to fix"],
+      main.map((i) => [i.code, SEVERITY_LABEL[i.severity], i.whatIsWrong, i.howToFix.map((f) => `• ${f}`).join("\n")]), [40, 50, 200, 224]);
   } else para(ctx, "No problems found against the 10 rules.");
 
   heading(ctx, "Rule results");
@@ -152,7 +152,7 @@ export async function downloadFullReportPdf(file: CheckedFile, explanationFor: (
   const ctx = await newDoc();
   const s = file.summary;
   header(ctx, "Pre-Flight full report", `${file.fileName} · ${s.total} bookings · checked against ${formatDDMMYYYY(file.views[0]?.result.checkedAgainstDate ?? null)}`);
-  table(ctx, ["Total", "Red", "Incomplete", "Amber", "Green"], [[String(s.total), String(s.red), String(s.incomplete), String(s.amber), String(s.green)]]);
+  table(ctx, ["Total", STATUS_LABEL.RED, STATUS_LABEL.INCOMPLETE, STATUS_LABEL.AMBER, STATUS_LABEL.GREEN], [[String(s.total), String(s.red), String(s.incomplete), String(s.amber), String(s.green)]]);
   table(ctx, ["Rule", "Bookings failing"], (Object.keys(RULES) as RuleId[]).map((id) => [`${id} ${RULES[id].text}`, String(s.ruleFailCounts[id] ?? 0)]), [430, 84]);
   if (file.fileIssues.length) {
     heading(ctx, "File-level problems");

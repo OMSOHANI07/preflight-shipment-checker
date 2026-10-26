@@ -22,7 +22,7 @@ Built for **Ops Hackathon – Case 2: Conversational Shipment Booking & "Pre-Fli
 5. **Confirm booking** is locked for Red and Incomplete. Amber needs "I understand these warnings" ticked first. Green confirms directly and gives a reference number.
 6. **Download PDF** (one booking) or **Full report PDF** (all bookings). **Share** / **Copy results link** opens `/results/<id>#BK-xxx` for anyone.
 
-The 76-booking edge-case workbook is at [`/samples/edge-cases.xlsx`](https://preflight-shipment-checker-omega.vercel.app/samples/edge-cases.xlsx): Red 21, Incomplete 15, Amber 7, Green 33, plus the orphan item EC-99 (V-11).
+The 76-booking edge-case workbook is at [`/samples/edge-cases.xlsx`](https://preflight-shipment-checker-omega.vercel.app/samples/edge-cases.xlsx): 21 can't ship yet, 15 details missing, 7 check first, 33 ready to ship, plus the orphan item EC-99 (V-11).
 
 ### Conversation (Chat and Voice)
 

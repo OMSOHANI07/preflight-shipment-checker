@@ -15,12 +15,12 @@ test("sample file → summary, RED card blocked, AMBER card needs acknowledgemen
   const summary = page.getByTestId("summary");
   await expect(summary).toBeVisible({ timeout: 30_000 });
   await expect(summary.getByText("Total bookings").locator("..")).toContainText("16", { timeout: 10_000 });
-  await expect(summary.getByText("Incomplete", { exact: true }).locator("..")).toContainText("1");
-  await expect(summary.getByText("Amber", { exact: true }).locator("..")).toContainText("5");
+  await expect(summary.getByText("Details missing", { exact: true }).locator("..")).toContainText("1");
+  await expect(summary.getByText("Check first", { exact: true }).locator("..")).toContainText("5");
   // BK-T16 "Bluetooth speaker" is RED when the AI R-06 check confirms a lithium battery,
   // GREEN (with an A-09 tip) when the AI is unavailable: 8 Red + 2 Green, or 9 Red + 1 Green.
-  const red = Number((await summary.getByText("Red", { exact: true }).locator("..").innerText()).match(/\d+/)?.[0]);
-  const green = Number((await summary.getByText("Green", { exact: true }).locator("..").innerText()).match(/\d+/)?.[0]);
+  const red = Number((await summary.getByText("Can't ship yet", { exact: true }).locator("..").innerText()).match(/\d+/)?.[0]);
+  const green = Number((await summary.getByText("Ready to ship", { exact: true }).locator("..").innerText()).match(/\d+/)?.[0]);
   expect([8, 9]).toContain(red);
   expect(red + green).toBe(10);
   await expect(page.getByText(/Checked against \d{2}-\d{2}-\d{4}/)).toBeVisible();

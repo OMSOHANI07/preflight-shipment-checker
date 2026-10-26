@@ -5,14 +5,14 @@ import { useEffect, useMemo, useState } from "react";
 import { formatDDMMYYYY, RULES, type BookingStatus, type RuleId } from "@/lib/calculations";
 import { useExplanations } from "@/lib/useExplanations";
 import type { CheckedFile } from "@/lib/types";
-import { cx, STATUS_ORDER } from "@/lib/ui";
+import { cx, RULE_KIND, STATUS_LABEL, STATUS_ORDER } from "@/lib/ui";
 import { BookingCard } from "./BookingCard";
 import { CountUp } from "./Motion";
 
 type Filter = "ALL" | BookingStatus;
 const FILTERS: { id: Filter; label: string; cls?: string }[] = [
-  { id: "ALL", label: "All" }, { id: "RED", label: "Red", cls: "sev-red" }, { id: "INCOMPLETE", label: "Incomplete", cls: "sev-grey" },
-  { id: "AMBER", label: "Amber", cls: "sev-amber" }, { id: "GREEN", label: "Green", cls: "sev-green" },
+  { id: "ALL", label: "All" }, { id: "RED", label: STATUS_LABEL.RED, cls: "sev-red" }, { id: "INCOMPLETE", label: STATUS_LABEL.INCOMPLETE, cls: "sev-grey" },
+  { id: "AMBER", label: STATUS_LABEL.AMBER, cls: "sev-amber" }, { id: "GREEN", label: STATUS_LABEL.GREEN, cls: "sev-green" },
 ];
 
 /** Anchor for a booking card: the Booking ID (suffixed if the ID repeats). */
@@ -111,10 +111,10 @@ export function ResultsView({ file, saveState }: { file: CheckedFile; saveState:
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5" data-testid="summary">
           {stat("Total bookings", s.total)}
-          {stat("Red", s.red, "sev-red")}
-          {stat("Incomplete", s.incomplete, "sev-grey")}
-          {stat("Amber", s.amber, "sev-amber")}
-          {stat("Green", s.green, "sev-green")}
+          {stat(STATUS_LABEL.RED, s.red, "sev-red")}
+          {stat(STATUS_LABEL.INCOMPLETE, s.incomplete, "sev-grey")}
+          {stat(STATUS_LABEL.AMBER, s.amber, "sev-amber")}
+          {stat(STATUS_LABEL.GREEN, s.green, "sev-green")}
         </div>
 
         {/* Rule heat-strip */}
@@ -130,7 +130,7 @@ export function ResultsView({ file, saveState }: { file: CheckedFile; saveState:
                     <span className="block font-mono text-[11px] font-semibold">{id}</span>
                     <span className="block text-[18px] font-bold">{n}</span>
                   </div>
-                  <span role="tooltip" className="tip-body">{RULES[id].text} ({RULES[id].severity})</span>
+                  <span role="tooltip" className="tip-body">{RULES[id].text} ({RULE_KIND(RULES[id].severity)})</span>
                 </li>
               );
             })}

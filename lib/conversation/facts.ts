@@ -3,7 +3,8 @@
  * engine's BookingResult and diffResults(); Gemini phrases them, the template joins them, and the
  * validator rejects any reply that mentions a £ amount, date, carrier or rule ID not in here.
  */
-import { formatDDMMYYYY, gbp, weekdayName, type BookingResult, type Issue } from "@/lib/calculations";
+import { formatDDMMYYYY, gbp, weekdayName, type BookingResult, type BookingStatus, type Issue } from "@/lib/calculations";
+import { STATUS_LABEL } from "@/lib/ui";
 import type { Change } from "./state";
 import type { Mode, NextQuestion, TurnDiff } from "./types";
 
@@ -14,7 +15,7 @@ export interface Facts {
   fixedRules: string[];
   newRules: { id: string; whatIsWrong: string; howToFix: string }[];
   status: string | null;
-  /** "RED → AMBER" when this turn changed the status, else null */
+  /** "Can't ship yet → Check first" when this turn changed the status, else null */
   statusChange: string | null;
   recommendation: { label: string; carrier: string | null; cost: string | null; eta: string | null; reasonFacts: string[] } | null;
   nextQuestion: { text: string; options: string[] };
@@ -63,8 +64,8 @@ export function buildFacts(o: {
     readbacks: o.readbacks,
     fixedRules: o.delta?.fixed ?? [],
     newRules: added.slice(0, 3).map((i) => ({ id: i.code, whatIsWrong: i.whatIsWrong, howToFix: i.howToFix[0] ?? "" })),
-    status: r?.status ?? null,
-    statusChange: o.prevStatus && r && o.prevStatus !== r.status ? `${o.prevStatus} → ${r.status}` : null,
+    status: r ? STATUS_LABEL[r.status] : null,
+    statusChange: o.prevStatus && r && o.prevStatus !== r.status ? `${STATUS_LABEL[o.prevStatus as BookingStatus] ?? o.prevStatus} → ${STATUS_LABEL[r.status]}` : null,
     recommendation: r && o.showRecommendation ? {
       label: r.recommendation.label, carrier: carrierName(r), cost: best ? gbp(best.cost) : null,
       eta: best?.etaDate ? `${weekdayName(best.etaDate)} ${formatDDMMYYYY(best.etaDate)}` : null, reasonFacts: r.recommendation.reasonFacts,

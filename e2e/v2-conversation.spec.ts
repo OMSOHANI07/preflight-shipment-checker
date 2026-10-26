@@ -40,7 +40,7 @@ test.describe("[V2 Chat] conversation booking", () => {
     await sendAll(page, VAGUE.slice(1));
     await sendAll(page, TO_REVIEW);
     await expect(page.getByTestId("review-card")).toBeVisible();
-    await expect(panel(page)).toContainText("Amber");
+    await expect(panel(page)).toContainText("Check first");
     await expect(panel(page)).toContainText("Carrier A");
     await expect(assistant(page).last()).toContainText("R-08");
     await page.getByRole("button", { name: "Confirm anyway" }).click();

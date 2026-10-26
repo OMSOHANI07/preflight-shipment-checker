@@ -79,7 +79,7 @@ test.describe("[Upload] Files", () => {
   test("[Upload] sample file: 16 bookings, totals add up, checked-against date shown", async ({ page }) => {
     await loadSample(page);
     await expect(page.getByTestId("summary").getByText("Total bookings").locator("..")).toContainText("16", { timeout: 10_000 });
-    const [red, inc, amber, green] = [await stat(page, "Red"), await stat(page, "Incomplete"), await stat(page, "Amber"), await stat(page, "Green")];
+    const [red, inc, amber, green] = [await stat(page, "Can't ship yet"), await stat(page, "Details missing"), await stat(page, "Check first"), await stat(page, "Ready to ship")];
     expect(red + inc + amber + green).toBe(16);
     expect([inc, amber]).toEqual([1, 5]);
     expect([8, 9]).toContain(red); // 9 when the AI confirms the Bluetooth speaker has a lithium battery
@@ -94,7 +94,7 @@ test.describe("[Upload] Files", () => {
     await upload(page, "Case2_Shipment_Booking_Test_Data_Format.xlsx", fs.readFileSync(TEMPLATE));
     await expect(page.getByText(/only has the template's grey example row/)).toBeVisible({ timeout: 30_000 });
     const card = await openCard(page, "BK-001");
-    await expect(card).toContainText("Green");
+    await expect(card).toContainText("Ready to ship");
     await expect(card).toContainText("Carrier A");
     await expect(card).toContainText("£540.00");
     await expect(card.getByRole("button", { name: /Confirm booking/ })).toBeEnabled();
@@ -116,7 +116,7 @@ test.describe("[Upload] Files", () => {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Booking ID", "SKU", "Description", "HS code", "Quantity (units)", "Unit price", "Units per carton", "Cartons", "Unit weight (kg)", "Country of origin"], ["BK-1", "MUG-01", "Ceramic coffee mug", 691200, 1080, 5, 12, 90, 0.5, "United Kingdom"]]), "Items");
     await upload(page, "no-pallets.xlsx", Buffer.from(XLSX.write(wb, { type: "buffer", bookType: "xlsx" })));
     await expect(page.getByText(/Column not found on the Bookings sheet: Pallets/)).toBeVisible({ timeout: 30_000 });
-    await expect(await stat(page, "Incomplete")).toBe(1);
+    await expect(await stat(page, "Details missing")).toBe(1);
   });
 });
 
@@ -127,9 +127,9 @@ test.describe("[Results] Summary, filters and cards", () => {
   });
   test("[Results] status filter shows only that status", async ({ page }) => {
     await loadSample(page);
-    await page.getByRole("radio", { name: /^Amber/ }).click();
+    await page.getByRole("radio", { name: /^Check first/ }).click();
     await expect(page.locator("article")).toHaveCount(5);
-    await expect(page.locator("article").first()).toContainText("Amber");
+    await expect(page.locator("article").first()).toContainText("Check first");
   });
   test("[Results] search by Booking ID and by seller", async ({ page }) => {
     await loadSample(page);
@@ -141,14 +141,14 @@ test.describe("[Results] Summary, filters and cards", () => {
   test("[Results] cards are ordered Red → Incomplete → Amber → Green", async ({ page }) => {
     await loadSample(page);
     const labels = await page.locator("article header, article h3 .chip").allInnerTexts();
-    const order = labels.map((l) => ["Red", "Incomplete", "Amber", "Green"].indexOf(l.trim())).filter((n) => n >= 0);
+    const order = labels.map((l) => ["Can't ship yet", "Details missing", "Check first", "Ready to ship"].indexOf(l.trim())).filter((n) => n >= 0);
     expect(order).toEqual([...order].sort((a, b) => a - b));
   });
   test("[Results] each issue shows rule, severity, numbers and a fix", async ({ page }) => {
     await loadSample(page);
     const card = await openCard(page, "BK-T03");
     await expect(card.getByText("R-02", { exact: true }).first()).toBeVisible();
-    await expect(card).toContainText("Red · blocking");
+    await expect(card).toContainText("Must fix");
     await expect(card).toContainText("Declared value is £5,000.00 but the items add up to £5,400.00");
     await expect(card).toContainText("Change the total declared value to £5,400.00.");
   });
@@ -171,7 +171,7 @@ test.describe("[Results] Summary, filters and cards", () => {
     await expect(tips).not.toHaveAttribute("open", "");
     await tips.locator("summary").click();
     await expect(tips).toContainText("A-02");
-    await expect(card).toContainText("Amber"); // tips never change the status
+    await expect(card).toContainText("Check first"); // tips never change the status
   });
 });
 

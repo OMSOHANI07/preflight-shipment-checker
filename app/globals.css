@@ -20,17 +20,17 @@
 
   /* Status colours: bright for dots/rings/fills, -text for AA-contrast labels */
   --red: #ff3b30;
-  --amber: #ff9f0a;
+  --amber: #ffcc00; /* shown as yellow */
   --green: #34c759;
   --grey: #8e8e93;
   --blue: #0a84ff;
   --red-text: #d70015;
-  --amber-text: #a05a00;
+  --amber-text: #7a5c00;
   --green-text: #1f7a35;
   --grey-text: #636366;
   --blue-text: #0058b8;
   --red-tint: rgba(255, 59, 48, 0.1);
-  --amber-tint: rgba(255, 159, 10, 0.14);
+  --amber-tint: rgba(255, 204, 0, 0.2);
   --green-tint: rgba(52, 199, 89, 0.12);
   --grey-tint: rgba(142, 142, 147, 0.14);
   --blue-tint: rgba(10, 132, 255, 0.1);
@@ -63,12 +63,12 @@
     --shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.5), 0 24px 60px rgba(0, 0, 0, 0.5);
     --red-text: #ff6961;
-    --amber-text: #ffb340;
+    --amber-text: #ffd60a;
     --green-text: #4cd964;
     --grey-text: #aeaeb2;
     --blue-text: #64b0ff;
     --red-tint: rgba(255, 69, 58, 0.18);
-    --amber-tint: rgba(255, 159, 10, 0.2);
+    --amber-tint: rgba(255, 214, 10, 0.18);
     --green-tint: rgba(48, 209, 88, 0.18);
     --grey-tint: rgba(142, 142, 147, 0.22);
     --blue-tint: rgba(10, 132, 255, 0.2);
@@ -94,12 +94,12 @@
   --hairline: rgba(255, 255, 255, 0.14);
   --accent-text: #4aa3ff;
   --red-text: #ff6961;
-  --amber-text: #ffb340;
+  --amber-text: #ffd60a;
   --green-text: #4cd964;
   --grey-text: #aeaeb2;
   --blue-text: #64b0ff;
   --red-tint: rgba(255, 69, 58, 0.18);
-  --amber-tint: rgba(255, 159, 10, 0.2);
+  --amber-tint: rgba(255, 214, 10, 0.18);
   --green-tint: rgba(48, 209, 88, 0.18);
   --grey-tint: rgba(142, 142, 147, 0.22);
   --blue-tint: rgba(10, 132, 255, 0.2);

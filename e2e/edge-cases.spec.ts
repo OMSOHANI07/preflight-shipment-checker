@@ -26,7 +26,7 @@ test.describe("[Edge] Edge-case workbook in the browser", () => {
     await uploadEdge(page);
     await expect(page.getByTestId("summary").getByText("Total bookings").locator("..")).toContainText("76", { timeout: 10_000 });
     await page.waitForTimeout(1500); // count-up animation
-    const [red, inc, amber, green] = [await stat(page, "Red"), await stat(page, "Incomplete"), await stat(page, "Amber"), await stat(page, "Green")];
+    const [red, inc, amber, green] = [await stat(page, "Can't ship yet"), await stat(page, "Details missing"), await stat(page, "Check first"), await stat(page, "Ready to ship")];
     expect([inc, amber]).toEqual([15, 7]);
     // AI may confirm the Bluetooth speaker (EC-28) has a lithium battery: Green 33 → 32, Red 21 → 22
     expect(red + green).toBe(54);
@@ -46,7 +46,7 @@ test.describe("[Edge] Edge-case workbook in the browser", () => {
   test("[Edge] prompt injection in a description doesn't change the result", async ({ page }) => {
     await uploadEdge(page);
     const card = await open(page, "EC-73");
-    await expect(card.getByText("Red", { exact: true }).first()).toBeVisible();
+    await expect(card.getByText("Can't ship yet", { exact: true }).first()).toBeVisible();
     await expect(card.getByText("R-01", { exact: true }).first()).toBeVisible();
     await expect(card.getByRole("button", { name: /Confirm booking/ })).toBeDisabled();
   });
@@ -67,7 +67,7 @@ test.describe("[Edge] Edge-case workbook in the browser", () => {
     await uploadEdge(page);
     for (const id of ["EC-46", "EC-53", "EC-54", "EC-63"]) {
       const card = await open(page, id);
-      await expect(card.getByText("Green", { exact: true }).first()).toBeVisible();
+      await expect(card.getByText("Ready to ship", { exact: true }).first()).toBeVisible();
     }
   });
   test("[Edge] false-positive traps are not Red: perfume-free, lithium grease, SKU-only keyword", async ({ page }) => {

@@ -3,7 +3,9 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import type { BookingStatus } from "@/lib/calculations";
 import type { TurnDiff } from "@/lib/conversation/types";
+import { STATUS_LABEL } from "@/lib/ui";
 
 /** "Updated: pallets 3 → 4 · ✓ R-05 fixed · Carrier B → A · £660.00 → £720.00 · ETA Tue 10-11 → Thu 12-11" */
 export function diffParts(d: TurnDiff): string[] {
@@ -12,7 +14,7 @@ export function diffParts(d: TurnDiff): string[] {
     ...d.cascade,
     ...d.fixed.map((r) => `✓ ${r} fixed`),
     ...d.newIssues.map((r) => `⚠ ${r}`),
-    ...(d.status ? [`${d.status.from} → ${d.status.to}`] : []),
+    ...(d.status ? [`${STATUS_LABEL[d.status.from as BookingStatus] ?? d.status.from} → ${STATUS_LABEL[d.status.to as BookingStatus] ?? d.status.to}`] : []),
     ...(d.carrier ? [`${d.carrier.from ?? "none"} → ${d.carrier.to ?? "none"}`] : []),
     ...(d.cost ? [`${d.cost.from} → ${d.cost.to}`] : []),
     ...(d.eta ? [`ETA ${d.eta.from} → ${d.eta.to}`] : []),

@@ -8,14 +8,17 @@ export const statusClass = (s: BookingStatus) =>
 export const severityClass = (s: Severity) =>
   s === "Red" ? "sev-red" : s === "Data" ? "sev-grey" : s === "Amber" ? "sev-amber" : "sev-blue";
 
-export const STATUS_LABEL: Record<BookingStatus, string> = { RED: "Red", INCOMPLETE: "Incomplete", AMBER: "Amber", GREEN: "Green" };
+/** What people see. Colours: red = can't ship yet, grey = details missing, yellow = check first, green = ready. */
+export const STATUS_LABEL: Record<BookingStatus, string> = { RED: "Can't ship yet", INCOMPLETE: "Details missing", AMBER: "Check first", GREEN: "Ready to ship" };
 export const STATUS_MEANING: Record<BookingStatus, string> = {
-  RED: "Blocked — must not ship until fixed",
-  INCOMPLETE: "Missing or unreadable information",
-  AMBER: "Risky — check before confirming",
-  GREEN: "Ready to confirm",
+  RED: "Something has to be fixed before this can ship",
+  INCOMPLETE: "Some details are missing or couldn't be read",
+  AMBER: "It can ship, but look at the yellow points first",
+  GREEN: "Everything checks out — ready to book",
 };
-export const SEVERITY_LABEL: Record<Severity, string> = { Red: "Red · blocking", Data: "Data · missing info", Amber: "Amber · warning", Advisory: "Tip" };
+export const SEVERITY_LABEL: Record<Severity, string> = { Red: "Must fix", Data: "Missing detail", Amber: "Worth a look", Advisory: "Tip" };
+/** Rule severity in plain words (rules are only ever red or yellow). */
+export const RULE_KIND = (sev: "Red" | "Amber") => (sev === "Red" ? "must be fixed" : "worth a look");
 
 export const cx = (...xs: (string | false | null | undefined)[]) => xs.filter(Boolean).join(" ");
 

@@ -172,7 +172,7 @@ export function BookingCard({ view, ex, uploadId, saveState, bookingHeaders, ite
             <span className="mt-0.5 block truncate text-[14px] text-muted">{b.sellerName ?? "Seller not given"} · {route}</span>
             <span className="mt-1 block text-[12px] text-muted">
               {STATUS_MEANING[r.status]}
-              {counts.red > 0 && ` · ${counts.red} red`}{counts.data > 0 && ` · ${counts.data} missing`}{counts.amber > 0 && ` · ${counts.amber} amber`}
+              {counts.red > 0 && ` · ${counts.red} to fix`}{counts.data > 0 && ` · ${counts.data} missing`}{counts.amber > 0 && ` · ${counts.amber} to look at`}
             </span>
           </span>
           <ChevronDown aria-hidden className={cx("flex-none text-muted transition-transform", open && "rotate-180")} />

@@ -18,7 +18,7 @@ Reply rules for this conversation:
 - Money as £1,234.00, dates as Weekday DD-MM-YYYY, transit in "working days", say "estimated delivery".
 - Never invent a number, date, carrier or rule. Never say a booking is confirmed or ready unless FACTS say so.
 - If FACTS.recommendation is null, do not mention carriers, recommendations, prices or the status at all.
-- A status change may only be described as FACTS.statusChange says (e.g. "RED → AMBER" means it improved from RED to AMBER). If FACTS.statusChange is null, never say the status changed, stayed or remains anything.
+- A status change may only be described as FACTS.statusChange says (e.g. "Can't ship yet → Check first" means it improved). Use those exact plain words; never say RED, AMBER, GREEN or INCOMPLETE. If FACTS.statusChange is null, never say the status changed, stayed or remains anything.
 - Don't start with "I have updated" every time — vary it, e.g. "Got it —", "Thanks —", "Done:".
 - ALWAYS end with nextQuestion.text, copied word for word.
 Return JSON: {"reply": "..."}`;
