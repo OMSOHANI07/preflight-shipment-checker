@@ -92,8 +92,8 @@ Plus input checks V-01…V-11, which make a booking **Incomplete**, and tips A-0
 |---|---|---|
 | Unit, scripted & parity | `npm test` — 302 Vitest cases: every rule and boundary, V-01…V-11, tips, carriers, parser warnings, the 76-booking edge-case workbook against its Expected sheet; conversation state, next-question order, normalisers, read-backs, reply validator; scripted chats (§7.1 vague seller, §7.2 add a pallet, contradictions, restricted goods, voice, prompt injection, Gemini down); chat ↔ Excel parity | 302 / 302 pass |
 | Local build | `npm run build && npm run e2e` — 70 Playwright cases. The local server runs with `GEMINI_MOCK=1`, so chat runs are repeatable. Covers V1 plus chat booking to PDF, add-a-pallet toast and highlight, Undo, refresh, voice with stubbed speech, the no-speech fallback, HTML-as-text and axe | 68 pass, 2 skipped by design |
-| Production | `E2E_BASE_URL=https://preflight-shipment-checker-omega.vercel.app npm run e2e` | 49 pass, 2 skipped by design |
-| No database, no AI | same suite with `E2E_NO_DB=1 E2E_NO_AI=1` against a server with Neon unreachable and no Gemini key | 48 pass, 3 skipped by design |
+| Production | `E2E_BASE_URL=https://preflight-shipment-checker-omega.vercel.app npm run e2e` (the mocked-chat tests skip; the full chat was also run by hand with real Gemini, about 2–4 s per turn) | 63 pass, 7 skipped |
+| No database, no AI (V1 run) | same suite with `E2E_NO_DB=1 E2E_NO_AI=1` against a server with Neon unreachable and no Gemini key | 48 pass, 3 skipped by design |
 
 `npx tsx scripts/collect-metrics.ts` measures speed and AI success on the live site; `npx tsx scripts/build-report-data.ts` turns all of it into `reports/data/*.json`, the datasets behind the test report dashboard (`reports/dashboard/index.html`).
 
