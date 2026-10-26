@@ -15,7 +15,12 @@ const carrierName = (e: CarrierEval) => `${e.carrier.carrier} ${e.carrier.servic
 
 /** "ceramic coffee mug, 350 ml" / "2 products" — plain description of the goods. */
 export function goodsPhrase(items: Item[]) {
-  if (items.length === 1 && items[0].description) return items[0].description.charAt(0).toLowerCase() + items[0].description.slice(1);
+  if (items.length === 1 && items[0].description) {
+    // Keep the confirmation sentence readable: shorten long descriptions at a word boundary.
+    let d = items[0].description.trim();
+    if (d.length > 70) d = d.slice(0, 70).replace(/[\s,;:.-]+\S*$/, "") + "…";
+    return d.charAt(0).toLowerCase() + d.slice(1);
+  }
   return items.length ? `${items.length} different products` : "goods";
 }
 

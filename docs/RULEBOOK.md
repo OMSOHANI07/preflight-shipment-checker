@@ -201,6 +201,9 @@ Implemented in `validateInputs()` and `orphanItemIssues()`.
   - A decimal comma ("5,00", "12,5") is a decimal point; "1,080" (three digits after the comma) is still a thousands separator.
   - Spreadsheet floating-point noise is removed (1080.0000000001 → 1080).
   - Line value = round_to_pence(quantity × unit price) — the unit price itself is never rounded first (1000 × £0.333 = £333.00).
+  - Unreadable cells are quoted back with the reason: a month-first date suggests the day-first one ("12/15/2026" → "Did you mean 15-12-2026?"), an impossible date names the short month, and blank vs. unreadable are worded differently (V-02, V-07).
+  - An HS code in scientific notation ("6.912E+05") says Excel lost the digits and to re-enter the column as Text (R-01).
+  - Long descriptions are shortened in the confirmation sentence and wrap in the data tables.
   - R-06: "<word>-free" is a negation (perfume-free, propellant-free); lithium grease/soap is a lubricant, not a battery; a keyword found only in the SKU code (e.g. "LIPO-BALM-01") is "possible", not definite.
 
 ---
@@ -344,6 +347,7 @@ Advisory issues **never** change status and are shown in a separate collapsible 
 | A-08 | Commercial invoice checklist | Always (once per booking, on the confirmation) | Lists what the invoice needs beyond our data | UK guide: the 15 items (below) |
 | A-09 | Please confirm the item isn't restricted | R-06 "possible" match and no Gemini/seller verdict | "'Bluetooth speaker' can indicate a lithium battery — please confirm." | Rulebook R-06 safety net |
 | A-10 | Correcting the weight will make the pallets too heavy | R-07 fails, R-05 passes, and net weight ÷ pallets is over the R-05 carrier's limit | "The goods alone weigh 1,620 kg — 540 kg per pallet, over Carrier A Road economy's 500 kg limit." | Added after edge-case testing (EC-35) |
+| A-11 | HS code isn't a real commodity code | HS code is all zeros (passes R-01's length check) | "HS code 000000 … no product is classified as all zeros." | Added after edge-case testing (EC-08) |
 
 ### 7.1 A-08 — UK commercial invoice checklist (from the gov.uk guide) and how the app handles each
 

@@ -21,7 +21,8 @@ function Cell({ cellKey, text, issues, focused, idPrefix }: { cellKey: string; t
   return (
     <td
       id={`${idPrefix}-${cellKey}`}
-      className={cx("whitespace-nowrap px-3 py-2 align-top", top && `${severityClass(top.severity)} cell-hit`, focused && "cell-focus")}
+      // Long text (descriptions) wraps in a readable column instead of stretching the table
+      className={cx("px-3 py-2 align-top", text.length > 40 ? "min-w-[16rem] max-w-[26rem] whitespace-normal break-words" : "whitespace-nowrap", top && `${severityClass(top.severity)} cell-hit`, focused && "cell-focus")}
       title={label}
     >
       {text === "" ? <span className="text-muted" aria-label="blank">—</span> : text}

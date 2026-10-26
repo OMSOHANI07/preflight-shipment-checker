@@ -138,12 +138,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 6088,
+                      "duration": 6990,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T08:20:00.190Z",
+                      "startTime": "2026-10-26T10:13:30.498Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -172,12 +172,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4649,
+                      "duration": 4963,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T08:20:06.395Z",
+                      "startTime": "2026-10-26T10:13:37.638Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -206,12 +206,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 5154,
+                      "duration": 3555,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T08:20:11.050Z",
+                      "startTime": "2026-10-26T10:13:42.605Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -240,12 +240,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4631,
+                      "duration": 3531,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T08:20:16.210Z",
+                      "startTime": "2026-10-26T10:13:46.164Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -274,12 +274,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4278,
+                      "duration": 4439,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T08:20:20.847Z",
+                      "startTime": "2026-10-26T10:13:49.698Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -308,12 +308,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 5345,
+                      "duration": 10167,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T08:20:25.133Z",
+                      "startTime": "2026-10-26T10:13:54.142Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -342,12 +342,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4748,
+                      "duration": 4082,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T08:20:30.486Z",
+                      "startTime": "2026-10-26T10:14:04.313Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -376,12 +376,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4677,
+                      "duration": 4478,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T08:20:35.239Z",
+                      "startTime": "2026-10-26T10:14:08.398Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -395,15 +395,125 @@
               "column": 7
             }
           ]
+        },
+        {
+          "title": "[Edge] Clearer messages",
+          "file": "edge-cases.spec.ts",
+          "line": 90,
+          "column": 6,
+          "specs": [
+            {
+              "title": "[Edge] unreadable dates explain why (US order, impossible date)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4013,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T10:14:12.879Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "db200a91ff2226597e25-736923e39bce517f0281",
+              "file": "edge-cases.spec.ts",
+              "line": 91,
+              "column": 7
+            },
+            {
+              "title": "[Edge] scientific-notation HS code and all-zero HS code are explained",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3624,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T10:14:16.894Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "db200a91ff2226597e25-3cae549eae026cb13174",
+              "file": "edge-cases.spec.ts",
+              "line": 96,
+              "column": 7
+            },
+            {
+              "title": "[Edge] a 300-character description wraps instead of stretching the table",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3990,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T10:14:20.521Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "db200a91ff2226597e25-86d974ad05f39ffe2dbd",
+              "file": "edge-cases.spec.ts",
+              "line": 103,
+              "column": 7
+            }
+          ]
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-26T08:19:59.482Z",
-    "duration": 40496.923,
-    "expected": 8,
+    "startTime": "2026-10-26T10:13:29.942Z",
+    "duration": 54615.894,
+    "expected": 11,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

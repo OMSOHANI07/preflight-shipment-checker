@@ -162,6 +162,8 @@ export interface Booking {
   chosenCarrierId?: string | null;
   /** Where each value came from: "stated" by seller, or "derived" by us and confirmed. */
   provenance?: Partial<Record<keyof Booking, "stated" | "derived" | "default">>;
+  /** Cells that had a value which couldn't be read (field → the text as written), for clearer messages. */
+  unreadable?: Partial<Record<string, string>>;
 }
 
 /** Sheet 2 row (after normalisation). */
@@ -177,6 +179,8 @@ export interface Item {
   cartons: number | null;
   unitWeightKg: number | null;
   countryOfOrigin: string | null;
+  /** Cells that had a value which couldn't be read (field → the text as written). */
+  unreadable?: Partial<Record<string, string>>;
 }
 
 export interface RecommendationPrefs {
@@ -546,13 +550,24 @@ export function normaliseHs(raw: string | number | null | undefined) {
 
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 
+/** Fields whose cell had something in it but came out null after normalising. */
+function unreadableCells(parsed: Record<string, unknown>, raw: (label: string) => unknown) {
+  const out: Partial<Record<string, string>> = {};
+  for (const [field, label] of Object.entries(FIELD_LABELS)) {
+    if (!(field in parsed) || parsed[field] != null) continue;
+    const v = raw(label);
+    if (v != null && String(v).trim() !== "") out[field] = String(v).trim();
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 /** Raw Excel row (header → value) → Booking. Header matching is case/space-insensitive. */
 export function bookingFromRow(row: Record<string, unknown>): Booking {
   const g = (name: string) => {
     const key = Object.keys(row).find((k) => clean(k) === clean(name));
     return key ? row[key] : null;
   };
-  return {
+  const b: Booking = {
     bookingId: String(g("Booking ID") ?? "").trim(),
     sellerName: g("Seller name") == null ? null : String(g("Seller name")).trim() || null,
     originCity: normaliseCity(g("Origin city")),
@@ -570,6 +585,8 @@ export function bookingFromRow(row: Record<string, unknown>): Booking {
     deliveryAppointmentBooked: normaliseYesNo(g("Delivery appointment booked")),
     provenance: {},
   };
+  const unreadable = unreadableCells(b as unknown as Record<string, unknown>, g);
+  return unreadable ? { ...b, unreadable } : b;
 }
 
 /** Raw Excel row → Item. Read HS code cell RAW (string or number) — never Number() it. */
@@ -579,7 +596,7 @@ export function itemFromRow(row: Record<string, unknown>, rowRef?: string): Item
     return key ? row[key] : null;
   };
   const hs = g("HS code");
-  return {
+  const it: Item = {
     bookingId: String(g("Booking ID") ?? "").trim(),
     rowRef,
     sku: g("SKU") == null ? null : String(g("SKU")).trim() || null,
@@ -592,6 +609,19 @@ export function itemFromRow(row: Record<string, unknown>, rowRef?: string): Item
     unitWeightKg: parseNumber(g("Unit weight (kg)")),
     countryOfOrigin: normaliseCountry(g("Country of origin")),
   };
+  const unreadable = unreadableCells(it as unknown as Record<string, unknown>, g);
+  return unreadable ? { ...it, unreadable } : it;
+}
+
+/** Why a date cell couldn't be read, and the likely intended date. */
+export function explainUnreadableDate(raw: string): string {
+  const m = raw.trim().match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+  if (m) {
+    const a = +m[1], b = +m[2], y = m[3].length === 2 ? 2000 + +m[3] : +m[3];
+    if (b > 12 && a <= 12) return `It looks like month-first (US) order, but dates are read day-first (DD-MM-YYYY). Did you mean ${pad2(b)}-${pad2(a)}-${y}?`;
+    if (b >= 1 && b <= 12 && a >= 1 && a <= 31) return `${raw} isn't a real date: ${MONTHS[b - 1][0].toUpperCase() + MONTHS[b - 1].slice(1)} doesn't have ${a} days.`;
+  }
+  return "Use the format DD-MM-YYYY, for example 15-12-2026.";
 }
 
 /** Group items under bookings; returns orphans (items whose Booking ID is not on Sheet 1). */
@@ -646,7 +676,11 @@ export function validateInputs(b: Booking, items: Item[], allBookingIds: string[
   // V-02 Required booking fields
   for (const f of REQUIRED_BOOKING_FIELDS) {
     if (b[f] == null || b[f] === "") {
-      out.push(data("V-02", `${FIELD_LABELS[f]} missing`, `${FIELD_LABELS[f]} is blank or could not be read.`, [`Provide the ${FIELD_LABELS[f].toLowerCase()}.`], [f]));
+      const raw = b.unreadable?.[f];
+      if (raw != null) {
+        const hint = f === "readyToShipDate" ? explainUnreadableDate(raw) : `Enter it in the template's format (${f === "pallets" || f === "cartons" ? "a whole number" : f === "sellerPriority" ? "Cheapest, Fastest, Most reliable or Balanced" : f === "destinationType" ? "Warehouse or Business address" : f === "deliveryAppointmentBooked" ? "Yes or No" : "a number"}).`;
+        out.push(data("V-02", `${FIELD_LABELS[f]} unreadable`, `${FIELD_LABELS[f]} "${raw}" could not be read. ${f === "readyToShipDate" ? hint : ""}`.trim(), [f === "readyToShipDate" ? "Enter the date as DD-MM-YYYY (day first), for example 15-12-2026." : hint], [f]));
+      } else out.push(data("V-02", `${FIELD_LABELS[f]} missing`, `${FIELD_LABELS[f]} is blank.`, [`Provide the ${FIELD_LABELS[f].toLowerCase()}.`], [f]));
     }
   }
   // V-03 Allowed values
@@ -683,7 +717,9 @@ export function validateInputs(b: Booking, items: Item[], allBookingIds: string[
   items.forEach((it, i) => {
     for (const f of REQUIRED_ITEM_FIELDS) {
       if (it[f] == null || it[f] === "")
-        out.push(data("V-07", `Item ${it.sku ?? i + 1}: ${FIELD_LABELS[f]} missing`, `${FIELD_LABELS[f]} is blank or unreadable for item ${it.sku ?? "#" + (i + 1)}.`, [`Provide the ${FIELD_LABELS[f].toLowerCase()}.`], [f], { scope: "item", itemIndex: i, sku: it.sku }));
+        out.push(it.unreadable?.[f] != null
+          ? data("V-07", `Item ${it.sku ?? i + 1}: ${FIELD_LABELS[f]} unreadable`, `${FIELD_LABELS[f]} "${it.unreadable[f]}" could not be read for item ${it.sku ?? "#" + (i + 1)}.`, ["Enter it as a plain number, for example 5.00 or 1080."], [f], { scope: "item", itemIndex: i, sku: it.sku })
+          : data("V-07", `Item ${it.sku ?? i + 1}: ${FIELD_LABELS[f]} missing`, `${FIELD_LABELS[f]} is blank for item ${it.sku ?? "#" + (i + 1)}.`, [`Provide the ${FIELD_LABELS[f].toLowerCase()}.`], [f], { scope: "item", itemIndex: i, sku: it.sku }));
     }
     for (const f of ["quantity", "unitsPerCarton", "cartons"] as (keyof Item)[]) {
       const v = it[f] as number | null;
@@ -917,6 +953,10 @@ export function checkR01(items: Item[]): Issue[] {
     if (!hs.digits) {
       what = `${itemLabel(it, i)} has no HS code.`;
       fix.push("Add the product's HS (commodity) code with at least 6 digits. Look it up on the UK Trade Tariff (gov.uk/trade-tariff) using the product description.");
+    } else if (hs.nonDigitChars && /^\d+(\.\d+)?e[+-]?\d+$/i.test(String(it.hsCodeRaw).trim())) {
+      // Excel shows long numbers as scientific notation ("6.912E+05") and the real digits are lost.
+      what = `${itemLabel(it, i)} has HS code "${it.hsCodeRaw}" — Excel turned it into scientific notation, so the real digits are lost.`;
+      fix.push("Format the HS code column as Text, then type the full code again (e.g. 691200).");
     } else if (hs.nonDigitChars) {
       what = `${itemLabel(it, i)} has HS code "${it.hsCodeRaw}", which contains characters that are not digits.`;
       fix.push("Enter the HS code using digits only (e.g. 691200).");
@@ -1137,9 +1177,13 @@ export function advisoryChecks(b: Booking, items: Item[], t: BookingTotals): Iss
     // A-02 Non-UK origin → may not get zero tariff under UK–EU trade agreement
     if (it.countryOfOrigin && it.countryOfOrigin !== "United Kingdom")
       out.push(adv("A-02", "Made outside the UK — EU import duty may apply", `${itemLabel(it, i)} was made in ${it.countryOfOrigin}. Goods must originate in the UK (or EU) to qualify for zero tariff under the UK–EU Trade and Cooperation Agreement, so duty may be charged on arrival.`, ["Check the duty with your buyer or customs broker; make sure the invoice shows the real country of origin."], { scope: "item", itemIndex: i, sku: it.sku, fields: ["countryOfOrigin"] }));
-    // A-06 HS code only 6 digits — declarations normally need 8 (UK export) / 10 (EU import)
     const hs = normaliseHs(it.hsCodeRaw);
-    if (hs.digitCount === 6)
+    // A-11 HS code of only zeros passes R-01's length check but isn't a real commodity code
+    const allZero = !!hs.digits && /^0+$/.test(hs.digits);
+    if (allZero)
+      out.push(adv("A-11", "HS code isn't a real commodity code", `${itemLabel(it, i)} has HS code ${hs.digits}. It has enough digits to pass R-01, but no product is classified as all zeros.`, ["Look up the product's real code on the UK Trade Tariff (gov.uk/trade-tariff) — customs will reject an all-zero code."], { scope: "item", itemIndex: i, sku: it.sku, fields: ["hsCodeRaw"] }));
+    // A-06 HS code only 6 digits — declarations normally need 8 (UK export) / 10 (EU import)
+    if (hs.digitCount === 6 && !allZero)
       out.push(adv("A-06", "Full commodity code recommended", `${itemLabel(it, i)} has a 6-digit HS code (${hs.digits}). That passes our check, but UK export declarations use an 8-digit commodity code and EU import declarations a 10-digit one.`, ["Look up the full code on the UK Trade Tariff and give it to your customs agent."], { scope: "item", itemIndex: i, sku: it.sku, fields: ["hsCodeRaw"] }));
   });
   // A-03 Gross barely above net → probably excludes packaging / pallets
@@ -1390,7 +1434,7 @@ const issueKey = (i: Issue) => `${i.code}${i.sku ? ` [${i.sku}]` : i.itemIndex !
 export function diffResults(beforeB: Booking, beforeItems: Item[], before: BookingResult, afterB: Booking, afterItems: Item[], after: BookingResult): ChangeReport {
   const fieldChanges: ChangeReport["fieldChanges"] = [];
   (Object.keys({ ...beforeB, ...afterB }) as (keyof Booking)[]).forEach((k) => {
-    if (k === "provenance") return;
+    if (k === "provenance" || k === "unreadable") return;
     if (JSON.stringify(beforeB[k]) !== JSON.stringify(afterB[k])) fieldChanges.push({ field: FIELD_LABELS[k] ?? k, from: beforeB[k], to: afterB[k] });
   });
   const max = Math.max(beforeItems.length, afterItems.length);
@@ -1399,7 +1443,7 @@ export function diffResults(beforeB: Booking, beforeItems: Item[], before: Booki
     if (!a) { fieldChanges.push({ field: `Item added`, from: null, to: z.sku }); continue; }
     if (!z) { fieldChanges.push({ field: `Item removed`, from: a.sku, to: null }); continue; }
     (Object.keys({ ...a, ...z }) as (keyof Item)[]).forEach((k) => {
-      if (k === "rowRef") return;
+      if (k === "rowRef" || k === "unreadable") return;
       if (JSON.stringify(a[k]) !== JSON.stringify(z[k])) fieldChanges.push({ field: `${z.sku ?? "item " + (i + 1)}: ${FIELD_LABELS[k] ?? k}`, from: a[k], to: z[k] });
     });
   }

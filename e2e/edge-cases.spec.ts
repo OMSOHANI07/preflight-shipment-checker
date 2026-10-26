@@ -86,3 +86,26 @@ test.describe("[Edge] Edge-case workbook in the browser", () => {
     await expect(card).toContainText("540 kg per pallet");
   });
 });
+
+test.describe("[Edge] Clearer messages", () => {
+  test("[Edge] unreadable dates explain why (US order, impossible date)", async ({ page }) => {
+    await uploadEdge(page);
+    await expect(await open(page, "EC-44")).toContainText("Did you mean 15-12-2026?");
+    await expect(await open(page, "EC-45")).toContainText("February doesn't have 31 days");
+  });
+  test("[Edge] scientific-notation HS code and all-zero HS code are explained", async ({ page }) => {
+    await uploadEdge(page);
+    await expect(await open(page, "EC-07")).toContainText("Excel turned it into scientific notation");
+    const c = await open(page, "EC-08");
+    await c.locator("details").filter({ hasText: /Tips \(/ }).locator("summary").click();
+    await expect(c).toContainText("A-11");
+  });
+  test("[Edge] a 300-character description wraps instead of stretching the table", async ({ page }) => {
+    await uploadEdge(page);
+    const c = await open(page, "EC-75");
+    const cell = c.locator("td", { hasText: "Hand-glazed stoneware coffee mug" }).first();
+    const w = await cell.evaluate((e) => e.getBoundingClientRect().width);
+    expect(w).toBeLessThanOrEqual(26 * 16 + 1);
+    await expect(c.locator("section[aria-label=Confirmation] p").first()).toContainText("…");
+  });
+});

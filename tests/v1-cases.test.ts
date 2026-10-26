@@ -407,3 +407,44 @@ describe("Edge-case fixes (Edge_Case_Test_Data.xlsx)", () => {
     expect(r.status).toBe("AMBER");
   });
 });
+
+describe("Edge-case follow-ups: clearer messages", () => {
+  const row = (over: Record<string, unknown>) => C.bookingFromRow({
+    "Booking ID": "BK-1", "Seller name": "A", "Origin city": "Leeds", "Origin country": "UK", "Destination city": "Paris", "Destination country": "France",
+    "Destination type": "Warehouse", "Ready to ship date": "15-12-2026", "Seller priority": "Cheapest", Pallets: 3, Cartons: 90,
+    "Total declared value": 5400, Currency: "GBP", "Total gross weight (kg)": 620, "Delivery appointment booked": "Yes", ...over,
+  });
+  it("US month-first date: says so and suggests the day-first date", () => {
+    const b = row({ "Ready to ship date": "12/15/2026" });
+    expect(issue(C.runAll(b, [mug], { now }), "V-02")?.whatIsWrong).toBe('Ready to ship date "12/15/2026" could not be read. It looks like month-first (US) order, but dates are read day-first (DD-MM-YYYY). Did you mean 15-12-2026?');
+  });
+  it("impossible date: names the month that's too short", () => {
+    expect(C.explainUnreadableDate("31-02-2027")).toBe("31-02-2027 isn't a real date: February doesn't have 31 days.");
+  });
+  it("blank vs unreadable are worded differently", () => {
+    expect(issue(C.runAll(row({ "Total gross weight (kg)": null }), [mug], { now }), "V-02")?.whatIsWrong).toBe("Total gross weight (kg) is blank.");
+    expect(issue(C.runAll(row({ Pallets: "lots" }), [mug], { now }), "V-02")?.whatIsWrong).toBe('Pallets "lots" could not be read.');
+  });
+  it("unreadable item number shows the text as written", () => {
+    const it = C.itemFromRow({ "Booking ID": "BK-001", SKU: "MUG-01", Description: "Mug", "HS code": 691200, "Quantity (units)": 1080, "Unit price": "five-ish", "Units per carton": 12, Cartons: 90, "Unit weight (kg)": 0.5, "Country of origin": "UK" });
+    expect(issue(run({}, [it]), "V-07")?.whatIsWrong).toBe('Unit price "five-ish" could not be read for item MUG-01.');
+  });
+  it("HS code in scientific notation explains what Excel did", () => {
+    expect(issue(run({}, [item({ hsCodeRaw: "6.912E+05" })]), "R-01")?.whatIsWrong).toMatch(/Excel turned it into scientific notation/);
+  });
+  it("all-zero HS code passes R-01 but gets tip A-11 (and not A-06)", () => {
+    const r = run({}, [item({ hsCodeRaw: "000000" })]);
+    expect(codes(r)).toEqual([]);
+    expect(tips(r)).toContain("A-11");
+    expect(tips(r)).not.toContain("A-06");
+  });
+  it("a very long description is shortened in the confirmation", () => {
+    const long = "Hand-glazed stoneware coffee mug with reinforced handle, 350 ml capacity, dishwasher and microwave safe, ".repeat(3);
+    const it = item({ description: long });
+    expect(confirmationDraft(base, [it], run({}, [it]))).toMatch(/90 cartons of hand-glazed stoneware coffee mug with reinforced handle, 350 ml…, £5,400\.00/);
+  });
+  it("unreadable markers never show up as changed fields in a mid-way diff", () => {
+    const b1 = { ...base, unreadable: { pallets: "lots" } }, b2 = { ...base };
+    expect(C.diffResults(b1, [mug], run(), b2, [mug], run()).fieldChanges).toEqual([]);
+  });
+});
