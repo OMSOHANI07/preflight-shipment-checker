@@ -3,15 +3,15 @@
  * Against production: E2E_BASE_URL=https://… npm run e2e
  */
 import { expect, test } from "@playwright/test";
+import path from "node:path";
 
 test("sample file → summary, RED card blocked, AMBER card needs acknowledgement", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Catch it before it ships." })).toBeVisible();
 
-  // V2 placeholders are visible
   await expect(page.getByRole("tab", { name: /Conversation/ })).toBeVisible();
 
-  await page.getByTestId("use-sample").click();
+  await page.locator('input[type="file"]').setInputFiles(path.resolve(__dirname, "../public/samples/stress-test.xlsx"));
   const summary = page.getByTestId("summary");
   await expect(summary).toBeVisible({ timeout: 30_000 });
   await expect(summary.getByText("Total bookings").locator("..")).toContainText("16", { timeout: 10_000 });

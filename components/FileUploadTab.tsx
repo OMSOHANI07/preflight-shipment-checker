@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Check, FileSpreadsheet, FlaskConical, Loader2, TriangleAlert, UploadCloud, Wand2 } from "lucide-react";
+import { Check, FileSpreadsheet, Loader2, TriangleAlert, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
 import { checkWorkbook, saveCheckedFile, type Step } from "@/lib/checkFile";
 import type { FileNotice } from "@/lib/parseExcel";
@@ -52,12 +52,6 @@ export function FileUploadTab() {
     await run(await f.arrayBuffer(), f.name);
   }
 
-  async function loadSample(path: string, name: string) {
-    const res = await fetch(path);
-    if (!res.ok) { setError({ message: "Couldn't load the sample file.", notices: [] }); return; }
-    await run(await res.arrayBuffer(), name);
-  }
-
   const busy = step !== null && step !== "done";
   const idx = step ? ORDER.indexOf(step) : -1;
 
@@ -77,14 +71,8 @@ export function FileUploadTab() {
           <button type="button" className="btn btn-primary" onClick={() => input.current?.click()} disabled={busy}>
             <FileSpreadsheet size={17} aria-hidden /> Choose file
           </button>
-          <button type="button" className="btn btn-secondary" onClick={() => loadSample("/samples/stress-test.xlsx", "stress-test.xlsx")} disabled={busy} data-testid="use-sample">
-            <Wand2 size={17} aria-hidden /> Use sample file
-          </button>
-          <button type="button" className="btn btn-ghost" onClick={() => loadSample("/samples/edge-cases.xlsx", "edge-cases.xlsx")} disabled={busy} data-testid="try-edge-cases">
-            <FlaskConical size={17} aria-hidden /> Try edge cases
-          </button>
         </div>
-        <p className="mt-4 text-[13px] text-muted">The sample has 16 bookings with planted mistakes, one for each rule plus combinations. The edge-case file has 75 tricky bookings (typos, odd formats, boundaries, injection attempts).</p>
+        <p className="mt-4 text-[13px] text-muted">No file to hand? Download the template from the top of the page, or describe the shipment in Conversation.</p>
         <input ref={input} type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" className="sr-only" aria-label="Choose an Excel file" onChange={(e) => { void onFiles(e.target.files); e.target.value = ""; }} />
 
         <AnimatePresence>

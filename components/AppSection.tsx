@@ -19,7 +19,7 @@ export function AppSection() {
     window.setTimeout(() => document.getElementById("upload")?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
   };
   return (
-    <section id="app" aria-label="Checker" className="pb-24">
+    <section id="app" aria-label="Checker" className="section-glass pb-24">
       {/* Sticky product sub-nav */}
       <div className="sticky top-12 z-40 border-b hairline backdrop-blur-xl backdrop-saturate-150" style={{ background: "var(--nav-bg)" }}>
         <div className="mx-auto flex h-14 max-w-[1080px] items-center justify-between gap-3 px-4 sm:px-6">

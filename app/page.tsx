@@ -1,5 +1,6 @@
 import { AppSection } from "@/components/AppSection";
 import { Hero } from "@/components/Hero";
+import { PageBackdrop } from "@/components/PageBackdrop";
 import { SiteNav } from "@/components/SiteNav";
 import { CarriersCompare, Footer, HowItWorks, RulesGrid } from "@/components/StaticSections";
 import { loadCarriers, loadRules } from "@/lib/db";
@@ -11,6 +12,7 @@ export default async function Home() {
   const [{ carriers }, rules] = await Promise.all([loadCarriers(), loadRules()]);
   return (
     <>
+      <PageBackdrop />
       <SiteNav />
       <main className="flex-1">
         <Hero />

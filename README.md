@@ -10,7 +10,7 @@ Built for **Ops Hackathon – Case 2: Conversational Shipment Booking & "Pre-Fli
 ## How judges test (2 minutes)
 
 1. Open the live link. No account is needed.
-2. In **Checker**, click **Use sample file**. It loads a 16-booking stress workbook: one booking breaks each rule R-01…R-10, plus combinations, a missing field, an overweight-for-every-carrier case, a 5-digit numeric HS code, an orphan item and a "Bluetooth speaker".
+2. Download the test workbook from [`/samples/stress-test.xlsx`](https://preflight-shipment-checker-omega.vercel.app/samples/stress-test.xlsx), then in **Checker** click **Choose file** (or drop it on the card). It has 16 bookings: one booking breaks each rule R-01…R-10, plus combinations, a missing field, an overweight-for-every-carrier case, a 5-digit numeric HS code, an orphan item and a "Bluetooth speaker".
    Or drop your own `.xlsx` / `.xls` in the template format. **Download template** is in the hero.
 3. Read the summary: totals, Red / Incomplete / Amber / Green, and how many bookings fail each rule. Filter by status or search by Booking ID or seller.
 4. Open any booking card. It shows:
@@ -22,7 +22,7 @@ Built for **Ops Hackathon – Case 2: Conversational Shipment Booking & "Pre-Fli
 5. **Confirm booking** is locked for Red and Incomplete. Amber needs "I understand these warnings" ticked first. Green confirms directly and gives a reference number.
 6. **Download PDF** (one booking) or **Full report PDF** (all bookings). **Share** / **Copy results link** opens `/results/<id>#BK-xxx` for anyone.
 
-**Try edge cases** loads the 76-booking edge-case workbook: Red 21, Incomplete 15, Amber 7, Green 33, plus the orphan item EC-99 (V-11).
+The 76-booking edge-case workbook is at [`/samples/edge-cases.xlsx`](https://preflight-shipment-checker-omega.vercel.app/samples/edge-cases.xlsx): Red 21, Incomplete 15, Amber 7, Green 33, plus the orphan item EC-99 (V-11).
 
 ### Conversation (Chat and Voice)
 
@@ -91,7 +91,7 @@ Plus input checks V-01…V-11, which make a booking **Incomplete**, and tips A-0
 | Run | What | Result |
 |---|---|---|
 | Unit, scripted & parity | `npm test` — 302 Vitest cases: every rule and boundary, V-01…V-11, tips, carriers, parser warnings, the 76-booking edge-case workbook against its Expected sheet; conversation state, next-question order, normalisers, read-backs, reply validator; scripted chats (§7.1 vague seller, §7.2 add a pallet, contradictions, restricted goods, voice, prompt injection, Gemini down); chat ↔ Excel parity | 302 / 302 pass |
-| Local build | `npm run build && npm run e2e` — 70 Playwright cases. The local server runs with `GEMINI_MOCK=1`, so chat runs are repeatable. Covers V1 plus chat booking to PDF, add-a-pallet toast and highlight, Undo, refresh, voice with stubbed speech, the no-speech fallback, HTML-as-text and axe | 68 pass, 2 skipped by design |
+| Local build | `npm run build && npm run e2e` — 69 Playwright cases. The local server runs with `GEMINI_MOCK=1`, so chat runs are repeatable. Covers V1 plus chat booking to PDF, add-a-pallet toast and highlight, Undo, refresh, voice with stubbed speech, the no-speech fallback, HTML-as-text and axe | 67 pass, 2 skipped by design |
 | Production | `E2E_BASE_URL=https://preflight-shipment-checker-omega.vercel.app npm run e2e` (the mocked-chat tests skip; the full chat was also run by hand with real Gemini, about 2–4 s per turn) | 63 pass, 7 skipped |
 | No database, no AI (V1 run) | same suite with `E2E_NO_DB=1 E2E_NO_AI=1` against a server with Neon unreachable and no Gemini key | 48 pass, 3 skipped by design |
 
@@ -148,6 +148,8 @@ tests/, e2e/           Vitest and Playwright
 ```
 
 ## Design notes
+
+The page sits on a full-screen photo backdrop: a ship at sea, a container port and a lorry and plane at dusk. It cross-fades between them as you scroll from section to section, drifts slowly, and a plane crosses the sky now and then. The photos are small, so the backdrop uses blurred copies, and the hero shows them sharp in a tall window (full-screen on phones). Sections are translucent so the backdrop shows through. All the motion stops when the device asks for reduced motion.
 
 The page borrows the *feel* of a product page: a big, tight hero headline; calm grey subheads; alternating light and dark full-width sections; a translucent sticky nav with a product sub-nav; pill buttons; large rounded cards; and scroll-reveal motion. It uses no third-party brand assets. Colour is used only for status (Red #ff3b30, Amber #ff9f0a, Green #34c759, Incomplete #8e8e93, Tips blue), with darker text variants for WCAG AA contrast.
 

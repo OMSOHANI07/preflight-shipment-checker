@@ -13,7 +13,8 @@ const TEMPLATE = path.resolve(__dirname, "../data/Case2_Shipment_Booking_Test_Da
 
 async function loadSample(page: Page) {
   await page.goto("/");
-  await page.getByTestId("use-sample").click();
+  // the 16-booking stress workbook, uploaded like any seller's file
+  await page.locator('input[type="file"]').setInputFiles(path.resolve(__dirname, "../public/samples/stress-test.xlsx"));
   await expect(page.getByTestId("summary")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator("ol[aria-live=polite]")).toHaveCount(0); // progress steps have finished fading out
 }
@@ -69,7 +70,8 @@ test.describe("[Page] Home and navigation", () => {
     await page.getByRole("tab", { name: /Conversation/ }).click();
     await page.getByRole("button", { name: "Check a file" }).click();
     await expect(page.locator("#panel-upload")).toBeVisible();
-    await expect(page.getByTestId("use-sample")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Choose file" })).toBeVisible();
+    await expect(page.getByTestId("use-sample")).toHaveCount(0);
   });
 });
 
@@ -82,11 +84,6 @@ test.describe("[Upload] Files", () => {
     expect([inc, amber]).toEqual([1, 5]);
     expect([8, 9]).toContain(red); // 9 when the AI confirms the Bluetooth speaker has a lithium battery
     await expect(page.getByText(/Checked against \d{2}-\d{2}-\d{4} \(UK date\)/)).toBeVisible();
-  });
-  test("[Upload] 'Try edge cases' loads the 76-booking edge-case file", async ({ page }) => {
-    await page.goto("/");
-    await page.getByTestId("try-edge-cases").click();
-    await expect(page.getByTestId("summary").getByText("Total bookings").locator("..")).toContainText("76", { timeout: 40_000 });
   });
   test("[Upload] file-level notices: grey example row skipped, orphan item (V-11)", async ({ page }) => {
     await loadSample(page);

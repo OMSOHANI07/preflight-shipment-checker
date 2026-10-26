@@ -10,7 +10,7 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="how" className="bg-bg-alt px-4 py-24 sm:px-6" aria-labelledby="how-title">
+    <section id="how" className="section-glass px-4 py-24 sm:px-6" aria-labelledby="how-title">
       <div className="mx-auto max-w-[1080px]">
         <Reveal>
           <p className="eyebrow text-center">How it works</p>
@@ -33,31 +33,52 @@ export function HowItWorks() {
   );
 }
 
+/** The rules as a person would say them. */
+const PLAIN: Record<RuleId, string> = {
+  "R-01": "Every product needs its customs code (the HS code), at least 6 digits long — without it, goods can sit at the border.",
+  "R-02": "The total value you declare has to match what your products add up to.",
+  "R-03": "The units have to fit the cartons — say 12 mugs a box and 90 boxes, and that's 1,080 mugs.",
+  "R-04": "The carton count on the booking has to match the cartons of each product added together.",
+  "R-05": "Each pallet has to be light enough for the carrier you pick.",
+  "R-06": "No lithium batteries, aerosols or flammable liquids — the road carriers won't take them.",
+  "R-07": "The total weight should be at least what the goods themselves weigh.",
+  "R-08": "Warehouses usually turn lorries away without a booked delivery slot.",
+  "R-09": "Say where each product was made — customs will ask.",
+  "R-10": "The ready date shouldn't already be in the past.",
+};
+
 export function RulesGrid({ rules }: { rules: { id: RuleId; text: string; severity: "Red" | "Amber" }[] }) {
+  const groups = [
+    { key: "stop", title: "Has to be fixed before it can ship", note: "We won't let these through.", box: "rules-box-red", items: rules.filter((r) => r.severity === "Red") },
+    { key: "look", title: "Worth a second look", note: "You can still book — we'll just ask you to confirm.", box: "rules-box-yellow", items: rules.filter((r) => r.severity !== "Red") },
+  ];
   return (
-    <section id="rules" className="section-dark px-4 py-24 sm:px-6" aria-labelledby="rules-title">
+    <section id="rules" className="section-dark section-glass-dark px-4 py-24 sm:px-6" aria-labelledby="rules-title">
       <div className="mx-auto max-w-[1080px]">
         <Reveal>
           <p className="eyebrow text-center">What we check</p>
-          <h2 id="rules-title" className="headline-lg mx-auto mt-2 max-w-[820px] text-center">Ten rules. Every booking. Every time.</h2>
-          <p className="lede mx-auto mt-4 max-w-[640px] text-center">Red stops a shipment until it&apos;s fixed. Amber is a risk you acknowledge before you confirm.</p>
+          <h2 id="rules-title" className="headline-lg mx-auto mt-2 max-w-[820px] text-center">The things that go wrong, in plain English.</h2>
+          <p className="lede mx-auto mt-4 max-w-[640px] text-center">Every booking is checked for all ten, every time.</p>
         </Reveal>
-        <ul className="mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {rules.map((r, i) => (
-            <li key={r.id}>
-              <Reveal delay={(i % 5) * 0.05} className={`${r.severity === "Red" ? "sev-red" : "sev-amber"} h-full rounded-[20px] bg-surface p-5`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-semibold text-muted">{r.id}</span>
-                  <span className="chip sev-chip"><span className="sev-dot" aria-hidden />{r.severity}</span>
-                </div>
-                <p className="mt-3 text-[15px] leading-snug">{r.text}</p>
-              </Reveal>
-            </li>
+        <div className="mt-14 grid gap-5 md:grid-cols-2">
+          {groups.map((g, gi) => (
+            <Reveal key={g.key} delay={gi * 0.08} className={`${g.box} h-full rounded-[28px] p-7 sm:p-8`}>
+              <div className="flex items-center gap-3">
+                <span className="rules-swatch size-4 shrink-0 rounded-[5px]" aria-hidden />
+                <h3 className="text-[22px] font-bold tracking-tight">{g.title}</h3>
+              </div>
+              <p className="mt-1 pl-7 text-[15px] text-muted">{g.note}</p>
+              <ul className="mt-6 space-y-3">
+                {g.items.map((r) => (
+                  <li key={r.id} className="rules-item rounded-2xl px-4 py-3 text-[16px] leading-snug">{PLAIN[r.id] ?? r.text}</li>
+                ))}
+              </ul>
+            </Reveal>
           ))}
-        </ul>
+        </div>
         <Reveal>
           <p className="mt-10 text-center text-[15px] text-muted">
-            Plus tips from the UK government export invoice guide — HS code length, country of origin, packaging weight and a full commercial-invoice checklist.
+            We also share tips from the UK government&apos;s export invoice guide, and give you a checklist for the commercial invoice.
           </p>
         </Reveal>
       </div>
@@ -70,7 +91,7 @@ const COUNTRY_SHORT: Record<string, string> = { Germany: "Germany", France: "Fra
 export function CarriersCompare({ carriers }: { carriers: readonly Carrier[] }) {
   const services = ["Carrier A", "Carrier B", "Carrier C"].map((name) => carriers.filter((c) => c.carrier === name));
   return (
-    <section id="carriers" className="px-4 py-24 sm:px-6" aria-labelledby="carriers-title">
+    <section id="carriers" className="section-glass px-4 py-24 sm:px-6" aria-labelledby="carriers-title">
       <div className="mx-auto max-w-[1080px]">
         <Reveal>
           <p className="eyebrow text-center">Carriers</p>
@@ -112,7 +133,7 @@ export function CarriersCompare({ carriers }: { carriers: readonly Carrier[] }) 
 
 export function Footer() {
   return (
-    <footer className="border-t hairline bg-bg-alt px-4 py-10 text-[12px] text-muted sm:px-6">
+    <footer className="section-glass border-t hairline px-4 py-10 text-[12px] text-muted sm:px-6">
       <div className="mx-auto flex max-w-[1080px] flex-col gap-2 sm:flex-row sm:justify-between">
         <p>Ops Hackathon · Case 2 — Conversational Shipment Booking &amp; “Pre-Flight” Error Checker.</p>
         <p>
