@@ -1,0 +1,42 @@
+{
+  "order": ["G1", "G2", "G3", "G4", "G5", "G6", "G7"],
+  "neverAsk": ["originCountry", "currency", "bookingId"],
+  "defaults": { "originCountry": "United Kingdom", "currency": "GBP" },
+  "inferences": [
+    { "field": "destinationCountry", "from": "destinationCity", "fn": "CITY_TO_COUNTRY" },
+    { "field": "item.cartons", "from": ["quantity", "unitsPerCarton"], "fn": "itemExactCartons", "confirm": true },
+    { "field": "item.quantity", "from": ["cartons", "unitsPerCarton"], "fn": "deriveItemField", "confirm": true },
+    { "field": "cartons", "from": "items", "fn": "deriveBookingTotals.cartons", "confirm": true },
+    { "field": "totalDeclaredValue", "from": "items", "fn": "deriveBookingTotals.totalDeclaredValue", "confirm": true }
+  ],
+  "neverDerive": ["totalGrossWeightKg", "pallets", "hsCodeRaw", "countryOfOrigin", "deliveryAppointmentBooked", "sellerPriority"],
+  "questions": [
+    { "id": "Q-01", "group": "G1", "field": "sellerName", "required": true, "chat": "What's the name of the business sending the goods?", "voice": "What's your business name?", "parser": "text" },
+    { "id": "Q-02", "group": "G1", "field": "originCity", "required": true, "chat": "Where are the goods being collected from — London, Manchester, Birmingham or Leeds?", "voice": "Collecting from London, Manchester, Birmingham or Leeds?", "parser": "normaliseCity", "options": ["London", "Manchester", "Birmingham", "Leeds"] },
+    { "id": "Q-03", "group": "G1", "field": "destinationCity", "required": true, "chat": "Which city is it going to? We deliver to Berlin, Frankfurt, Hamburg, Paris, Lyon, Amsterdam and Rotterdam.", "voice": "Which city is it going to?", "parser": "normaliseCity", "options": ["Berlin", "Frankfurt", "Hamburg", "Paris", "Lyon", "Amsterdam", "Rotterdam"] },
+    { "id": "Q-04", "group": "G1", "field": "destinationType", "required": true, "chat": "Is it being delivered to a warehouse (like a fulfilment or distribution centre) or a business address (like a shop or office)?", "voice": "Is it a warehouse, or a business address like a shop or office?", "parser": "normaliseDestinationType", "options": ["Warehouse", "Business address"] },
+    { "id": "Q-05", "group": "G2", "field": "readyToShipDate", "required": true, "chat": "When will the goods be packed and ready for collection?", "voice": "What date will the goods be ready for collection?", "parser": "parseDate", "readBack": true },
+    { "id": "Q-06", "group": "G2", "field": "sellerPriority", "required": true, "chat": "What matters most: cheapest, fastest, most reliable, or a balance of all three?", "voice": "What matters most — cheapest, fastest, most reliable, or a balance?", "parser": "normalisePriority", "options": ["Cheapest", "Fastest", "Most reliable", "Balanced"], "fallback": "Balanced" },
+    { "id": "Q-07", "group": "G2", "field": "prefs.requiredDeliveryDate", "required": false, "chat": "Does it need to arrive by a particular date?", "voice": "Does it need to arrive by a certain date?", "parser": "parseDate", "askOnce": true },
+    { "id": "Q-08", "group": "G3", "field": "item.description", "required": true, "chat": "What's the product? A short plain description.", "voice": "What's the product?", "parser": "text", "afterParse": "detectDangerousGoods" },
+    { "id": "Q-08s", "group": "G3", "field": "item.dgConfirm", "required": false, "chat": "Quick safety check: does the {product} contain a lithium battery, or is it an aerosol or a flammable liquid?", "voice": "Does it contain a lithium battery, or is it an aerosol or flammable liquid?", "parser": "normaliseYesNo", "askIf": "dg.verdict == 'possible'" },
+    { "id": "Q-09", "group": "G3", "field": "item.sku", "required": true, "chat": "Do you have a product code (SKU)? If not, I'll call it ITEM-{n}.", "voice": "Do you have a product code for it?", "parser": "text", "fallback": "ITEM-{n}" },
+    { "id": "Q-10", "group": "G3", "field": "item.quantity", "required": true, "chat": "How many units of {product} in total?", "voice": "How many units in total?", "parser": "parseNumber", "integer": true, "readBack": "voice" },
+    { "id": "Q-11", "group": "G3", "field": "item.unitsPerCarton", "required": true, "chat": "How many units are packed in each carton?", "voice": "How many in each carton?", "parser": "parseNumber", "integer": true },
+    { "id": "Q-12", "group": "G3", "field": "item.cartons", "required": true, "chat": "That's {qty} ÷ {upc} = {cartons} cartons of {product} — correct?", "voice": "So {cartons} cartons — right?", "parser": "parseNumber", "integer": true, "derive": "itemExactCartons" },
+    { "id": "Q-13", "group": "G3", "field": "item.unitPrice", "required": true, "chat": "What's the price of one {product}, in pounds?", "voice": "What's the price of one unit, in pounds?", "parser": "parseNumber" },
+    { "id": "Q-14", "group": "G3", "field": "item.unitWeightKg", "required": true, "chat": "How much does one {product} weigh, in kg? (grams is fine too)", "voice": "How much does one unit weigh?", "parser": "parseNumber", "units": { "g": 0.001, "kg": 1 } },
+    { "id": "Q-15", "group": "G3", "field": "item.hsCodeRaw", "required": false, "rule": "R-01", "chat": "Do you know the HS code (customs code) for {product}? At least 6 digits.", "voice": "Do you know the customs HS code? It's at least six digits.", "parser": "normaliseHs", "readBack": "pairs", "neverGuess": true },
+    { "id": "Q-16", "group": "G3", "field": "item.countryOfOrigin", "required": false, "rule": "R-09", "chat": "Where was {product} made? (Not where it ships from.)", "voice": "Which country was it made in?", "parser": "normaliseCountry", "options": ["United Kingdom", "China", "India", "Vietnam", "Turkey", "Germany"] },
+    { "id": "Q-18", "group": "G3", "field": "loop.moreItems", "required": true, "chat": "Is there any other product in this shipment?", "voice": "Any other products?", "parser": "normaliseYesNo" },
+    { "id": "Q-19", "group": "G4", "field": "cartons", "required": true, "chat": "So the shipment has {sumCartons} cartons in total — correct?", "voice": "{sumCartons} cartons in total — right?", "parser": "parseNumber", "derive": "deriveBookingTotals.cartons" },
+    { "id": "Q-20", "group": "G4", "field": "totalDeclaredValue", "required": true, "chat": "The goods add up to {sumValue}. Is that the value on your invoice?", "voice": "That's {sumValue} in total — is that what's on your invoice?", "parser": "parseNumber", "derive": "deriveBookingTotals.totalDeclaredValue" },
+    { "id": "Q-21", "group": "G4", "field": "pallets", "required": true, "chat": "How many pallets will it be on?", "voice": "How many pallets?", "parser": "parseNumber", "integer": true },
+    { "id": "Q-22", "group": "G4", "field": "totalGrossWeightKg", "required": true, "chat": "What's the total gross weight in kg — goods plus cartons and pallets? The goods alone are about {net} kg.", "voice": "What's the total weight, including cartons and pallets, in kilos?", "parser": "parseNumber", "neverAutofill": true },
+    { "id": "Q-23", "group": "G5", "field": "deliveryAppointmentBooked", "required": true, "chat": "Have you booked a delivery appointment (time slot) at the warehouse?", "voice": "Have you booked a delivery slot?", "parser": "normaliseYesNo" },
+    { "id": "Q-24", "group": "G5", "field": "prefs.appointmentDate", "required": false, "chat": "What date is the slot?", "voice": "What date is the slot?", "parser": "parseDate", "askIf": "deliveryAppointmentBooked == true" },
+    { "id": "Q-25", "group": "G6", "field": "prefs.maxBudgetGbp", "required": false, "chat": "Is there a maximum you'd like to spend on freight?", "parser": "parseNumber", "askIf": "sellerPriority in ['Cheapest','Balanced']" },
+    { "id": "Q-26", "group": "G6", "field": "prefs.highValueOrFragile", "required": false, "chat": "Are the goods especially valuable or fragile?", "parser": "normaliseYesNo", "askIf": "sellerPriority == 'Balanced'" },
+    { "id": "Q-29", "group": "G7", "field": "review", "required": true, "chat": "Here's your booking. Would you like to fix anything, or confirm?", "voice": "Shall I read the summary, or do you want to confirm?" }
+  ]
+}
