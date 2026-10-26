@@ -135,7 +135,7 @@ export function Footer() {
   return (
     <footer className="section-glass border-t hairline px-4 py-10 text-[12px] text-muted sm:px-6">
       <div className="mx-auto flex max-w-[1080px] flex-col gap-2 sm:flex-row sm:justify-between">
-        <p>Ops Hackathon · Case 2 — Conversational Shipment Booking &amp; “Pre-Flight” Error Checker.</p>
+        <p>Ship Eazy · Ops Hackathon, Case 2 — conversational shipment booking and error checker.</p>
         <p>
           Costs and delivery dates are estimates only ·{" "}
           <a className="underline hover:text-fg" href="https://github.com/OMSOHANI07/preflight-shipment-checker" target="_blank" rel="noreferrer">GitHub</a>

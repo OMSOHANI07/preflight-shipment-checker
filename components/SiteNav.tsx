@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlaneTakeoff } from "lucide-react";
+import { Ship } from "lucide-react";
 
 const LINKS = [
   { href: "/#how", label: "How it works" },
@@ -13,8 +13,8 @@ export function SiteNav() {
     <header className="sticky top-0 z-50 border-b hairline backdrop-blur-xl backdrop-saturate-150" style={{ background: "var(--nav-bg)" }}>
       <nav className="mx-auto flex h-12 max-w-[1080px] items-center justify-between px-4 sm:px-6" aria-label="Main">
         <Link href="/" className="flex items-center gap-2 text-[15px] font-semibold tracking-tight">
-          <PlaneTakeoff size={18} aria-hidden />
-          Pre-Flight
+          <Ship size={18} aria-hidden />
+          Ship Eazy
         </Link>
         <ul className="flex items-center gap-4 text-[13px] text-muted sm:gap-7">
           {LINKS.map((l, i) => (

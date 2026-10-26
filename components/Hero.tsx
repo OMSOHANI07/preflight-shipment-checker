@@ -5,7 +5,7 @@ import { ChevronDown, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PHOTOS } from "./PageBackdrop";
 
-const BRAND = "PRE-FLIGHT";
+const BRAND = "SHIP EAZY";
 const CAPTIONS = ["By sea", "Through the port", "By road and air"];
 
 export function Hero() {
@@ -31,7 +31,7 @@ export function Hero() {
       <div className="mx-auto grid w-full max-w-[1180px] items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
         <div className="text-center lg:text-left">
           <p className="brand-word select-none whitespace-nowrap text-[clamp(44px,12vw,64px)] font-black leading-none tracking-[0.05em] lg:text-[clamp(56px,6.4vw,96px)]">
-            <span className="sr-only">Pre-Flight</span>
+            <span className="sr-only">Ship Eazy</span>
             {BRAND.split("").map((ch, i) => (
               <motion.span key={i} aria-hidden className="inline-block"
                 {...(reduce ? {} : { initial: { opacity: 0, y: 60, filter: "blur(10px)" }, animate: { opacity: 1, y: 0, filter: "blur(0px)" }, transition: { duration: 0.8, delay: 0.1 + i * 0.06, ease: [0.22, 1, 0.36, 1] as const } })}>
@@ -50,8 +50,8 @@ export function Hero() {
           </motion.p>
           <motion.div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start" {...up(1.15)}>
             <a href="#app" className="btn btn-primary">Check a file</a>
-            <a href="/samples/template.xlsx" download="Case2_Shipment_Booking_Test_Data_Format.xlsx" className="btn btn-glass">
-              <Download size={17} aria-hidden /> Download template
+            <a href="/samples/template.xlsx" download="Ship_Eazy_Excel_Template.xlsx" className="btn btn-glass">
+              <Download size={17} aria-hidden /> Excel template download
             </a>
           </motion.div>
         </div>

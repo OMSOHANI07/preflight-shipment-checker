@@ -7,7 +7,7 @@ import { loadUpload } from "@/lib/uploads";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Shared results · Pre-Flight Shipment Checker" };
+export const metadata: Metadata = { title: "Shared results · Ship Eazy" };
 
 export default async function ResultsPage({ params }: PageProps<"/results/[uploadId]">) {
   const { uploadId } = await params;

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Pre-Flight Shipment Checker",
+  title: "Ship Eazy — shipment checker",
   description: "Upload your shipment bookings. Every carton, code and kilo is checked against the rulebook, then the right carrier is picked.",
 };
 
