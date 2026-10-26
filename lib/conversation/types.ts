@@ -142,6 +142,8 @@ export interface NextQuestion {
 }
 
 export interface TurnResponse {
+  /** Guardrail flags raised by this message (names only — for counting, never logged with text). */
+  guardrailFlags?: string[];
   state: ConversationState;
   reply: string;
   speak: string;

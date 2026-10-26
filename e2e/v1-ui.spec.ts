@@ -43,7 +43,8 @@ test.describe("[Page] Home and navigation", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Catch it before it ships." })).toBeVisible();
     await expect(page.locator("#how li")).toHaveCount(3);
-    await expect(page.locator("#rules li")).toHaveCount(10);
+    await expect(page.locator("#rules li")).toHaveCount(15); // 10 rules + 5 safety checks
+    await expect(page.getByTestId("safety-checks")).toContainText("prohibited goods");
     await expect(page.locator("#carriers h3")).toHaveText(["Carrier A", "Carrier B", "Carrier C"]);
     await expect(page.locator("#carriers")).toContainText("£180");
     await expect(page.getByRole("link", { name: "GitHub" })).toHaveAttribute("href", /github\.com/);

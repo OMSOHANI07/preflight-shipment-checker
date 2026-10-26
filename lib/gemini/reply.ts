@@ -4,6 +4,7 @@
  * falls back to the fixed-wording template otherwise.
  */
 import "server-only";
+import { GEMINI_GUARDRAILS } from "@/lib/guardrails";
 import { z } from "zod";
 import type { Facts } from "@/lib/conversation/facts";
 import { chatModel, generateJson } from "@/lib/gemini";
@@ -25,6 +26,7 @@ Reply rules for this conversation:
 - A status change may only be described as FACTS.statusChange says (e.g. "Can't ship yet → Check first" means it improved). Use those exact plain words; never say RED, AMBER, GREEN or INCOMPLETE. If FACTS.statusChange is null, never say the status changed, stayed or remains anything.
 - Don't start with "I have updated" every time — vary it, e.g. "Got it —", "Thanks —", "Done:".
 - ALWAYS end with nextQuestion.text, copied word for word.
+${GEMINI_GUARDRAILS}
 Return JSON: {"reply": "..."}`;
 
 const Out = z.object({ reply: z.string().min(1).max(1200) });

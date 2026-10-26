@@ -69,4 +69,7 @@ export const ConfirmRequestSchema = z.object({
   status: z.enum(["RED", "INCOMPLETE", "AMBER", "GREEN"]),
   acknowledgedAmber: z.boolean(),
   carrierId: z.string().max(20).nullable(),
+  /** The booking and its items, so the server re-runs every check (incl. guardrails) itself. */
+  booking: z.record(z.string(), z.unknown()).optional(),
+  items: z.array(z.record(z.string(), z.unknown())).max(200).optional(),
 });

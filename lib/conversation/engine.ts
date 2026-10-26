@@ -2,13 +2,14 @@
  * One conversation turn (prompt §3.2). Pure apart from the injected deps (Gemini extract / reply,
  * R-06 second opinion, confirmation store), so tests run it with mocks and no network.
  */
-import { diffResults, runAll, todayISO, type BookingResult } from "@/lib/calculations";
+import { diffResults, todayISO, type BookingResult } from "@/lib/calculations";
+import { GUARDRAIL_REPLIES, prohibitedCategory, runAllWithGuardrails, screenMessage, type ScreenFlag } from "@/lib/guardrails";
 import { confirmationDraft, nextSteps } from "@/lib/explain";
 import { buildFacts, speakText, templateReply, turnDiff, validateReply, type Facts } from "./facts";
 import { cannedAnswer, fallbackExtract, supplementExtraction } from "./fallback";
 import { forSpeech } from "./readback";
 import { changeMenu, changeQuestion, fixQuestion, itemChangeQuestion, itemMenu, pickNextQuestion, reviewQuestion } from "./nextQuestion";
-import { cleanMessage, guardMessage, isOnTopic, OFF_TOPIC_REPLY } from "./guard";
+import { cleanMessage, isOnTopic, OFF_TOPIC_REPLY } from "./guard";
 import * as N from "./normalise";
 import { issueDelta } from "./issues";
 import { applyExtraction, itemComplete, newItem, productName, toRunInputs } from "./state";
@@ -37,7 +38,7 @@ export const OPENING = {
 const nowIso = () => new Date().toISOString();
 const runFor = (s: ConversationState, now: Date) => {
   const { booking, items, geminiR06Verdicts } = toRunInputs(s);
-  return { booking, items, result: runAll(booking, items, { now, geminiR06Verdicts }) };
+  return { booking, items, result: runAllWithGuardrails(booking, items, { now, geminiR06Verdicts }) };
 };
 const hasAnyData = (s: ConversationState) => !!(s.booking.sellerName || s.booking.destinationCity || s.items.length || s.booking.originCity);
 
@@ -55,12 +56,17 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
   const text = cleanMessage(message);
   const prevRun = hasAnyData(prev) ? runFor({ ...prev, mode }, now) : null;
 
-  const finish = (s: ConversationState, reply: string, q: NextQuestion | null, result: BookingResult | null, diff: TurnResponse["diff"], replySource: "ai" | "template", extractionSource: TurnResponse["extractionSource"], speak?: string): TurnResponse => {
+  let guardFlags: ScreenFlag[] = [];
+  let guardPrefix = "";
+  const finish = (s: ConversationState, body: string, q: NextQuestion | null, result: BookingResult | null, diff: TurnResponse["diff"], replySource: "ai" | "template", extractionSource: TurnResponse["extractionSource"], spoken?: string): TurnResponse => {
+    // a guardrail's fixed line always comes first, word for word
+    const reply = guardPrefix ? `${guardPrefix} ${body}` : body;
     s.history.push({ role: "assistant", text: reply, at: nowIso(), quickReplies: q?.options ?? [], diff });
     if (s.history.length > 200) s.history = s.history.slice(-200);
     s.version += 1;
     s.lastResult = result;
-    return { state: s, reply, speak: mode === "voice" ? forSpeech(speak ?? q?.voiceText ?? reply) : speak ?? reply, quickReplies: q?.options ?? [], result, diff, replySource, extractionSource };
+    const said = mode === "voice" ? forSpeech(spoken ?? q?.voiceText ?? body) : spoken ?? body;
+    return { state: s, reply, speak: guardPrefix ? `${guardPrefix} ${said}` : said, quickReplies: q?.options ?? [], result, diff, replySource, extractionSource, guardrailFlags: guardFlags };
   };
 
   /* Step 1 — guard */
@@ -68,21 +74,24 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
     const q = state.pending ? { ...pickNextQuestion(state, { invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: prevRun?.result ?? null, notes: [] }) } : null;
     return finish(state, q?.text ?? OPENING[mode], q, prevRun?.result ?? null, null, "template", "fallback");
   }
-  state.history.push({ role: "seller", text: text.slice(0, MAX_MESSAGE), at: nowIso() });
+  /* guardrails (docs/GUARDRAILS.md §4.1) — in code, before any AI sees the message; personal data never stored */
+  const screen = screenMessage(text);
+  guardFlags = screen.flags;
+  state.history.push({ role: "seller", text: screen.redacted.slice(0, MAX_MESSAGE), at: nowIso() });
   if (text.length > MAX_MESSAGE) {
     const q = pickNextQuestion(state, { invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: prevRun?.result ?? null, notes: [] });
     setPending(state, q);
     return finish(state, `That's a lot — for many bookings, use the File Upload tab. Here, let's do one shipment at a time. ${q.text}`, q, prevRun?.result ?? null, null, "template", "fallback");
   }
 
-  /* guardrails — in code, before any AI sees the message */
-  const hit = guardMessage(text);
-  if (hit) {
-    if (hit.redact) state.history[state.history.length - 1].text = hit.redact;
+  // customs evasion, prohibited goods, personal data: the fixed reply, nothing changes, the question again
+  if (screen.block) {
     const q = pickNextQuestion(state, { invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: prevRun?.result ?? null, notes: [] });
     setPending(state, q);
-    return finish(state, `${hit.reply} ${q.text}`, q, prevRun?.result ?? null, null, "template", "fallback");
+    return finish(state, `${screen.replies.join(" ")} ${q.text}`, q, prevRun?.result ?? null, null, "template", "fallback");
   }
+  // prompt injection / abuse: the fixed line first, then the rest of the message is handled as usual
+  guardPrefix = screen.replies.join(" ");
 
   /* menu picks after "change something" — answered in code */
   const pf = state.pending?.field;
@@ -122,6 +131,14 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
   else if (extraction.question && !isOnTopic(extraction.question) && !cannedAnswer(extraction.question)) { extraction = { ...extraction, question: null }; offTopic = true; }
   // pending R-06 safety question answered "don't know" → second opinion below
   if (state.pending?.field === "dg" && state.pending.itemIndex != null && extraction.yesNo == null && N.isUnknown(text)) state.dgAnswers[state.pending.itemIndex] = null;
+
+  // safety net: a prohibited product is never created, whatever the extraction says
+  if (extraction.items.some((x) => typeof x.description === "string" && prohibitedCategory(x.description))) {
+    guardFlags = [...guardFlags, "prohibited_request"];
+    const q = pickNextQuestion(state, { invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: prevRun?.result ?? null, notes: [] });
+    setPending(state, q);
+    return finish(state, `${GUARDRAIL_REPLIES.prohibited_request} ${q.text}`, q, prevRun?.result ?? null, null, "template", extractionSource);
+  }
 
   /* Steps 3–4 — normalise + apply */
   const applied = applyExtraction(state, extraction, today);

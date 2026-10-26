@@ -8,7 +8,7 @@ import { invoiceChecklist, nextSteps } from "@/lib/explain";
 import { cellIssueMap, cellsForIssue } from "@/lib/highlight";
 import type { Explanation } from "@/lib/schema";
 import type { BookingView, R06Review } from "@/lib/types";
-import { cx, severityClass, SEVERITY_LABEL, STATUS_MEANING } from "@/lib/ui";
+import { cx, issueLabel, severityClass, STATUS_MEANING } from "@/lib/ui";
 import { CarrierCard } from "./CarrierCard";
 import { DataTables } from "./DataTables";
 import { StatusBadge, StatusRing } from "./Motion";
@@ -41,7 +41,7 @@ function IssueRow({ issue, summary, onFocus }: { issue: Issue; summary: string |
       <button type="button" onClick={onFocus} className="group w-full text-left" aria-label={`${issue.code} ${issue.title} — show the cells in the data tables`}>
         <div className="flex flex-wrap items-center gap-2">
           <span className="chip sev-chip font-mono">{issue.code}</span>
-          <span className="text-[12px] font-semibold" style={{ color: "var(--sev-text)" }}>{SEVERITY_LABEL[issue.severity]}</span>
+          <span className="text-[12px] font-semibold" style={{ color: "var(--sev-text)" }}>{issueLabel(issue)}</span>
           {issue.sku && <span className="chip bg-surface-2 text-muted">{issue.sku}</span>}
           <span className="ml-auto text-[12px] text-accent-text group-hover:underline">Show cells ↓</span>
         </div>
@@ -132,7 +132,7 @@ export function BookingCard({ view, ex, uploadId, saveState, bookingHeaders, ite
     try {
       const res = await fetch("/api/confirm", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uploadId, bookingRowId: view.rowId, bookingId: b.bookingId, status: r.status, acknowledgedAmber: ack, carrierId: r.recommendation.recommended?.carrier.id ?? null }),
+        body: JSON.stringify({ uploadId, bookingRowId: view.rowId, bookingId: b.bookingId, status: r.status, acknowledgedAmber: ack, carrierId: r.recommendation.recommended?.carrier.id ?? null, booking: b, items: view.items }),
       });
       const data = (await res.json()) as { ok: boolean; reference?: string; saved?: boolean; error?: string };
       setConfirm(data.ok ? { state: "done", ref: data.reference, saved: data.saved } : { state: "error", msg: data.error ?? "Couldn't confirm." });

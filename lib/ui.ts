@@ -17,6 +17,8 @@ export const STATUS_MEANING: Record<BookingStatus, string> = {
   GREEN: "Everything checks out — ready to book",
 };
 export const SEVERITY_LABEL: Record<Severity, string> = { Red: "Must fix", Data: "Missing detail", Amber: "Worth a look", Advisory: "Tip" };
+/** Label for one issue: guardrail blocks (G-01 prohibited goods, G-03 HS chapter) read "Can't ship". */
+export const issueLabel = (i: { code: string; severity: Severity }) => (i.code.startsWith("G-") && i.severity === "Red" ? "Can't ship" : SEVERITY_LABEL[i.severity]);
 /** Rule severity in plain words (rules are only ever red or yellow). */
 export const RULE_KIND = (sev: "Red" | "Amber") => (sev === "Red" ? "must be fixed" : "worth a look");
 

@@ -28,9 +28,9 @@ test.describe("[Edge] Edge-case workbook in the browser", () => {
     await page.waitForTimeout(1500); // count-up animation
     const [red, inc, amber, green] = [await stat(page, "Can't ship yet"), await stat(page, "Details missing"), await stat(page, "Check first"), await stat(page, "Ready to ship")];
     expect([inc, amber]).toEqual([15, 7]);
-    // AI may confirm the Bluetooth speaker (EC-28) has a lithium battery: Green 33 → 32, Red 21 → 22
+    // with the guardrails EC-08 (HS 000000) is red; the AI may also confirm the Bluetooth speaker (EC-28): Red 22 or 23
     expect(red + green).toBe(54);
-    expect([21, 22]).toContain(red);
+    expect([22, 23]).toContain(red);
     await expect(page.getByText(/Skipped the template's grey example row/)).toBeVisible();
     await expect(page.getByText(/EC-99 on the Items sheet does not exist/)).toBeVisible();
   });
@@ -97,6 +97,8 @@ test.describe("[Edge] Clearer messages", () => {
     await uploadEdge(page);
     await expect(await open(page, "EC-07")).toContainText("Excel turned it into scientific notation");
     const c = await open(page, "EC-08");
+    await expect(c).toContainText("Can't ship yet");
+    await expect(c).toContainText("G-03");
     await c.locator("details").filter({ hasText: /Tips \(/ }).locator("summary").click();
     await expect(c).toContainText("A-11");
   });

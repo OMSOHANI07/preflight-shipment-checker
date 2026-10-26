@@ -9,6 +9,7 @@ import { createConfirmation } from "@/lib/confirm";
 import { createState, runTurn, type TurnDeps } from "@/lib/conversation";
 import type { ConversationState } from "@/lib/conversation/types";
 import { geminiExtract } from "@/lib/gemini/extract";
+import { countFlags, type ScreenFlag } from "@/lib/guardrails";
 import { geminiMockEnabled, mockExtract } from "@/lib/gemini/mock";
 import { geminiR06, geminiReply } from "@/lib/gemini/reply";
 import { clientIp, rateLimited } from "@/lib/rateLimit";
@@ -24,7 +25,7 @@ const StateShape = z.custom<ConversationState>((v) => {
   const s = v as ConversationState;
   if (!s || typeof s !== "object" || typeof s.id !== "string" || s.id.length > 80 || typeof s.version !== "number") return false;
   if (typeof s.booking !== "object" || s.booking === null || !Array.isArray(s.items) || !Array.isArray(s.history)) return false;
-  if (s.items.length > 30 || s.history.length > 400 || (s.undoStack?.length ?? 0) > 60) return false;
+  if (s.items.length > 50 || s.history.length > 400 || (s.undoStack?.length ?? 0) > 60) return false;
   if (!Object.values(s.booking).every((x) => short(x, 300) || typeof x === "object")) return false;
   if (!s.items.every((it) => it && typeof it === "object" && Object.values(it).every((x) => short(x, 300) || typeof x === "object"))) return false;
   return s.history.every((t) => t && (t.role === "seller" || t.role === "assistant") && typeof t.text === "string" && t.text.length <= 4000);
@@ -54,5 +55,6 @@ export async function POST(req: Request) {
     extractionSource: mock ? "mock" : "ai",
   };
   const res = await runTurn(state, parsed.data.message, parsed.data.mode, deps);
+  countFlags((res.guardrailFlags ?? []) as ScreenFlag[]);
   return Response.json(res, { headers: { "Cache-Control": "no-store" } });
 }

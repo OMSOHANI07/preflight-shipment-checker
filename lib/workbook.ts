@@ -114,9 +114,11 @@ export function correctBooking(v: BookingView) {
 
   // what still needs the seller
   const markIssue = (i: Issue) => {
-    if (i.severity === "Advisory" || fixes.includes(i.code)) return;
-    const kind = i.severity === "Amber" ? "yellow" : "red";
-    const note = `${i.severity === "Amber" ? "Worth a look" : "Must fix"} (${i.code}): ${i.whatIsWrong}${i.howToFix[0] ? ` Fix: ${i.howToFix[0]}` : ""}`;
+    // guardrail tips (G-02 paperwork, G-04 HS mismatch, G-05 low value) are worth a look; other tips aren't marked
+    if ((i.severity === "Advisory" && !i.code.startsWith("G-")) || fixes.includes(i.code)) return;
+    const kind = i.severity === "Amber" || i.severity === "Advisory" ? "yellow" : "red";
+    const label = kind === "yellow" ? "Worth a look" : i.code.startsWith("G-") ? "Can't ship" : "Must fix";
+    const note = `${label} (${i.code}): ${i.whatIsWrong}${i.howToFix[0] ? ` Fix: ${i.howToFix[0]}` : ""}`;
     const put = (marks: Record<string, Mark>, col: string) => {
       const prev = marks[col];
       if (prev?.kind === "red" && kind === "yellow") return;

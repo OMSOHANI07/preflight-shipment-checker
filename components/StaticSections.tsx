@@ -47,6 +47,15 @@ const PLAIN: Record<RuleId, string> = {
   "R-10": "The ready date shouldn't already be in the past.",
 };
 
+/** Guardrails (docs/GUARDRAILS.md), as a person would say them. */
+const SAFETY: { code: string; text: string; kind: "stop" | "tip" }[] = [
+  { code: "G-01", kind: "stop", text: "We don't carry prohibited goods: weapons, ammunition, explosives and fireworks, illegal drugs, counterfeits, protected wildlife, cash or bullion, radioactive or toxic substances, human remains or live animals." },
+  { code: "G-03", kind: "stop", text: "The HS code has to start with a real chapter — 01 to 97 (77 isn't used)." },
+  { code: "G-02", kind: "tip", text: "Restricted goods — alcohol, tobacco and vapes, medicines and CBD, knives, meat and dairy, plants and seeds, art and antiques, military items — get a tip on the licences and certificates they need." },
+  { code: "G-04", kind: "tip", text: "We check the HS code fits the product, and spot a leading zero Excel dropped." },
+  { code: "G-05", kind: "tip", text: "We flag prices that look too low for the product, which customs may treat as under-valuation." },
+];
+
 export function RulesGrid({ rules }: { rules: { id: RuleId; text: string; severity: "Red" | "Amber" }[] }) {
   const groups = [
     { key: "stop", title: "Has to be fixed before it can ship", note: "We won't let these through.", box: "rules-box-red", items: rules.filter((r) => r.severity === "Red") },
@@ -76,6 +85,18 @@ export function RulesGrid({ rules }: { rules: { id: RuleId; text: string; severi
             </Reveal>
           ))}
         </div>
+        <Reveal className="mt-12">
+          <h3 className="text-center text-[22px] font-bold tracking-tight">Plus safety checks</h3>
+          <p className="mx-auto mt-1 max-w-[560px] text-center text-[15px] text-muted">On every booking — file, chat or voice. Chat and voice also refuse requests to under-declare, hide or mislabel goods.</p>
+          <ul className="mx-auto mt-6 grid max-w-[920px] gap-3 sm:grid-cols-2" data-testid="safety-checks">
+            {SAFETY.map((g) => (
+              <li key={g.code} className={`${g.kind === "stop" ? "rules-box-red" : "rules-box-tip"} flex gap-3 rounded-2xl px-4 py-3 text-[15px] leading-snug`}>
+                <span className="rules-swatch mt-1 size-3 shrink-0 rounded-[4px]" aria-hidden />
+                <span><span className="sr-only">{g.kind === "stop" ? "Can't ship: " : "Tip: "}</span>{g.text}</span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
         <Reveal>
           <p className="mt-10 text-center text-[15px] text-muted">
             We also share tips from the UK government&apos;s export invoice guide, and give you a checklist for the commercial invoice.

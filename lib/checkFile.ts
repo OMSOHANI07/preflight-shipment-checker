@@ -3,7 +3,8 @@
  * items → runFile() again with the verdicts. Every pass/fail and number comes from
  * calculations.ts; the AI only answers restricted yes/no for flagged items.
  */
-import { bookingKey, detectDangerousGoods, normaliseHs, runFile, type Item, type RuleId } from "@/lib/calculations";
+import { bookingKey, detectDangerousGoods, normaliseHs, type Item, type RuleId } from "@/lib/calculations";
+import { runFileWithGuardrails } from "@/lib/guardrails";
 import { parseWorkbook, type FileNotice, type RawRow } from "@/lib/parseExcel";
 import type { R06Verdict } from "@/lib/schema";
 import type { BookingView, CheckedFile, R06Review } from "@/lib/types";
@@ -66,7 +67,8 @@ export async function checkWorkbook(data: ArrayBuffer, fileName: string, onStep:
       r06.verdicts.push({ bookingId: p.bookingId, itemIndex: p.itemIndex, sku: p.it.sku, restricted: v.restricted, reason: v.reason });
     }
   }
-  const run = runFile(parsed.bookings, parsed.items, { now, geminiR06VerdictsByBooking: byBooking });
+  // the official rules plus the guardrails (docs/GUARDRAILS.md): prohibited goods, HS chapters, values
+  const run = runFileWithGuardrails(parsed.bookings, parsed.items, { now, geminiR06VerdictsByBooking: byBooking });
 
   onStep("carriers");
   const views: BookingView[] = parsed.bookings.map((b, i) => {
