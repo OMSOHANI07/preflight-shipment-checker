@@ -54,15 +54,15 @@ test.describe("[Page] Home and navigation", () => {
     expect(res.status()).toBe(200);
     expect((await res.body()).subarray(0, 2).toString()).toBe("PK"); // xlsx = zip
   });
-  test("[Page] Conversation tab shows Chat and Voice as 'Coming in V2' with no input", async ({ page }) => {
+  test("[Page] Conversation tab is live: Chat and Voice enabled, no 'Coming in V2' badge", async ({ page }) => {
     await page.goto("/");
+    await expect(page.getByRole("tab", { name: /Conversation/ })).not.toContainText("V2");
     await page.getByRole("tab", { name: /Conversation/ }).click();
     const panel = page.locator("#panel-conversation");
-    await expect(panel.getByRole("tab", { name: /Chat/ })).toContainText("Coming in V2");
-    await expect(panel.getByRole("tab", { name: /Voice/ })).toContainText("Coming in V2");
-    await panel.getByRole("tab", { name: /Voice/ }).click({ force: true }); // aria-disabled, but clicking still explains why
-    await expect(panel.getByRole("status")).toHaveText(/Conversation booking arrives in V2/);
-    await expect(panel.locator("input, textarea")).toHaveCount(0);
+    await expect(panel.getByRole("tab", { name: "Chat" })).toHaveAttribute("aria-selected", "true");
+    await expect(panel.getByRole("tab", { name: "Voice" })).toBeEnabled();
+    await expect(panel).not.toContainText("Coming in V2");
+    await expect(panel.locator("#chat-input")).toBeVisible();
   });
   test("[Page] 'Check a file' returns to the upload tab", async ({ page }) => {
     await page.goto("/");

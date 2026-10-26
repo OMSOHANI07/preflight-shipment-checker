@@ -4,7 +4,8 @@
  */
 const hits = new Map<string, number[]>();
 
-export function rateLimited(ip: string, limit = 30, windowMs = 60_000): boolean {
+/** CHAT_RATE_LIMIT overrides the 30-per-minute default (the local Playwright server raises it). */
+export function rateLimited(ip: string, limit = Number(process.env.CHAT_RATE_LIMIT) || 30, windowMs = 60_000): boolean {
   const now = Date.now();
   const recent = (hits.get(ip) ?? []).filter((t) => now - t < windowMs);
   recent.push(now);
