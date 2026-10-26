@@ -181,7 +181,7 @@ function itemQuestion(s: ConversationState, i: number, mode: Mode): NextQuestion
 function itemSummary(it: ConvItem) {
   const value = isNum(it.quantity) && isNum(it.unitPrice) ? round(it.quantity * it.unitPrice, 2) : null;
   const net = isNum(it.quantity) && isNum(it.unitWeightKg) ? round(it.quantity * it.unitWeightKg, 3) : null;
-  return `Got it: ${it.cartons} cartons × ${it.unitsPerCarton} ${productName(it)} = ${readNumber(it.quantity!)} units at ${readMoney(it.unitPrice)} = ${readMoney(value)}; ${net != null ? `${readNumber(net)} kg` : "—"} net.`;
+  return `So: ${it.cartons} cartons × ${it.unitsPerCarton} ${productName(it)} = ${readNumber(it.quantity!)} units at ${readMoney(it.unitPrice)} = ${readMoney(value)}; ${net != null ? `${readNumber(net)} kg` : "—"} net.`;
 }
 
 /* ------------------------------------------------------------------ main */
@@ -241,7 +241,7 @@ export function pickNextQuestion(s: ConversationState, ctx: NextContext): NextQu
   if (s.itemLoopOpen) {
     const last = s.items.length - 1;
     const summary = itemSummary(s.items[last]);
-    return { ...q("Q-18", mode), kind: "more-items", text: mode === "voice" ? `Got it — ${readNumber(s.items[last].quantity!)} ${productName(s.items[last])}. Any other products?` : `${summary} Is there any other product in this shipment?`, field: "loop.moreItems", options: ["No, that's all", "Yes, add another"] };
+    return { ...q("Q-18", mode), kind: "more-items", text: mode === "voice" ? `That makes ${readNumber(s.items[last].quantity!)} ${productName(s.items[last])}. Any other products?` : `${summary} Is there any other product in this shipment?`, field: "loop.moreItems", options: ["No, that's all", "Yes, add another"] };
   }
   // G4
   const t = deriveBookingTotals(s.items);

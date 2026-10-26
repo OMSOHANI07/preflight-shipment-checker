@@ -101,7 +101,7 @@ const NON_GBP = /€|\$|\beur(o|os)?\b|\busd\b|\bdollars?\b|\brupees?\b|\binr\b|
 /** Money in GBP. Other currencies are never converted — we ask for pounds. */
 export function money(v: unknown): Norm<number> {
   if (NON_GBP.test(s(v))) return fail("All prices need to be in GBP — what's the price in pounds?");
-  const n = parseNumber(v);
+  const n = parseNumber(s(v).toLowerCase().replace(EACH, ""));
   if (n == null) return fail("I couldn't read that amount — what is it in pounds, e.g. 5.50?");
   if (!(n > 0)) return fail("The price has to be more than £0 — what is it in pounds?");
   return ok(round(n, 2));
@@ -110,7 +110,7 @@ export function money(v: unknown): Norm<number> {
 /** Whole number ≥ 1 (units, units per carton, cartons, pallets). */
 export function wholeNumber(v: unknown, what = "number"): Norm<number> {
   // "12 a box", "1,080 units", "90 cartons" → the leading number
-  const unit = s(v).toLowerCase().match(/^([\d][\d,.\s]*?)\s*(?:units?|pcs|pieces|items|each|a box|per box|in a box|per carton|a carton|to a carton|in each(?: carton| box)?|cartons?|boxes|box|pallets?)$/);
+  const unit = s(v).toLowerCase().match(/^(.+?)\s*(?:units?|pcs|pieces|items|each|a box|per box|in a box|per carton|a carton|to a carton|in each(?: carton| box)?|cartons?|boxes|box|pallets?)$/);
   const n = parseNumber(unit ? unit[1] : v);
   if (n == null) return fail(`I couldn't read that — how many ${what}?`);
   if (!Number.isInteger(n) || n < 1) return fail(`That has to be a whole number of ${what} (1 or more) — how many?`);
@@ -118,8 +118,10 @@ export function wholeNumber(v: unknown, what = "number"): Norm<number> {
 }
 
 /** Unit weight in kg; grams, "half a kilo", pounds are converted. */
+const EACH = /\s*(each|apiece|a piece|per (unit|item|piece|one)|a unit|for one)$/;
+
 export function unitWeightKg(v: unknown): Norm<number> {
-  const t = s(v).toLowerCase();
+  const t = s(v).toLowerCase().replace(EACH, "");
   if (/^(half|a half)( a)? (kilo|kg|kilogram)s?$/.test(t)) return ok(0.5);
   if (/^(a )?quarter( of)?( a)? (kilo|kg)s?$/.test(t)) return ok(0.25);
   const m = t.match(/^(.+?)\s*(g|gram|grams|gm|gms)$/);

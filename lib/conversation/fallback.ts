@@ -91,7 +91,13 @@ export function cannedAnswer(question: string): string | null {
  * Deterministic safety net on top of Gemini: a "£5 each" / "£3.50 a piece" / "5 pounds per mug" unit
  * price that the model dropped is filled in (it reliably drops it in long lists). Only fills gaps.
  */
-export function supplementExtraction(message: string, ex: Extraction, pending: Pending | null): Extraction {
+export function supplementExtraction(message: string, ex: Extraction, pending: Pending | null, readyKnown = true): Extraction {
+  // a date with no "arrive by / deadline" wording, while the ready date is still unknown, is the ready date
+  const due = ex.prefs.requiredDeliveryDate;
+  if (!readyKnown && due != null && ex.booking.readyToShipDate == null && pending?.field !== "prefs.requiredDeliveryDate"
+    && !/\b(arrive|arrives|arriving|deadline|there by|delivered by|deliver(ed)? by|need(s)? it by|latest|no rush|no deadline)\b/i.test(message)) {
+    ex = { ...ex, booking: { ...ex.booking, readyToShipDate: due }, prefs: { ...ex.prefs, requiredDeliveryDate: undefined } };
+  }
   const m = message.match(/(£\s?\d+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?\s?(?:pounds?|quid|gbp))\s*(?:each|apiece|a piece|per (?:unit|item|piece|[a-z]+)|a (?:unit|piece|[a-z]+))\b/i);
   if (!m) return ex;
   const price = m[1].trim();

@@ -7,7 +7,8 @@ import {
   applyExtraction, buildFacts, createState, fallbackExtract, pickNextQuestion, readDate, readHs, readMoney, readNumber,
   resolveItemRef, spokenDigits, startOver, templateReply, toRunInputs, undo, validateReply,
 } from "@/lib/conversation";
-import { wholeNumber } from "@/lib/conversation/normalise";
+import { money, unitWeightKg, wholeNumber } from "@/lib/conversation/normalise";
+import { forSpeech } from "@/lib/conversation/readback";
 import { parseWorkbook } from "@/lib/parseExcel";
 import type { ConversationState, NextQuestion } from "@/lib/conversation/types";
 import { NOW, VAGUE_SELLER, ex, play } from "./conversation-helpers";
@@ -174,12 +175,20 @@ describe("normalise.ts", () => {
   it("whole numbers with a unit word after them", () => {
     expect(["12 a box", "1,080 units", "90 cartons", "12 per carton", "12"].map((v) => wholeNumber(v))).toEqual([12, 1080, 90, 12, 12].map((value) => ({ ok: true, value })));
     expect(wholeNumber("some").ok).toBe(false);
+    expect(wholeNumber("twelve a box")).toEqual({ ok: true, value: 12 });
+    expect(unitWeightKg("half a kilo each")).toEqual({ ok: true, value: 0.5 });
+    expect(unitWeightKg("500 g each")).toEqual({ ok: true, value: 0.5 });
+    expect(money("£5 each")).toEqual({ ok: true, value: 5 });
   });
 });
 
 describe("readback.ts", () => {
   it("numbers, dates with weekday, HS in pairs, money", () => {
     expect([readNumber(1080), readDate("2026-11-05"), readHs("691200"), readMoney(5.5)]).toEqual(["1,080", "Thursday 05-11-2026", "69-12-00", "£5.50"]);
+  });
+  it("text for speech", () => {
+    expect(forSpeech("£5,400.00 or £5.50")).toBe("£5,400 or £5.50");
+    expect(forSpeech("Ready Thursday 05-11-2026, HS 69-12-00, 620 kg → 1,600 kg")).toBe("Ready Thursday 5 November, HS 6 9 1 2 0 0, 620 kilos to 1,600 kilos");
   });
   it("spoken HS codes", () => {
     expect(spokenDigits("six nine one two oh oh")).toBe("691200");

@@ -6,6 +6,7 @@ import { diffResults, runAll, todayISO, type BookingResult } from "@/lib/calcula
 import { confirmationDraft, nextSteps } from "@/lib/explain";
 import { buildFacts, speakText, templateReply, turnDiff, validateReply, type Facts } from "./facts";
 import { cannedAnswer, fallbackExtract, supplementExtraction } from "./fallback";
+import { forSpeech } from "./readback";
 import { pickNextQuestion, reviewQuestion } from "./nextQuestion";
 import * as N from "./normalise";
 import { issueDelta } from "./issues";
@@ -58,7 +59,7 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
     if (s.history.length > 200) s.history = s.history.slice(-200);
     s.version += 1;
     s.lastResult = result;
-    return { state: s, reply, speak: speak ?? (mode === "voice" ? `${q?.voiceText ?? reply}` : reply), quickReplies: q?.options ?? [], result, diff, replySource, extractionSource };
+    return { state: s, reply, speak: mode === "voice" ? forSpeech(speak ?? q?.voiceText ?? reply) : speak ?? reply, quickReplies: q?.options ?? [], result, diff, replySource, extractionSource };
   };
 
   /* Step 1 — guard */
@@ -78,7 +79,7 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
   let extractionSource: TurnResponse["extractionSource"] = "fallback";
   if (deps.extract) {
     try { extraction = await deps.extract({ message: text, pending: state.pending, state, today }); } catch { extraction = null; }
-    if (extraction) { extractionSource = deps.extractionSource ?? "ai"; extraction = supplementExtraction(text, extraction, state.pending); }
+    if (extraction) { extractionSource = deps.extractionSource ?? "ai"; extraction = supplementExtraction(text, extraction, state.pending, state.booking.readyToShipDate != null); }
   }
   if (!extraction) extraction = fallbackExtract(text, state.pending);
   // pending R-06 safety question answered "don't know" → second opinion below
@@ -87,6 +88,8 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
   /* Steps 3–4 — normalise + apply */
   const applied = applyExtraction(state, extraction, today);
   state = applied.state;
+  // "confirm anyway" said in so many words acknowledges the warnings in one go (a bare "confirm" still asks)
+  if (applied.confirmRequested && /\banyway\b|despite the warnings?|ignore the warnings?/i.test(text)) applied.amberAcknowledged = true;
   // failures per field → after two, show options; priority falls back to Balanced (Q-06)
   for (const inv of applied.invalid) state.failures[inv.field] = (state.failures[inv.field] ?? 0) + 1;
   for (const c of applied.changes) for (const f of Object.keys(state.failures)) if (c.field.toLowerCase().includes(f.replace(/^item\./, "").toLowerCase())) delete state.failures[f];

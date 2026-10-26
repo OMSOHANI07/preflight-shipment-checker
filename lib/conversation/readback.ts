@@ -45,3 +45,14 @@ export function readBack(field: string, value: unknown): string | null {
   if (isNum(value)) return readNumber(value);
   return null;
 }
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+/** Text for the speech synthesiser: "05-11-2026" → "5 November", HS "69-12-00" → "6 9 1 2 0 0", "→" → "to". */
+export function forSpeech(text: string): string {
+  return text
+    .replace(/\b(\d{2})-(\d{2})-(\d{4})\b/g, (_, d: string, m: string) => `${+d} ${MONTH_NAMES[+m - 1] ?? m}`)
+    .replace(/\b(\d{2})-(\d{2})-(\d{2})(?:-(\d{2}))?\b/g, (x) => x.replace(/-/g, "").split("").join(" "))
+    .replace(/(£[\d,]+)\.00\b/g, "$1")
+    .replace(/\s*→\s*/g, " to ")
+    .replace(/\bkg\b/g, "kilos");
+}

@@ -115,7 +115,8 @@ describe("voice parsing", () => {
     ], { mode: "voice" });
     expect(state.items[0].quantity).toBe(1080);
     expect(state.booking.readyToShipDate).toBe("2026-11-05");
-    expect(turns[2].speak).toMatch(/Thursday 05-11-2026/);
+    expect(turns[2].reply).toMatch(/Thursday 05-11-2026/);
+    expect(turns[2].speak).toMatch(/Thursday 5 November/);
     expect(state.items[0].unitPrice).toBe(5.5);
   });
 });
@@ -164,5 +165,37 @@ describe("live-test fixes", () => {
   it("no carrier recommendation before there is any cargo", async () => {
     const { turns } = await play(VAGUE_SELLER.slice(0, 4));
     expect(turns.map((t) => t.reply).join(" ")).not.toMatch(/Carrier [ABC]/);
+  });
+});
+
+describe("dates the AI files under the wrong field", () => {
+  it("an unprompted plain date is the ready date, not the deadline", async () => {
+    const { state } = await play([
+      ["Need to send 3 pallets of mugs to Frankfurt", ex({ booking: { pallets: 3, destinationCity: "Frankfurt" }, items: [{ ref: "new", description: "mugs" }] })],
+      ["Thursday the fifth of November", ex({ prefs: { requiredDeliveryDate: "Thursday the fifth of November" } })],
+    ]);
+    expect(state.booking.readyToShipDate).toBe("2026-11-05");
+    expect(state.prefs.requiredDeliveryDate ?? null).toBeNull();
+  });
+  it("'needs to arrive by' stays a deadline", async () => {
+    const { state } = await play([
+      ["Need to send 3 pallets of mugs to Frankfurt", ex({ booking: { pallets: 3, destinationCity: "Frankfurt" }, items: [{ ref: "new", description: "mugs" }] })],
+      ["it needs to arrive by the tenth of November", ex({ prefs: { requiredDeliveryDate: "the tenth of November" } })],
+    ]);
+    expect(state.prefs.requiredDeliveryDate).toBe("2026-11-10");
+    expect(state.booking.readyToShipDate).toBeNull();
+  });
+});
+
+describe("'confirm anyway' straight away", () => {
+  it("books AMBER in one turn when the seller says 'anyway'", async () => {
+    const { state, last } = await play([...VAGUE_SELLER, ...TO_REVIEW, ["confirm anyway", ex({ intent: "confirm", yesNo: true })]]);
+    expect(state.confirmed?.reference).toBe("PF-TEST-000001");
+    expect(last.reply).toMatch(/^Booked!/);
+  });
+  it("voice reads the carrier and price at review", async () => {
+    const { last } = await play([...VAGUE_SELLER, ...TO_REVIEW], { mode: "voice" });
+    expect(last.speak).toMatch(/Carrier A Road economy, £540,.*Thursday 5 November/);
+    expect(last.speak).not.toMatch(/\d{2}-\d{2}-\d{4}|£540\.00/);
   });
 });

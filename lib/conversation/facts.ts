@@ -108,6 +108,10 @@ export function validateReply(reply: string, f: Facts): { ok: boolean; problem?:
 
 /** What the voice reads aloud: short (prompt §5, G11) — one sentence of news + the question. */
 export function speakText(reply: string, f: Facts, voiceQuestion: string): string {
+  // a short reply is spoken as written; a long one is cut to the news plus the short voice question
+  if (reply.length <= 260) return reply;
+  const rec = f.recommendation?.carrier ? `${f.recommendation.carrier}, ${f.recommendation.cost}, arriving ${f.recommendation.eta}.` : "";
+  if (rec && f.changeSummary.length === 0) return `${rec} ${voiceQuestion}`.trim();
   const news = f.changeSummary.length ? `Updated: ${f.changeSummary[0]}.` : f.newRules[0] ? `${f.newRules[0].id}: ${f.newRules[0].whatIsWrong.split(". ")[0]}.` : f.readbacks[0] ?? (f.answerToQuestion ? f.answerToQuestion.split(". ")[0] + "." : "");
   return `${news} ${voiceQuestion}`.trim();
 }
