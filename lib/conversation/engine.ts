@@ -88,7 +88,7 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
   if (screen.block) {
     const q = pickNextQuestion(state, { invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: prevRun?.result ?? null, notes: [] });
     setPending(state, q);
-    return finish(state, `${screen.replies.join(" ")} ${q.text}`, q, prevRun?.result ?? null, null, "template", "fallback");
+    return finish(state, `${screen.replies.join(" ")} ${q.text}`, q, prevRun?.result ?? null, null, "template", "fallback", mode === "voice" ? `${screen.replies.join(" ")} ${q.voiceText}` : undefined);
   }
   // prompt injection / abuse: the fixed line first, then the rest of the message is handled as usual
   guardPrefix = screen.replies.join(" ");
@@ -137,7 +137,7 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
     guardFlags = [...guardFlags, "prohibited_request"];
     const q = pickNextQuestion(state, { invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: prevRun?.result ?? null, notes: [] });
     setPending(state, q);
-    return finish(state, `${GUARDRAIL_REPLIES.prohibited_request} ${q.text}`, q, prevRun?.result ?? null, null, "template", extractionSource);
+    return finish(state, `${GUARDRAIL_REPLIES.prohibited_request} ${q.text}`, q, prevRun?.result ?? null, null, "template", extractionSource, mode === "voice" ? `${GUARDRAIL_REPLIES.prohibited_request} ${q.voiceText}` : undefined);
   }
 
   /* Steps 3–4 — normalise + apply */

@@ -26,7 +26,6 @@ export interface ConversationApi {
   busy: boolean;
   error: string | null;
   lastDiff: TurnDiff | null;
-  lastSpeak: string | null;
   quickReplies: string[];
   changedFields: Set<string>;
   send: (text: string, mode: Mode) => Promise<TurnResponse | null>;
@@ -40,7 +39,6 @@ export function useConversation(): ConversationApi {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastDiff, setLastDiff] = useState<TurnDiff | null>(null);
-  const [lastSpeak, setLastSpeak] = useState<string | null>(null);
   const [changedFields, setChanged] = useState<Set<string>>(new Set());
   // the last state the server agreed to (the optimistic seller bubble is display-only)
   const stateRef = useRef<ConversationState | null>(null);
@@ -58,7 +56,6 @@ export function useConversation(): ConversationApi {
   const apply = useCallback((res: TurnResponse) => {
     commit(res.state);
     setLastDiff(res.diff);
-    setLastSpeak(res.speak);
     const fields = new Set((res.diff?.fields ?? []).map((f) => f.field.split(":").pop()!.trim()));
     // one highlight at a time: a newer change cancels the older one's fade-out
     if (flashTimer.current) window.clearTimeout(flashTimer.current);
@@ -97,7 +94,7 @@ export function useConversation(): ConversationApi {
 
   const lastAssistant = state ? [...state.history].reverse().find((t) => t.role === "assistant") : undefined;
   return {
-    state, result: state?.lastResult ?? null, busy, error, lastDiff, lastSpeak, changedFields,
+    state, result: state?.lastResult ?? null, busy, error, lastDiff, changedFields,
     quickReplies: busy ? [] : lastAssistant?.quickReplies ?? [],
     send, startOver, canUndo: !!state?.undoStack.length, clearDiff: () => setLastDiff(null),
   };

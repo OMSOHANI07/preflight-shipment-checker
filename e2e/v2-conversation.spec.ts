@@ -99,58 +99,62 @@ test.describe("[V2 Chat] conversation booking", () => {
   });
 });
 
-test.describe("[V2 Voice] push-to-talk", () => {
-  test("[V2 Voice] stubbed speech: en-GB, transcript, sends the turn, speaks the reply", async ({ page }) => {
-    test.skip(LIVE, "needs GEMINI_MOCK=1");
+test.describe("[V2 Voice] ElevenLabs agent", () => {
+  /** A fake microphone so the permission step succeeds in headless Chromium. */
+  const fakeMic = (page: Page) => page.addInitScript(() => {
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: async () => new MediaStream(), enumerateDevices: async () => [] } });
+  });
+
+  test("[V2 Voice] the page asks our server for a token (never the key) and explains when voice isn't set up", async ({ page }) => {
+    await fakeMic(page);
+    let asked = false;
+    await page.route("**/api/voice/token", (r) => { asked = true; return r.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "Voice isn't set up on this site yet.", kind: "not_configured" }) }); });
+    await openChat(page);
+    await page.getByRole("tab", { name: "Voice" }).click();
+    await expect(page.getByTestId("voice-status")).toHaveText("Tap to talk");
+    await page.getByTestId("mic").click();
+    await expect(page.getByTestId("voice-problem")).toHaveText("Voice isn't set up on this site yet.");
+    expect(asked).toBe(true);
+    await page.getByRole("button", { name: "Switch to Chat" }).click();
+    await expect(page.locator("#chat-input")).toBeVisible();
+  });
+
+  test("[V2 Voice] invalid key / unreachable service is shown plainly", async ({ page }) => {
+    await fakeMic(page);
+    await page.route("**/api/voice/token", (r) => r.fulfill({ status: 502, contentType: "application/json", body: JSON.stringify({ error: "The voice service rejected this site's credentials.", kind: "rejected" }) }));
+    await openChat(page);
+    await page.getByRole("tab", { name: "Voice" }).click();
+    await page.getByTestId("mic").click();
+    await expect(page.getByTestId("voice-problem")).toContainText("rejected this site's credentials");
+  });
+
+  test("[V2 Voice] microphone denied → explains how to allow it, Try again and Switch to Chat", async ({ page }) => {
     await page.addInitScript(() => {
-      const w = window as unknown as Record<string, unknown>;
-      w.__said = [] as string[];
-      w.__heard = "";
-      class FakeSR {
-        lang = ""; onresult: ((e: unknown) => void) | null = null; onerror: ((e: unknown) => void) | null = null; onend: (() => void) | null = null;
-        start() {
-          w.__lang = this.lang;
-          const t = w.__heard as string;
-          setTimeout(() => {
-            const alt = Object.assign([{ transcript: t, confidence: 0.9 }], { isFinal: true });
-            this.onresult?.({ resultIndex: 0, results: [alt] });
-            this.onend?.();
-          }, 200);
-        }
-        stop() {} abort() {}
-      }
-      w.SpeechRecognition = FakeSR;
-      speechSynthesis.speak = (u: SpeechSynthesisUtterance) => { (w.__said as string[]).push(u.text); setTimeout(() => u.onend?.(new Event("end") as SpeechSynthesisEvent), 50); };
+      Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: async () => { throw new DOMException("denied", "NotAllowedError"); } } });
     });
     await openChat(page);
     await page.getByRole("tab", { name: "Voice" }).click();
-    await page.evaluate((m) => { (window as unknown as Record<string, unknown>).__heard = m; }, VAGUE[0]);
     await page.getByTestId("mic").click();
-    await expect(page.getByTestId("transcript")).toContainText("3 pallets of mugs");
-    await expect(page.getByTestId("transcript").getByRole("button", { name: "Edit" })).toBeVisible();
-    await expect.poll(() => page.evaluate(() => ((window as unknown as Record<string, string[]>).__said).length), { timeout: 20_000 }).toBe(1);
-    const said = await page.evaluate(() => (window as unknown as Record<string, string[]>).__said[0]);
-    expect(said).toMatch(/2 November/); // dates are spoken, not read as digits
-    expect(said).not.toMatch(/\d{2}-\d{2}-\d{4}/);
-    expect(await page.evaluate(() => (window as unknown as Record<string, string>).__lang)).toBe("en-GB");
-    await expect(page.getByTestId("mic")).toHaveAttribute("aria-label", "Tap to talk");
-    // same conversation in Chat
-    await page.getByRole("tab", { name: "Chat" }).click();
-    await expect(page.locator('[data-testid=messages] [data-role="seller"]').last()).toContainText("3 pallets of mugs");
+    await expect(page.getByTestId("voice-unsupported")).toContainText("The microphone is blocked");
+    await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
+    await page.getByRole("button", { name: "Switch to Chat" }).click();
+    await expect(page.getByRole("tab", { name: "Chat" })).toHaveAttribute("aria-selected", "true");
   });
 
-  test("[V2 Voice] no speech recognition → explains and offers Switch to Chat", async ({ page }) => {
-    await page.addInitScript(() => {
-      const w = window as unknown as Record<string, unknown>;
-      delete w.SpeechRecognition; delete w.webkitSpeechRecognition;
-      Object.defineProperty(window, "webkitSpeechRecognition", { value: undefined });
-    });
+  test("[V2 Voice] no microphone API → Switch to Chat", async ({ page }) => {
+    await page.addInitScript(() => { Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: undefined }); });
     await openChat(page);
     await page.getByRole("tab", { name: "Voice" }).click();
     await expect(page.getByTestId("voice-unsupported")).toContainText("isn't supported");
-    await page.getByRole("button", { name: "Switch to Chat" }).click();
-    await expect(page.getByRole("tab", { name: "Chat" })).toHaveAttribute("aria-selected", "true");
-    await expect(page.locator("#chat-input")).toBeVisible();
+  });
+
+  test("[V2 Voice] typing on the Voice tab without a call still books through the same engine", async ({ page }) => {
+    test.skip(LIVE, "needs GEMINI_MOCK=1");
+    await openChat(page);
+    await page.getByRole("tab", { name: "Voice" }).click();
+    await page.locator("#voice-type").fill(VAGUE[0]);
+    await page.locator("#voice-type").press("Enter");
+    await expect(panel(page).locator("[data-field=route]")).toContainText("Frankfurt", { timeout: 20_000 });
   });
 });
 

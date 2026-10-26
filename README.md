@@ -34,7 +34,12 @@ The 76-booking edge-case workbook is at [`/samples/edge-cases.xlsx`](https://pre
 3. Change your mind mid-way: *"Actually the total weight is 1,600 kg."* R-05 fails, and it offers "Use 4 pallets" or "Switch to Carrier B". Say *"add a pallet then"*. A toast shows exactly what changed (pallets 3 → 4 · ✓ R-05 fixed · RED → AMBER · Carrier B → Carrier A · £660.00 → £720.00), and the panel row flashes.
 4. **Undo last change** steps back one change; **Start over** clears the booking. Chats are **not saved**: nothing is kept in the browser or the database, so a refresh starts a new conversation. At the review step, **Fix the warnings** goes straight to the first problem, and **Change something** opens a menu (pallets, weight, date, slot, priority, destination, a product, add a product) that asks the exact question with the current value and options.
 5. At the end you get the same booking card as File Upload: issues, rule table, carrier card, confirmation, next steps and invoice checklist, with **Confirm**, **Purchase order (PDF)**, **Corrected Excel** and **Share**. After booking, the chat also offers both downloads as buttons. Red and Incomplete can't be booked. Amber needs "confirm anyway". Green books straight away.
-6. **Voice** (Chrome, Edge or Safari): tap the mic, speak, and tap again or pause. You see what it heard for 1.5 s, with **Edit**, before it sends. The reply is spoken in a British voice, with dates and amounts said naturally ("Thursday 5 November", "£540"). It never listens while it's talking, and tapping the mic stops the speech. Browsers without speech recognition (e.g. Firefox) show **Switch to Chat**, which continues the same conversation. There is also a **Type instead** box.
+6. **Voice** is an ElevenLabs Conversational AI agent.
+   - **Starting a call:** tap the mic to start, tap again to end. The status shows Connecting, Listening, Agent speaking or Call ended, with a live transcript.
+   - **Security:** the browser gets a short-lived token from `/api/voice/token`; the ElevenLabs key never leaves the server.
+   - **Same rules as Chat:** the agent talks, but every booking change goes through **client tools** into the same engine as Chat (`update_booking`, `get_booking_summary`, `confirm_booking`, `undo_last_change`, `start_over`, `download_purchase_order`, `download_corrected_excel`). So the rules, guardrails, maths, summary panel and booking card are the same.
+   - **When something goes wrong:** a blocked mic, no mic, voice not set up, a rejected key, an unreachable service or a dropped connection each gets a plain message, with **Try again** / **Switch to Chat**.
+   - **Typing:** **Type instead** works during a call or without one.
 
 Uploading the original template gives BK-001 GREEN, Carrier A Road economy, £540.00. That file contains only the grey example row, so it is checked as a demo. In any file that also has real rows, the grey example row is skipped.
 
@@ -99,7 +104,7 @@ Plus input checks V-01…V-11, which make a booking **Incomplete**, and tips A-0
 | Run | What | Result |
 |---|---|---|
 | Unit, scripted & parity | `npm test` — 302 Vitest cases: every rule and boundary, V-01…V-11, tips, carriers, parser warnings, the 76-booking edge-case workbook against its Expected sheet; conversation state, next-question order, normalisers, read-backs, reply validator; scripted chats (§7.1 vague seller, §7.2 add a pallet, contradictions, restricted goods, voice, prompt injection, Gemini down); chat ↔ Excel parity | 302 / 302 pass |
-| Local build | `npm run build && npm run e2e` — 69 Playwright cases. The local server runs with `GEMINI_MOCK=1`, so chat runs are repeatable. Covers V1 plus chat booking to purchase order and corrected Excel, add-a-pallet toast and highlight, Undo, refresh starting fresh, voice with stubbed speech, the no-speech fallback, HTML-as-text and axe | 67 pass, 2 skipped by design |
+| Local build | `npm run build && npm run e2e` — 73 Playwright cases. The local server runs with `GEMINI_MOCK=1`, so chat runs are repeatable. Covers V1 plus chat booking to purchase order and corrected Excel, add-a-pallet toast and highlight, Undo, refresh starting fresh, voice token / mic-denied / not-configured / no-mic handling, guardrails on the rules page, HTML-as-text and axe | 71 pass, 2 skipped by design |
 | Production | `E2E_BASE_URL=https://preflight-shipment-checker-omega.vercel.app npm run e2e` (the mocked-chat tests skip; the full chat was also run by hand with real Gemini, about 2–4 s per turn) | 63 pass, 7 skipped |
 | No database, no AI (V1 run) | same suite with `E2E_NO_DB=1 E2E_NO_AI=1` against a server with Neon unreachable and no Gemini key | 48 pass, 3 skipped by design |
 
@@ -120,6 +125,8 @@ npm run dev
 |---|---|---|
 | `GEMINI_API_KEY` | No (fallback text without it) | Google AI Studio key. Used server-side only. |
 | `GEMINI_CHAT_MODEL` | No | Model for chat extraction and replies (default `gemini-3.5-flash`, minimal thinking, for about 2–5 s per turn) |
+| `ELEVENLABS_API_KEY` | For voice | ElevenLabs API key. Server only — used by `/api/voice/token` to mint a conversation token |
+| `ELEVENLABS_AGENT_ID` | For voice | The ElevenLabs agent to talk to |
 | `GEMINI_MOCK` | No | `1` = no Gemini calls in chat; the demo messages map to fixed extractions (used by Playwright) |
 | `CHAT_RATE_LIMIT` | No | Chat messages per minute per IP (default 30) |
 | `GEMINI_MODEL` | No | Overrides the model (production uses `gemini-3.8-flash`, the newest stable Flash on the key, with thinking set to low so calls fit the 8 s time-box). If empty, the newest stable `gemini-X.Y-flash` from the key's model list is used. |
