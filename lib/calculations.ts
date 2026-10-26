@@ -349,7 +349,8 @@ export function parseDate(raw: unknown): string | null {
     if (raw > 20000 && raw < 80000) return addCalendarDays("1899-12-30", Math.floor(raw));
     return null;
   }
-  const s = String(raw).trim();
+  // A trailing time ("15-12-2026 09:30", "2026-12-15T09:30:00") is ignored: only the day matters.
+  const s = String(raw).trim().replace(/(?:[T\s]+\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:\s*[ap]m)?(?:Z|[+-]\d{2}:?\d{2})?)$/i, "");
   let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
   if (m) return validIso(+m[1], +m[2], +m[3]);
   m = s.match(/^(\d{1,2})[-/.\s](\d{1,2})[-/.\s](\d{2,4})$/);
@@ -489,10 +490,14 @@ const SCALES: Record<string, number> = { hundred: 100, thousand: 1000, k: 1000, 
  * Parse numbers from Excel/chat/voice: 1080, "1,080", "£5.00", "620kg", "620 kilos",
  * "1.2k", "ninety", "one thousand and eighty", "a dozen", "five pounds fifty".
  */
+/** Remove spreadsheet floating-point noise (1080.0000000001 → 1080) without touching real decimals. */
+const snapNoise = (n: number) => (Number.isFinite(n) ? Number(n.toFixed(9)) : n);
 export function parseNumber(v: unknown): number | null {
   if (v == null || v === "") return null;
-  if (isNum(v)) return v;
+  if (isNum(v)) return snapNoise(v);
   let s = String(v).toLowerCase().trim();
+  // Decimal comma ("5,00", "12,5"): one comma followed by 1–2 digits. "1,080" (3 digits) stays a thousands separator.
+  if (/^[£$€]?\s*-?\d+,\d{1,2}(\s*[a-z£$€]*)?$/.test(s)) s = s.replace(",", ".");
   // "five pounds fifty" / "5 pounds 50"
   const pp = s.match(/^(.+?) pounds? (?:and )?(.+?)( pence| p)?$/);
   if (pp) {
@@ -502,7 +507,7 @@ export function parseNumber(v: unknown): number | null {
   s = s.replace(/[£$€,]|gbp|pounds?|quid|kgs?|kilos?|kilograms?|units?|pcs|pieces|cartons?|boxes|pallets?|days?/g, " ").trim();
   const km = s.match(/^(-?\d+(?:\.\d+)?)\s*k$/);
   if (km) return +km[1] * 1000;
-  if (/^-?\d+(\.\d+)?$/.test(s.replace(/\s+/g, ""))) return Number(s.replace(/\s+/g, ""));
+  if (/^-?\d+(\.\d+)?$/.test(s.replace(/\s+/g, ""))) return snapNoise(Number(s.replace(/\s+/g, "")));
   // words
   const tokens = s.replace(/-/g, " ").split(/\s+/).filter((t) => t && t !== "and");
   if (!tokens.length) return null;
@@ -590,11 +595,13 @@ export function itemFromRow(row: Record<string, unknown>, rowRef?: string): Item
 }
 
 /** Group items under bookings; returns orphans (items whose Booking ID is not on Sheet 1). */
+/** Booking IDs are matched ignoring case and surrounding spaces (" ec-63 " on Items = "EC-63" on Bookings). */
+export const bookingKey = (id: unknown) => String(id ?? "").trim().toUpperCase();
 export function groupItems(bookings: Booking[], items: Item[]) {
   const byId = new Map<string, Item[]>();
-  bookings.forEach((b) => byId.set(b.bookingId, []));
+  bookings.forEach((b) => byId.set(bookingKey(b.bookingId), []));
   const orphans: Item[] = [];
-  items.forEach((it) => (byId.has(it.bookingId) ? byId.get(it.bookingId)!.push(it) : orphans.push(it)));
+  items.forEach((it) => (byId.has(bookingKey(it.bookingId)) ? byId.get(bookingKey(it.bookingId))!.push(it) : orphans.push(it)));
   return { byId, orphans };
 }
 
@@ -633,7 +640,7 @@ export function validateInputs(b: Booking, items: Item[], allBookingIds: string[
 
   // V-01 Booking ID present and unique
   if (!b.bookingId) out.push(data("V-01", "Booking ID missing", "This booking has no Booking ID.", ["Add a unique Booking ID such as BK-001."], ["bookingId"]));
-  else if (allBookingIds.filter((x) => x === b.bookingId).length > 1)
+  else if (allBookingIds.filter((x) => bookingKey(x) === bookingKey(b.bookingId)).length > 1)
     out.push(data("V-01", "Duplicate Booking ID", `Booking ID ${b.bookingId} appears more than once on the Bookings sheet.`, ["Give each booking a unique ID."], ["bookingId"]));
 
   // V-02 Required booking fields
@@ -728,7 +735,8 @@ export const RULE_INPUTS: Record<RuleId, { booking: (keyof Booking)[]; item: (ke
 
 /** Line value = quantity × unit price (GBP, exact to the penny). */
 export const itemLineValue = (it: Item) =>
-  isNum(it.quantity) && isNum(it.unitPrice) ? fromPence(Math.round(it.quantity * toPence(it.unitPrice))) : null;
+  // round_to_pence(quantity × unit price): 1000 × £0.333 = £333.00 (rounding the price first would give £330.00)
+  isNum(it.quantity) && isNum(it.unitPrice) ? fromPence(toPence(round(it.quantity * it.unitPrice, 6))) : null;
 /** Net weight = quantity × unit weight (kg). */
 export const itemNetWeight = (it: Item) =>
   isNum(it.quantity) && isNum(it.unitWeightKg) ? round(it.quantity * it.unitWeightKg, 3) : null;
@@ -755,7 +763,7 @@ export const itemCartonNetWeight = (it: Item) =>
   isNum(it.unitsPerCarton) && isNum(it.unitWeightKg) ? round(it.unitsPerCarton * it.unitWeightKg, 3) : null;
 /** Value per carton = units per carton × unit price. */
 export const itemCartonValue = (it: Item) =>
-  isNum(it.unitsPerCarton) && isNum(it.unitPrice) ? fromPence(Math.round(it.unitsPerCarton * toPence(it.unitPrice))) : null;
+  isNum(it.unitsPerCarton) && isNum(it.unitPrice) ? fromPence(toPence(round(it.unitsPerCarton * it.unitPrice, 6))) : null;
 
 /* ========================================================================== */
 /* 7. BOOKING-LEVEL CALCULATIONS                                               */
@@ -777,7 +785,7 @@ export function computeTotals(b: Booking, items: Item[]): BookingTotals {
   const declaredValueDiff = isNum(b.totalDeclaredValue) && sumItemValue != null
     ? fromPence(toPence(b.totalDeclaredValue) - toPence(sumItemValue)) : null;
   const declaredValueDiffPct = declaredValueDiff != null && sumItemValue
-    ? round((Math.abs(declaredValueDiff) / sumItemValue) * 100, 3) : null;
+    ? round((Math.abs(declaredValueDiff) / Math.abs(sumItemValue)) * 100, 3) : null;
   const cartonsDiff = isNum(b.cartons) && sumItemCartons != null ? b.cartons - sumItemCartons : null;
   const weightPerPalletKg = isNum(b.totalGrossWeightKg) && isPositiveInt(b.pallets)
     ? round(b.totalGrossWeightKg / (b.pallets as number), 2) : null;
@@ -926,7 +934,7 @@ export function checkR01(items: Item[]): Issue[] {
 /** R-02 — declared value within 1% of Σ(quantity × unit price). */
 export function checkR02(b: Booking, items: Item[], t: BookingTotals): Issue[] {
   if (!isNum(b.totalDeclaredValue) || t.sumItemValue == null) return [];
-  const tolerance = round((t.sumItemValue * CONFIG.VALUE_TOLERANCE_PCT) / 100, 2);
+  const tolerance = round((Math.abs(t.sumItemValue) * CONFIG.VALUE_TOLERANCE_PCT) / 100, 2);
   const diffAbs = Math.abs(t.declaredValueDiff!);
   if (toPence(diffAbs) <= toPence(tolerance)) return [];
   const higher = (t.declaredValueDiff as number) > 0;
@@ -1012,7 +1020,11 @@ export const DG_NEGATIONS = [
   "non-aerosol", "non aerosol", "pump spray", "trigger spray", "spray bottle (empty)", "empty spray bottle",
   "non-flammable", "non flammable", "nonflammable", "alcohol-free", "alcohol free", "water-based", "water based", "solvent-free", "solvent free",
   "fuel-efficient", "fuel efficient",
+  // Lithium-soap lubricants are not batteries
+  "lithium grease", "lithium-based grease", "lithium complex grease", "lithium soap", "white lithium",
 ];
+/** "perfume-free", "propellant-free", "lithium-free": any keyword followed by "-free" is a negation. */
+const FREE_OF = /[a-z0-9]+(?:[- ][a-z0-9]+)?-free\b/g;
 /** HS 6-digit prefixes that indicate (definite) or hint (possible) restricted goods. */
 export const DG_HS = {
   definite: { "850650": "lithium", "850760": "lithium", "220710": "flammable", "220720": "flammable", "271012": "flammable", "271019": "flammable", "360610": "flammable", "381400": "flammable", "330300": "flammable" } as Record<string, keyof typeof DG_KEYWORDS>,
@@ -1023,17 +1035,21 @@ export interface DgResult { verdict: "definite" | "possible" | "none"; categorie
 
 const wordMatch = (text: string, kw: string) => new RegExp(`(^|[^a-z0-9])${kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z0-9]|$)`).test(text);
 export function detectDangerousGoods(it: Item): DgResult {
-  let text = ` ${clean(it.description)} ${clean(it.sku)} `;
-  for (const n of DG_NEGATIONS) text = text.split(n).join(" ");
+  const strip = (t: string) => { let x = ` ${t.replace(FREE_OF, " ")} `; for (const n of DG_NEGATIONS) x = x.split(n).join(" "); return x; };
+  const desc = strip(clean(it.description));
+  const sku = strip(clean(it.sku));
+  const text = `${desc} ${sku}`;
   const matched: string[] = []; const cats = new Set<DgCategory>(); let verdict: DgResult["verdict"] = "none";
+  // Definite only when the description says it; a keyword found only in the SKU code ("LIPO-BALM-01") is "possible".
   (Object.keys(DG_KEYWORDS) as DgCategory[]).forEach((cat) => {
-    DG_KEYWORDS[cat].definite.forEach((k) => { if (wordMatch(text, k)) { matched.push(k); cats.add(cat); verdict = "definite"; } });
+    DG_KEYWORDS[cat].definite.forEach((k) => { if (wordMatch(desc, k)) { matched.push(k); cats.add(cat); verdict = "definite"; } });
   });
   const hs = normaliseHs(it.hsCodeRaw).digits ?? "";
   for (const [p, cat] of Object.entries(DG_HS.definite)) if (hs.startsWith(p)) { matched.push(`HS ${p}`); cats.add(cat); verdict = "definite"; }
   if (verdict !== "definite") {
     (Object.keys(DG_KEYWORDS) as DgCategory[]).forEach((cat) => {
       DG_KEYWORDS[cat].possible.forEach((k) => { if (wordMatch(text, k)) { matched.push(k); cats.add(cat); verdict = "possible"; } });
+      DG_KEYWORDS[cat].definite.forEach((k) => { if (!wordMatch(desc, k) && wordMatch(sku, k)) { matched.push(`${k} (in SKU)`); cats.add(cat); verdict = "possible"; } });
     });
     for (const [p, cat] of Object.entries(DG_HS.possible)) if (hs.startsWith(p)) { matched.push(`HS ${p}`); cats.add(cat); verdict = "possible"; }
   }
@@ -1305,6 +1321,17 @@ export function runAll(b: Booking, items: Item[], opts: RunOptions = {}): Bookin
 
   // Advisory
   issues.push(...advisoryChecks(b, items, totals));
+  // A-10 — gross weight is below the goods' own weight (R-07), and the goods alone are too heavy per pallet
+  // for the carrier R-05 checks: R-05 only passes because the gross weight is understated.
+  const r05c = pickR05Carrier(b, rec);
+  if (issues.some((i) => i.code === "R-07") && !r05.length && r05c && totals.sumNetWeightKg != null && isPositiveInt(b.pallets)) {
+    const netPerPallet = round(totals.sumNetWeightKg / (b.pallets as number), 2);
+    if (netPerPallet > r05c.carrier.maxKgPerPallet)
+      issues.push({ code: "A-10", severity: "Advisory", scope: "booking", fields: ["totalGrossWeightKg", "pallets"], title: "Correcting the weight will make the pallets too heavy",
+        whatIsWrong: `The goods alone weigh ${kg(totals.sumNetWeightKg)} — ${kg(netPerPallet)} per pallet, over ${r05c.carrier.carrier} ${r05c.carrier.service}'s ${r05c.carrier.maxKgPerPallet} kg limit. R-05 only passes because the stated gross weight (${kg(b.totalGrossWeightKg)}) is too low.`,
+        howToFix: [`When you correct the gross weight, use at least ${minPalletsFor(r05c.carrier, totals.sumNetWeightKg)} pallets for ${r05c.carrier.carrier}, or a carrier that takes heavier pallets.`],
+        numbers: { net: totals.sumNetWeightKg, netPerPallet, max: r05c.carrier.maxKgPerPallet } });
+  }
 
   // Rule results table (pass / fail / not evaluable)
   const ruleResults = {} as BookingResult["ruleResults"];
@@ -1329,7 +1356,7 @@ export function runAll(b: Booking, items: Item[], opts: RunOptions = {}): Bookin
 export function runFile(bookings: Booking[], items: Item[], opts: RunOptions = {}) {
   const { byId, orphans } = groupItems(bookings, items);
   const ids = bookings.map((b) => b.bookingId);
-  const results = bookings.map((b) => runAll(b, byId.get(b.bookingId) ?? [], {
+  const results = bookings.map((b) => runAll(b, byId.get(bookingKey(b.bookingId)) ?? [], {
     ...opts, allBookingIds: ids,
     geminiR06Verdicts: opts.geminiR06VerdictsByBooking?.[b.bookingId] ?? opts.geminiR06Verdicts,
   }));

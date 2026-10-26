@@ -361,3 +361,49 @@ describe("Explanations with missing data", () => {
     expect(confirmationDraft(b, [mug], r)).toMatch(/can't be booked yet: Destination country is missing/);
   });
 });
+
+describe("Edge-case fixes (Edge_Case_Test_Data.xlsx)", () => {
+  it("money: line value rounds quantity × price, not the price (1000 × £0.333 = £333.00)", () => {
+    const r = run({ cartons: 100, totalDeclaredValue: 333, totalGrossWeightKg: 600 }, [item({ quantity: 1000, unitPrice: 0.333, unitsPerCarton: 10, cartons: 100 })]);
+    expect(r.totals.sumItemValue).toBe(333);
+    expect(tips(r)).not.toContain("A-07");
+  });
+  it("money: negative quantity doesn't produce a negative % or a 'close enough' tip", () => {
+    const r = run({}, [item({ quantity: -1080 })]);
+    expect(r.totals.declaredValueDiffPct).toBe(200);
+    expect(codes(r)).toContain("R-02");
+    expect(tips(r)).not.toContain("A-07");
+  });
+  it("dates: a trailing time is ignored", () => {
+    expect(["15-12-2026 09:30", "2026-12-15T09:30:00Z", "15/12/2026 9:30 am"].map(C.parseDate)).toEqual(Array(3).fill("2026-12-15"));
+  });
+  it("numbers: decimal comma vs thousands comma", () => {
+    expect(["5,00", "12,5", "£5,50", "1,080", "5,400.00"].map(C.parseNumber)).toEqual([5, 12.5, 5.5, 1080, 5400]);
+  });
+  it("numbers: spreadsheet float noise is removed, real decimals kept", () => {
+    expect([1080.0000000001, 0.333, 2.5].map(C.parseNumber)).toEqual([1080, 0.333, 2.5]);
+  });
+  it("IDs: items match bookings ignoring case and spaces", () => {
+    const f = C.runFile([base], [item({ bookingId: " bk-001 " })], { now });
+    expect(f.fileIssues).toEqual([]);
+    expect(f.results[0].status).toBe("GREEN");
+  });
+  it("R-06: '-free' is a negation (perfume-free, propellant-free)", () => {
+    for (const d of ["Perfume-free hand cream 50 ml", "Propellant-free pump spray"]) expect(C.detectDangerousGoods(item({ description: d })).verdict).not.toBe("definite");
+  });
+  it("R-06: lithium grease is a lubricant, not a battery", () => {
+    expect(C.detectDangerousGoods(item({ description: "Lithium grease, 400 g tube", hsCodeRaw: 340319 })).verdict).toBe("none");
+    expect(C.detectDangerousGoods(item({ description: "Lithium battery pack" })).verdict).toBe("definite");
+  });
+  it("R-06: a keyword only in the SKU code is 'possible', not Red", () => {
+    const r = run({}, [item({ sku: "LIPO-BALM-01", description: "Lip balm, 10 g" })]);
+    expect(codes(r)).not.toContain("R-06");
+    expect(tips(r)).toContain("A-09");
+  });
+  it("A-10: understated gross weight hiding an overweight pallet is pointed out", () => {
+    const r = run({ totalGrossWeightKg: 1200 }, [item({ unitWeightKg: 1.5 })]);
+    expect(codes(r)).toEqual(["R-07"]);
+    expect(issue(r, "A-10")?.whatIsWrong).toMatch(/1,620 kg — 540 kg per pallet, over Carrier A Road economy's 500 kg limit/);
+    expect(r.status).toBe("AMBER");
+  });
+});

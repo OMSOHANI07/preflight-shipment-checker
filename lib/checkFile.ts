@@ -3,7 +3,7 @@
  * items → runFile() again with the verdicts. Every pass/fail and number comes from
  * calculations.ts; the AI only answers restricted yes/no for flagged items.
  */
-import { detectDangerousGoods, normaliseHs, runFile, type Item, type RuleId } from "@/lib/calculations";
+import { bookingKey, detectDangerousGoods, normaliseHs, runFile, type Item, type RuleId } from "@/lib/calculations";
 import { parseWorkbook, type FileNotice, type RawRow } from "@/lib/parseExcel";
 import type { R06Verdict } from "@/lib/schema";
 import type { BookingView, CheckedFile, R06Review } from "@/lib/types";
@@ -26,7 +26,6 @@ async function fetchJson<T>(url: string, body: unknown, timeoutMs: number): Prom
   }
 }
 
-const idOf = (v: unknown) => String(v ?? "").trim();
 
 export async function checkWorkbook(data: ArrayBuffer, fileName: string, onStep: (s: Step) => void): Promise<CheckOutcome> {
   onStep("read");
@@ -36,14 +35,14 @@ export async function checkWorkbook(data: ArrayBuffer, fileName: string, onStep:
   onStep("check");
   const now = new Date();
   // Items per booking in file order — the same grouping runFile() uses, so itemIndex lines up.
-  const itemsFor = (bookingId: string) => parsed.items.map((it, k) => ({ it, k })).filter((x) => x.it.bookingId === bookingId);
+  const itemsFor = (bookingId: string) => parsed.items.map((it, k) => ({ it, k })).filter((x) => bookingKey(x.it.bookingId) === bookingKey(bookingId));
 
   // R-06 second opinion for "possible" items (one batched call per file).
   const possible: { key: string; bookingId: string; itemIndex: number; it: Item; matched: string[] }[] = [];
   const seen = new Set<string>();
   for (const b of parsed.bookings) {
-    if (seen.has(b.bookingId)) continue;
-    seen.add(b.bookingId);
+    if (seen.has(bookingKey(b.bookingId))) continue;
+    seen.add(bookingKey(b.bookingId));
     itemsFor(b.bookingId).forEach(({ it }, i) => {
       const dg = detectDangerousGoods(it);
       if (dg.verdict === "possible") possible.push({ key: `${b.bookingId}::${i}`, bookingId: b.bookingId, itemIndex: i, it, matched: dg.matched });
@@ -77,8 +76,8 @@ export async function checkWorkbook(data: ArrayBuffer, fileName: string, onStep:
       result: run.results[i], rowId: null,
     };
   });
-  const bookingIds = new Set(parsed.bookings.map((b) => b.bookingId));
-  const orphanRows: RawRow[] = parsed.items.map((it, k) => ({ it, k })).filter((x) => !bookingIds.has(idOf(x.it.bookingId))).map((x) => parsed.itemRows[x.k]);
+  const bookingIds = new Set(parsed.bookings.map((b) => bookingKey(b.bookingId)));
+  const orphanRows: RawRow[] = parsed.items.map((it, k) => ({ it, k })).filter((x) => !bookingIds.has(bookingKey(x.it.bookingId))).map((x) => parsed.itemRows[x.k]);
 
   const file: CheckedFile = {
     uploadId: null, fileName, checkedAt: now.toISOString(),
