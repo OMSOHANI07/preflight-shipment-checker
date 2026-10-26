@@ -263,7 +263,7 @@ svg[hidden], [hidden] { display: none !important; }
     </section>
 
     <section class="card" id="fixes" aria-labelledby="fix-title">
-      <div class="head"><div><h2 id="fix-title">What failed first, and the fix</h2><p class="sub">The first run matched 67 of 77 rows. Each mismatch was a real bug or gap; each fix shipped with a regression test and is live on production.</p></div><span class="pill s-fixed" id="fix-count"></span></div>
+      <div class="head"><div><h2 id="fix-title">What failed first, and the fix</h2><p class="sub">The first run matched 67 of 77 rows: ten real bugs. A follow-up pass then sharpened five cases that already matched but explained themselves poorly. Every change shipped with a regression test and is live on production.</p></div><span class="pill s-fixed" id="fix-count"></span></div>
       <div class="fixes" id="fix-list"></div>
     </section>
 
@@ -333,10 +333,11 @@ const obs = new IntersectionObserver((es) => es.forEach((e) => { if (e.isInterse
 
 /* header */
 const nOk = rows.filter(ok).length, nAll = rows.length;
-const nFixed = rows.filter((r) => r.before).length;
+const nFixed = rows.filter((r) => r.before && r.before.kind !== "followup").length;
+const nImproved = rows.filter((r) => r.before && r.before.kind === "followup").length;
 const prod = DATA.browserProd, local = DATA.browserLocal;
 const prodPass = prod ? prod.cases.filter((c) => c.status === "passed").length : 0;
-$("takeaway").textContent = `Every one of the ${nAll} expected results now matches. The first run caught ${nFixed} real bugs; all are fixed, tested and live.`;
+$("takeaway").textContent = `Every one of the ${nAll} expected results now matches. The first run caught ${nFixed} real bugs and ${nImproved} weak messages; all are fixed, tested and live.`;
 $("file-meta").textContent = `${DATA.summary.bookingsParsed} bookings · ${DATA.summary.itemsParsed} items`;
 $("checked").textContent = `Checked against ${DATA.summary.checkedAgainst}`;
 $("match").textContent = nOk; $("match-of").textContent = `/ ${nAll}`;
@@ -345,7 +346,7 @@ $("before").textContent = `${nAll - nFixed} / ${nAll}`;
 $("fixed").textContent = nFixed;
 $("live").textContent = prod ? `${prodPass} / ${prod.cases.length}` : "—";
 $("gen").textContent = "Generated " + new Date(DATA.generatedAt).toLocaleString("en-GB", { timeZone: "Europe/London", dateStyle: "medium", timeStyle: "short" }) + " UK";
-$("fix-count").textContent = `${nFixed} fixed`;
+$("fix-count").textContent = `${nFixed} bugs fixed · ${nImproved} improved`;
 
 /* compare chart: expected vs engine vs live */
 const STATUSES = ["RED", "INCOMPLETE", "AMBER", "GREEN"];
@@ -429,18 +430,18 @@ $("tiles").replaceChildren(...[...cats].map(([name, c]) => {
   const t = el("article", "tile");
   const top = el("div", "tile-top"); top.append(el("h3", null, name), el("span", "switch" + (c.fixed ? " fixed" : "")));
   top.lastChild.setAttribute("role", "img"); top.lastChild.setAttribute("aria-label", c.fixed ? `${c.fixed} fixed, all passing` : "All passing");
-  const f = el("div", "tile-foot"); f.append(el("b", null, `${c.ok}/${c.total}`), document.createTextNode(c.fixed ? ` match · ${c.fixed} fixed` : " match"));
+  const f = el("div", "tile-foot"); f.append(el("b", null, `${c.ok}/${c.total}`), document.createTextNode(c.fixed ? ` match · ${c.fixed} changed` : " match"));
   t.append(top, f); return t;
 }));
 
 /* fixes */
 $("fix-list").replaceChildren(...rows.filter((r) => r.before).map((r) => {
   const c = el("article", "fix");
-  const top = el("div", "fix-top"); top.append(el("span", "code", r.booking_id), el("span", "pill s-info", r.before.area), el("span", "pill s-fixed", "Fixed"));
+  const top = el("div", "fix-top"); top.append(el("span", "code", r.booking_id), el("span", "pill s-info", r.before.area), el("span", "pill " + (r.before.kind === "followup" ? "s-pass" : "s-fixed"), r.before.kind === "followup" ? "Improved" : "Fixed"));
   const ba = el("div", "ba");
-  const was = el("div", "was"); was.append(el("small", null, "First run"), document.createTextNode(r.before.got));
+  const was = el("div", "was"); was.append(el("small", null, r.before.kind === "followup" ? "Before" : "First run"), document.createTextNode(r.before.got));
   const arrow = el("div", "arrow"); arrow.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-  const now = el("div", "now"); now.append(el("small", null, "Now"), document.createTextNode(`${title(r.actual_status)}${r.actual_flags !== "—" ? " · " + r.actual_flags : ""} — as expected`));
+  const now = el("div", "now"); now.append(el("small", null, "Now"), document.createTextNode(r.before.now || `${title(r.actual_status)}${r.actual_flags !== "—" ? " · " + r.actual_flags : ""} — as expected`));
   ba.append(was, arrow, now);
   const cause = el("p"); cause.append(el("b", null, "Why: "), document.createTextNode(r.before.cause));
   const fix = el("p"); fix.append(el("b", null, "Fix: "), document.createTextNode(r.before.fix));
@@ -482,7 +483,7 @@ $("br-body").replaceChildren(...names.map((n) => {
 }));
 
 /* all cases */
-const FILTERS = [["all", "All"], ["fixed", "Fixed this run"], ["RED", "Red"], ["INCOMPLETE", "Incomplete"], ["AMBER", "Amber"], ["GREEN", "Green"], ["other", "File-level"]];
+const FILTERS = [["all", "All"], ["fixed", "Fixed or improved"], ["RED", "Red"], ["INCOMPLETE", "Incomplete"], ["AMBER", "Amber"], ["GREEN", "Green"], ["other", "File-level"]];
 let filter = "all", q = "";
 $("filters").replaceChildren(...FILTERS.map(([k, t]) => { const b = el("button", "fbtn", t); b.type = "button"; b.setAttribute("aria-pressed", String(k === filter)); b.addEventListener("click", () => { filter = k; [...$("filters").children].forEach((x, i) => x.setAttribute("aria-pressed", String(FILTERS[i][0] === k))); drawTable(); }); return b; }));
 $("q").addEventListener("input", (e) => { q = e.target.value.trim().toLowerCase(); drawTable(); });
@@ -501,7 +502,7 @@ function drawTable() {
     const idCell = el("td"); idCell.append(el("span", "code", r.booking_id));
     const edge = el("td"); edge.append(el("div", null, r.edge_case), el("div", "muted", r.what));
     const carrier = el("td"); const cc = el("div", "cmp"); cc.append(el("div", null, r.expected_carrier || "—")); if (!r.carrier_ok || r.actual_carrier !== r.expected_carrier) cc.append(el("span", null, "→ " + r.actual_carrier)); carrier.append(cc);
-    const res = el("td"); const m = el("div", "cmp"); m.append(el("span", "pill " + (ok(r) ? "s-pass" : "s-fail"), ok(r) ? "Match" : "Differs")); if (r.before) m.append(el("span", "pill s-fixed", "Fixed")); res.append(m);
+    const res = el("td"); const m = el("div", "cmp"); m.append(el("span", "pill " + (ok(r) ? "s-pass" : "s-fail"), ok(r) ? "Match" : "Differs")); if (r.before) m.append(el("span", "pill " + (r.before.kind === "followup" ? "s-pass" : "s-fixed"), r.before.kind === "followup" ? "Improved" : "Fixed")); res.append(m);
     const cat = el("td", "muted", r.category);
     const exp = el("td"); exp.append(statusPill(r.expected_status, r.expected_flags));
     const act = el("td"); act.append(statusPill(r.actual_status, r.actual_flags));

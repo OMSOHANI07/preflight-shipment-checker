@@ -20,7 +20,7 @@ const pwCases = (file: string) => {
 };
 
 // What the engine produced on the first run, before the fixes (from the first comparison).
-const BEFORE: Record<string, { got: string; cause: string; fix: string; area: string }> = {
+const BEFORE: Record<string, { got: string; cause: string; fix: string; area: string; kind?: "followup"; now?: string }> = {
   "EC-13": { area: "Money", got: "GREEN + tip A-07 (items valued at £330.00)", cause: "Unit price was rounded to whole pence before multiplying: £0.333 became £0.33.", fix: "Line value = round_to_pence(quantity × unit price)." },
   "EC-29": { area: "Restricted goods", got: "RED — R-06 (matched 'perfume')", cause: "'Perfume-free' wasn't recognised as a negation.", fix: "Any '<word>-free' is a negation (perfume-free, propellant-free…)." },
   "EC-30": { area: "Restricted goods", got: "RED — R-06 (matched 'lithium')", cause: "Lithium grease is a lubricant, but 'lithium' alone counted as a battery.", fix: "Lithium grease / lithium soap are excluded before matching." },
@@ -30,6 +30,12 @@ const BEFORE: Record<string, { got: string; cause: string; fix: string; area: st
   "EC-50": { area: "Money", got: "RED + wrong tip A-07", cause: "A negative item total gave a negative percentage, which looked 'within 1%'.", fix: "The percentage uses the absolute item total." },
   "EC-53": { area: "Numbers", got: "RED — R-02 (unit price read as 500)", cause: "Decimal comma '5,00' was read as a thousands separator.", fix: "One comma followed by 1–2 digits is a decimal point; '1,080' is unchanged." },
   "EC-54": { area: "Numbers", got: "RED — R-03 + V-08", cause: "1080.0000000001 (spreadsheet formula noise) wasn't a whole number.", fix: "Floating-point noise is removed when reading numbers." },
+  // Follow-ups: results already matched, but the messages were vague or the layout weak.
+  "EC-07": { kind: "followup", area: "HS code", got: "RED — R-01: 'contains characters that are not digits'", now: "RED — R-01: 'Excel turned it into scientific notation, so the real digits are lost' + re-enter as Text", cause: "The message didn't say Excel had converted the code.", fix: "Scientific-notation HS codes get their own explanation." },
+  "EC-08": { kind: "followup", area: "HS code", got: "GREEN — no warning (file lists it as a known gap)", now: "GREEN + tip A-11: 'no product is classified as all zeros'", cause: "'000000' passes the 6-digit rule but isn't a real code.", fix: "New tip A-11 for all-zero HS codes (status unchanged, per the rulebook)." },
+  "EC-44": { kind: "followup", area: "Dates", got: "INCOMPLETE — 'blank or could not be read'", now: "INCOMPLETE — 'looks like month-first (US) order… Did you mean 15-12-2026?'", cause: "The seller wasn't told why the date failed.", fix: "Unreadable dates are quoted back with the likely day-first date." },
+  "EC-45": { kind: "followup", area: "Dates", got: "INCOMPLETE — 'blank or could not be read'", now: "INCOMPLETE — '31-02-2027 isn't a real date: February doesn't have 31 days'", cause: "Same vague message for an impossible date.", fix: "Impossible dates name the month that's too short." },
+  "EC-75": { kind: "followup", area: "Layout", got: "GREEN — 300-character description stretched the table and the confirmation", now: "GREEN — description wraps at ~26 rem; confirmation shortens it with '…'", cause: "No limit on very long text.", fix: "Long cells wrap; the confirmation shortens descriptions over 70 characters." },
   "EC-63": { area: "IDs", got: "INCOMPLETE — V-06, and a false orphan (V-11)", cause: "Items sheet ID ' ec-63 ' didn't match 'EC-63'.", fix: "Booking IDs match ignoring case and surrounding spaces." },
 };
 
