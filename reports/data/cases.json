@@ -1,0 +1,2756 @@
+[
+ {
+  "case_id": "U-001",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "template example BK-001",
+  "name": "is green and recommends Carrier A for Cheapest",
+  "status": "passed",
+  "duration_ms": 24
+ },
+ {
+  "case_id": "U-002",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "template example BK-001",
+  "name": "priority mapping",
+  "status": "passed",
+  "duration_ms": 5
+ },
+ {
+  "case_id": "U-003",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "official rules",
+  "name": "R-01 blank / short / 5-digit numeric",
+  "status": "passed",
+  "duration_ms": 3
+ },
+ {
+  "case_id": "U-004",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "official rules",
+  "name": "R-02 1% tolerance",
+  "status": "passed",
+  "duration_ms": 3
+ },
+ {
+  "case_id": "U-005",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "official rules",
+  "name": "R-03 / R-04 cartons",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-006",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "official rules",
+  "name": "R-05 overweight pallets → priority pick flagged, eligible carrier recommended",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-007",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "official rules",
+  "name": "R-05 boundary: exactly at max passes",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-008",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "official rules",
+  "name": "R-06 definite / negated / possible",
+  "status": "passed",
+  "duration_ms": 2
+ },
+ {
+  "case_id": "U-009",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "official rules",
+  "name": "R-07 gross < net is Amber",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-010",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "official rules",
+  "name": "R-08 / R-09 / R-10",
+  "status": "passed",
+  "duration_ms": 2
+ },
+ {
+  "case_id": "U-011",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "status & data",
+  "name": "missing pallets → INCOMPLETE, cannot confirm",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-012",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "status & data",
+  "name": "orphan items reported at file level",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-013",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "status & data",
+  "name": "runFile applies R-06 AI verdicts per booking, not to the same item index in every booking",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-014",
+  "suite_id": "unit",
+  "area": "Mid-way change",
+  "group": "mid-way change",
+  "name": "add a pallet fixes R-05 and changes the recommendation",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-015",
+  "suite_id": "unit",
+  "area": "Parsing",
+  "group": "parsers",
+  "name": "numbers",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-016",
+  "suite_id": "unit",
+  "area": "Parsing",
+  "group": "parsers",
+  "name": "dates",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-017",
+  "suite_id": "unit",
+  "area": "Parsing",
+  "group": "parsers",
+  "name": "enums",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-018",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "original template: only the grey example → checked as a demo, BK-001 GREEN, Carrier A £540",
+  "status": "passed",
+  "duration_ms": 73
+ },
+ {
+  "case_id": "U-019",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "template with real rows: grey example row is skipped",
+  "status": "passed",
+  "duration_ms": 169
+ },
+ {
+  "case_id": "U-020",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "a non-grey BK-001 in row 3 is treated as data",
+  "status": "passed",
+  "duration_ms": 9
+ },
+ {
+  "case_id": "U-021",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "finds the header row by 'Booking ID' (no title row)",
+  "status": "passed",
+  "duration_ms": 3
+ },
+ {
+  "case_id": "U-022",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "keeps HS code raw: numeric stays a number, text keeps leading zero",
+  "status": "passed",
+  "duration_ms": 3
+ },
+ {
+  "case_id": "U-023",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "reads Excel date serials and DD-MM-YYYY text",
+  "status": "passed",
+  "duration_ms": 2
+ },
+ {
+  "case_id": "U-024",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "orphan items surface as V-11",
+  "status": "passed",
+  "duration_ms": 5
+ },
+ {
+  "case_id": "U-025",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "missing columns: file notice + V-02 on every booking",
+  "status": "passed",
+  "duration_ms": 6
+ },
+ {
+  "case_id": "U-026",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "falls back to the first two sheets with a notice",
+  "status": "passed",
+  "duration_ms": 2
+ },
+ {
+  "case_id": "U-027",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "matches sheet names case-insensitively",
+  "status": "passed",
+  "duration_ms": 2
+ },
+ {
+  "case_id": "U-028",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "rejects non-Excel files and unreadable data",
+  "status": "passed",
+  "duration_ms": 2
+ },
+ {
+  "case_id": "U-029",
+  "suite_id": "unit",
+  "area": "Excel files",
+  "group": "parseWorkbook",
+  "name": "skips empty rows; a row with only a Booking ID is data with missing fields",
+  "status": "passed",
+  "duration_ms": 3
+ },
+ {
+  "case_id": "U-030",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "skips the grey example row and reads every booking",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-031",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T01: Clean booking",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-032",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T02: R-01 only: HS code too short",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-033",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T03: R-02 only: declared value 7.4% low (date stored as a real Excel date)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-034",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T04: R-03 only: 12 × 85 ≠ 1,080",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-035",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T05: R-04 only: booking says 84 cartons, items say 90",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-036",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T06: R-05 only: 533 kg per pallet vs Carrier A's 500 kg",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-037",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T07: R-06 only: lithium power bank",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-038",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T08: R-07 only: gross 500 kg but goods weigh 540 kg",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-039",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T09: R-08 only: warehouse with no appointment",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-040",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T10: R-09 only: no country of origin",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-041",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T11: R-10 only: ready date in the past",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-042",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T12: Many rules at once (5-digit numeric HS code, lithium item, wrong totals)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-043",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T13: Missing required field (pallets blank) → INCOMPLETE",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-044",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T14: Amber only: gross too low and no appointment",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-045",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T15: Overweight for every carrier: 800 kg per pallet",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-046",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T16: Possible R-06: Bluetooth speaker (needs AI or manual check)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-047",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T06 recommends Carrier B once fixed",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-048",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T15 has no carrier that fits",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-049",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T12 flags the 5-digit numeric HS code as a possible lost leading zero",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-050",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T13 is incomplete because pallets are missing",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-051",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T16 Bluetooth speaker: A-09 without AI, R-06 when AI confirms",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-052",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "BK-T03 reads a real Excel date cell",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-053",
+  "suite_id": "unit",
+  "area": "Stress workbook",
+  "group": "stress-test workbook",
+  "name": "reports the orphan item at file level (V-11)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-054",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-01 HS code",
+  "name": "blank HS code fails (reported as R-01, not V-07)",
+  "status": "passed",
+  "duration_ms": 5
+ },
+ {
+  "case_id": "U-055",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-01 HS code",
+  "name": "4-digit code fails with the digit count",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-056",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-01 HS code",
+  "name": "5-digit numeric cell suggests a lost leading zero",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-057",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-01 HS code",
+  "name": "letters in the code fail",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-058",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-01 HS code",
+  "name": "'6912.00', '6912 00' and '69-12-00' pass",
+  "status": "passed",
+  "duration_ms": 3
+ },
+ {
+  "case_id": "U-059",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-01 HS code",
+  "name": "exactly 6 digits passes and adds tip A-06",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-060",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-01 HS code",
+  "name": "8 and 10 digits pass without A-06",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-061",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-02 Declared value",
+  "name": "exact match passes",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-062",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-02 Declared value",
+  "name": "+1.00% passes, +1.02% fails",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-063",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-02 Declared value",
+  "name": "−1.00% passes, −1.02% fails",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-064",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-02 Declared value",
+  "name": "message shows declared, computed, gap and the 1% limit",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-065",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-02 Declared value",
+  "name": "first fix gives the corrected value",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-066",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-02 Declared value",
+  "name": "sums money in pence across items (no floating-point drift)",
+  "status": "passed",
+  "duration_ms": 2
+ },
+ {
+  "case_id": "U-067",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-02 Declared value",
+  "name": "missing unit price makes R-02 not evaluable",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-068",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-03 Units per carton × cartons",
+  "name": "12 × 85 ≠ 1,080 fails with all fix options",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-069",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-03 Units per carton × cartons",
+  "name": "quantity that doesn't divide evenly explains the part-filled carton",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-070",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-03 Units per carton × cartons",
+  "name": "checked per item: only the bad item is flagged",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-071",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-04 Booking cartons",
+  "name": "84 vs 90 fails with the difference",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-072",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-04 Booking cartons",
+  "name": "sums cartons across items",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-073",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-04 Booking cartons",
+  "name": "R-03 and R-04 can fail together",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-074",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-05 Weight per pallet",
+  "name": "533.33 kg/pallet fails against Cheapest's Carrier A (500 kg)",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-075",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-05 Weight per pallet",
+  "name": "exactly at the limit passes (500 kg on A)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-076",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-05 Weight per pallet",
+  "name": "same weight passes for Balanced (priority pick is B, 750 kg)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-077",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-05 Weight per pallet",
+  "name": "seller-chosen carrier is checked (C at 500 kg/pallet fails)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-078",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-05 Weight per pallet",
+  "name": "adding a pallet fixes it (mid-way change)",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-079",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-05 Weight per pallet",
+  "name": "over 750 kg/pallet: no carrier fits, only fix is more pallets",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-080",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-06 Restricted goods",
+  "name": "lithium keywords are Red",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-081",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-06 Restricted goods",
+  "name": "aerosols are Red",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-082",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-06 Restricted goods",
+  "name": "flammable liquids are Red",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-083",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-06 Restricted goods",
+  "name": "restricted HS code alone is Red (850760)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-084",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-06 Restricted goods",
+  "name": "negations don't trigger: non-flammable, battery-free, alcohol-free",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-085",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-06 Restricted goods",
+  "name": "whole-word matching: 'ginger biscuits' is not 'gin'",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-086",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-06 Restricted goods",
+  "name": "possible match without AI → tip A-09, status unchanged",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-087",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-06 Restricted goods",
+  "name": "possible match + AI says restricted → Red, message says AI-confirmed",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-088",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-06 Restricted goods",
+  "name": "possible match + AI says safe → pass, no A-09",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-089",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-07 Gross weight",
+  "name": "gross 500 kg < goods 540 kg is Amber, 40 kg short",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-090",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-07 Gross weight",
+  "name": "gross equal to goods passes, with tip A-03",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-091",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-07 Gross weight",
+  "name": "fix suggests net + 15 kg per pallet",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-092",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-08 Delivery appointment",
+  "name": "Warehouse + no appointment is Amber",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-093",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-08 Delivery appointment",
+  "name": "Business address + no appointment passes with tip A-04",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-094",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-08 Delivery appointment",
+  "name": "Warehouse + appointment booked passes",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-095",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-09 Country of origin",
+  "name": "blank origin is Amber (reported as R-09, not V-07)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-096",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-09 Country of origin",
+  "name": "non-UK origin passes with duty tip A-02",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-097",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-10 Ready date",
+  "name": "yesterday fails, with days in the past",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-098",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-10 Ready date",
+  "name": "today passes",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-099",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-10 Ready date",
+  "name": "past ready date: estimates start from today (Sunday → Monday 26-10)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-100",
+  "suite_id": "unit",
+  "area": "Official rules",
+  "group": "R-10 Ready date",
+  "name": "every result records the date it was checked against",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-101",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-01 duplicate Booking ID",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-102",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-01 blank Booking ID",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-103",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-02 missing seller name → INCOMPLETE",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-104",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-03 origin city, origin country, destination country, currency not allowed",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-105",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-04 city doesn't match country (Paris + Germany)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-106",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-05 pallets 2.5 and declared value 0",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-107",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-06 booking with no items",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-108",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-07 missing unit price",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-109",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-08 units per carton 0",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-110",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-09 country of origin not in the list (Japan)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-111",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-10 same SKU twice in one booking",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-112",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "V-11 item for a booking that doesn't exist",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-113",
+  "suite_id": "unit",
+  "area": "Input checks",
+  "group": "V-01…V-11 Input validation",
+  "name": "rules missing inputs are 'not evaluable', never 'pass'",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-114",
+  "suite_id": "unit",
+  "area": "Tips",
+  "group": "A-01…A-09 Tips (never change status)",
+  "name": "A-01 vague description 'Goods'",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-115",
+  "suite_id": "unit",
+  "area": "Tips",
+  "group": "A-01…A-09 Tips (never change status)",
+  "name": "A-05 Saturday ready date → collection Monday 09-11-2026",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-116",
+  "suite_id": "unit",
+  "area": "Tips",
+  "group": "A-01…A-09 Tips (never change status)",
+  "name": "A-07 within 1% but not exact",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-117",
+  "suite_id": "unit",
+  "area": "Tips",
+  "group": "A-01…A-09 Tips (never change status)",
+  "name": "A-08 invoice checklist is always present",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-118",
+  "suite_id": "unit",
+  "area": "Tips",
+  "group": "A-01…A-09 Tips (never change status)",
+  "name": "a booking with several tips is still GREEN",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-119",
+  "suite_id": "unit",
+  "area": "Status & confirm",
+  "group": "Status & confirmation",
+  "name": "GREEN: confirm directly",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-120",
+  "suite_id": "unit",
+  "area": "Status & confirm",
+  "group": "Status & confirmation",
+  "name": "AMBER: confirm after acknowledgement",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-121",
+  "suite_id": "unit",
+  "area": "Status & confirm",
+  "group": "Status & confirmation",
+  "name": "RED: confirm blocked",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-122",
+  "suite_id": "unit",
+  "area": "Status & confirm",
+  "group": "Status & confirmation",
+  "name": "INCOMPLETE: confirm blocked",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-123",
+  "suite_id": "unit",
+  "area": "Status & confirm",
+  "group": "Status & confirmation",
+  "name": "Red beats missing data; missing data beats Amber",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-124",
+  "suite_id": "unit",
+  "area": "Status & confirm",
+  "group": "Status & confirmation",
+  "name": "issues are ordered Red → Data → Amber → Advisory",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-125",
+  "suite_id": "unit",
+  "area": "Status & confirm",
+  "group": "Status & confirmation",
+  "name": "every booking gets a recommendation section, even when RED",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-126",
+  "suite_id": "unit",
+  "area": "Status & confirm",
+  "group": "Status & confirmation",
+  "name": "runFile summary counts statuses and rule failures",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-127",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "BK-001 Cheapest → Carrier A £540, ETA Thu 12-11-2026",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-128",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "Balanced → Carrier B £660 (score 0.65 > C 0.60 > A 0.40)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-129",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "Fastest and Most reliable → Carrier C £1,020, ETA Mon 09-11-2026",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-130",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "Paris, Balanced, 2 pallets, 800 kg → B £420, ETA Thu 05-11; runner-up C",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-131",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "Rotterdam, Cheapest, must arrive by 05-11 → B £800 exactly on the deadline; A excluded",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-132",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "Berlin, Fastest, 450 kg/pallet → B £440 'once fixed'; R-05 against C",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-133",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "Hamburg, Balanced + high-value → C £680 (reliability weighted up)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-134",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "Amsterdam, Fastest, £500 budget → B £400; C over budget",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-135",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "No budget can be met → best that meets everything else, says so",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-136",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "No carrier meets the deadline → fastest that fits, says when it arrives",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-137",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "Missing priority → Balanced, and the reason says so",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-138",
+  "suite_id": "unit",
+  "area": "Carrier choice",
+  "group": "Carrier recommendation (spec §5.1)",
+  "name": "Prices follow the route: Germany > France > Netherlands",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-139",
+  "suite_id": "unit",
+  "area": "Parsing",
+  "group": "Parsing & normalisation",
+  "name": "country, city, priority, type, yes/no and currency aliases",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-140",
+  "suite_id": "unit",
+  "area": "Parsing",
+  "group": "Parsing & normalisation",
+  "name": "numbers with symbols, separators, units and words",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-141",
+  "suite_id": "unit",
+  "area": "Parsing",
+  "group": "Parsing & normalisation",
+  "name": "dates: DD-MM-YYYY, slashes, dots, ISO, Excel serial; invalid rejected",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-142",
+  "suite_id": "unit",
+  "area": "Parsing",
+  "group": "Parsing & normalisation",
+  "name": "UK day-first: 03-04-2026 is 3 April",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-143",
+  "suite_id": "unit",
+  "area": "Parsing",
+  "group": "Parsing & normalisation",
+  "name": "HS code normalisation keeps text and flags lost zeros",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-144",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations & confirmation",
+  "name": "confirmation matches the spec sentence (RULEBOOK §11.5)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-145",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations & confirmation",
+  "name": "blocked bookings say 'once the issues above are fixed'",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-146",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations & confirmation",
+  "name": "no-carrier bookings say they can't be booked yet",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-147",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations & confirmation",
+  "name": "headline names carrier, cost and weekday date",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-148",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations & confirmation",
+  "name": "next steps cover appointment, invoice, labels, collection, receiver (§11.6)",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-149",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations & confirmation",
+  "name": "invoice checklist has all 15 gov.uk elements with a draft invoice number",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-150",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations & confirmation",
+  "name": "AI guardrail: rejects a £ amount or date not in the facts",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-151",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations & confirmation",
+  "name": "explanation cache key changes when the facts change",
+  "status": "passed",
+  "duration_ms": 1
+ },
+ {
+  "case_id": "U-152",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations with missing data",
+  "name": "missing pallets: no '? pallets' or 'Freight: —' in the text",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "U-153",
+  "suite_id": "unit",
+  "area": "Explanations",
+  "group": "Explanations with missing data",
+  "name": "missing destination: says why carriers can't be compared",
+  "status": "passed",
+  "duration_ms": 0
+ },
+ {
+  "case_id": "L-001",
+  "suite_id": "local",
+  "area": "Smoke test",
+  "group": "Smoke",
+  "name": "sample file → summary, RED card blocked, AMBER card needs acknowledgement",
+  "status": "passed",
+  "duration_ms": 6406
+ },
+ {
+  "case_id": "L-002",
+  "suite_id": "local",
+  "area": "API rules",
+  "group": "API",
+  "name": "RED booking is refused (409)",
+  "status": "passed",
+  "duration_ms": 107
+ },
+ {
+  "case_id": "L-003",
+  "suite_id": "local",
+  "area": "API rules",
+  "group": "API",
+  "name": "INCOMPLETE booking is refused (409)",
+  "status": "passed",
+  "duration_ms": 13
+ },
+ {
+  "case_id": "L-004",
+  "suite_id": "local",
+  "area": "API rules",
+  "group": "API",
+  "name": "AMBER without acknowledgement is refused; with it, confirmed",
+  "status": "passed",
+  "duration_ms": 796
+ },
+ {
+  "case_id": "L-005",
+  "suite_id": "local",
+  "area": "API rules",
+  "group": "API",
+  "name": "saved RED booking can't be confirmed by claiming GREEN",
+  "status": "passed",
+  "duration_ms": 505
+ },
+ {
+  "case_id": "L-006",
+  "suite_id": "local",
+  "area": "API rules",
+  "group": "API",
+  "name": "malformed request is rejected (400)",
+  "status": "passed",
+  "duration_ms": 6
+ },
+ {
+  "case_id": "L-007",
+  "suite_id": "local",
+  "area": "API rules",
+  "group": "API",
+  "name": "upload is saved and the shared page shows it",
+  "status": "passed",
+  "duration_ms": 1568
+ },
+ {
+  "case_id": "L-008",
+  "suite_id": "local",
+  "area": "API rules",
+  "group": "API",
+  "name": "invalid upload body is rejected (400)",
+  "status": "passed",
+  "duration_ms": 6
+ },
+ {
+  "case_id": "L-009",
+  "suite_id": "local",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "R-06 second opinion answers yes/no per item (or reports unavailable)",
+  "status": "passed",
+  "duration_ms": 2169
+ },
+ {
+  "case_id": "L-010",
+  "suite_id": "local",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "R-06 with no items returns no verdicts; bad body is 400",
+  "status": "passed",
+  "duration_ms": 9
+ },
+ {
+  "case_id": "L-011",
+  "suite_id": "local",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "explanation uses only the engine's numbers, within the time-box",
+  "status": "passed",
+  "duration_ms": 3224
+ },
+ {
+  "case_id": "L-012",
+  "suite_id": "local",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "blocked booking is explained as 'once the issues are fixed'",
+  "status": "passed",
+  "duration_ms": 3481
+ },
+ {
+  "case_id": "L-013",
+  "suite_id": "local",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "bad explain body is rejected (400)",
+  "status": "passed",
+  "duration_ms": 5
+ },
+ {
+  "case_id": "L-014",
+  "suite_id": "local",
+  "area": "Security",
+  "group": "Security",
+  "name": "no API key or database URL in the page or its scripts",
+  "status": "passed",
+  "duration_ms": 38
+ },
+ {
+  "case_id": "L-015",
+  "suite_id": "local",
+  "area": "Pages",
+  "group": "Page",
+  "name": "hero, how-it-works, rules and carriers sections render",
+  "status": "passed",
+  "duration_ms": 316
+ },
+ {
+  "case_id": "L-016",
+  "suite_id": "local",
+  "area": "Pages",
+  "group": "Page",
+  "name": "Download template serves the Excel template",
+  "status": "passed",
+  "duration_ms": 246
+ },
+ {
+  "case_id": "L-017",
+  "suite_id": "local",
+  "area": "Pages",
+  "group": "Page",
+  "name": "Conversation tab shows Chat and Voice as 'Coming in V2' with no input",
+  "status": "passed",
+  "duration_ms": 308
+ },
+ {
+  "case_id": "L-018",
+  "suite_id": "local",
+  "area": "Pages",
+  "group": "Page",
+  "name": "'Check a file' returns to the upload tab",
+  "status": "passed",
+  "duration_ms": 290
+ },
+ {
+  "case_id": "L-019",
+  "suite_id": "local",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "sample file: 16 bookings, totals add up, checked-against date shown",
+  "status": "passed",
+  "duration_ms": 5275
+ },
+ {
+  "case_id": "L-020",
+  "suite_id": "local",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "file-level notices: grey example row skipped, orphan item (V-11)",
+  "status": "passed",
+  "duration_ms": 4183
+ },
+ {
+  "case_id": "L-021",
+  "suite_id": "local",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "original template: example checked as demo → BK-001 GREEN, Carrier A £540.00",
+  "status": "passed",
+  "duration_ms": 1102
+ },
+ {
+  "case_id": "L-022",
+  "suite_id": "local",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "a non-Excel file is rejected with a clear message",
+  "status": "passed",
+  "duration_ms": 1004
+ },
+ {
+  "case_id": "L-023",
+  "suite_id": "local",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "a workbook with one sheet is rejected (needs Bookings and Items)",
+  "status": "passed",
+  "duration_ms": 1021
+ },
+ {
+  "case_id": "L-024",
+  "suite_id": "local",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "missing column is reported and bookings become Incomplete",
+  "status": "passed",
+  "duration_ms": 1783
+ },
+ {
+  "case_id": "L-025",
+  "suite_id": "local",
+  "area": "Results",
+  "group": "Results",
+  "name": "rule heat-strip lists R-01 … R-10",
+  "status": "passed",
+  "duration_ms": 3171
+ },
+ {
+  "case_id": "L-026",
+  "suite_id": "local",
+  "area": "Results",
+  "group": "Results",
+  "name": "status filter shows only that status",
+  "status": "passed",
+  "duration_ms": 3410
+ },
+ {
+  "case_id": "L-027",
+  "suite_id": "local",
+  "area": "Results",
+  "group": "Results",
+  "name": "search by Booking ID and by seller",
+  "status": "passed",
+  "duration_ms": 3671
+ },
+ {
+  "case_id": "L-028",
+  "suite_id": "local",
+  "area": "Results",
+  "group": "Results",
+  "name": "cards are ordered Red → Incomplete → Amber → Green",
+  "status": "passed",
+  "duration_ms": 3668
+ },
+ {
+  "case_id": "L-029",
+  "suite_id": "local",
+  "area": "Results",
+  "group": "Results",
+  "name": "each issue shows rule, severity, numbers and a fix",
+  "status": "passed",
+  "duration_ms": 3963
+ },
+ {
+  "case_id": "L-030",
+  "suite_id": "local",
+  "area": "Results",
+  "group": "Results",
+  "name": "'Show cells' highlights the exact spreadsheet cell",
+  "status": "passed",
+  "duration_ms": 3194
+ },
+ {
+  "case_id": "L-031",
+  "suite_id": "local",
+  "area": "Results",
+  "group": "Results",
+  "name": "rule table: the many-errors booking fails 9 rules",
+  "status": "passed",
+  "duration_ms": 3577
+ },
+ {
+  "case_id": "L-032",
+  "suite_id": "local",
+  "area": "Results",
+  "group": "Results",
+  "name": "tips are separate and collapsed",
+  "status": "passed",
+  "duration_ms": 3623
+ },
+ {
+  "case_id": "L-033",
+  "suite_id": "local",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "RED: R-05 shown, 'Recommended once fixed', Confirm locked with reason",
+  "status": "passed",
+  "duration_ms": 3318
+ },
+ {
+  "case_id": "L-034",
+  "suite_id": "local",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "INCOMPLETE: missing pallets, R-05 not evaluable, Confirm locked",
+  "status": "passed",
+  "duration_ms": 3254
+ },
+ {
+  "case_id": "L-035",
+  "suite_id": "local",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "AMBER: needs 'I understand these warnings' before confirming",
+  "status": "passed",
+  "duration_ms": 5037
+ },
+ {
+  "case_id": "L-036",
+  "suite_id": "local",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "GREEN: confirms directly with a reference number",
+  "status": "passed",
+  "duration_ms": 5677
+ },
+ {
+  "case_id": "L-037",
+  "suite_id": "local",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "overweight for every carrier: 'No carrier fits'",
+  "status": "passed",
+  "duration_ms": 3740
+ },
+ {
+  "case_id": "L-038",
+  "suite_id": "local",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "carrier card: cost, transit, dates, reason, trade-off and all 3 options",
+  "status": "passed",
+  "duration_ms": 4493
+ },
+ {
+  "case_id": "L-039",
+  "suite_id": "local",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "confirmation paragraph, next steps and invoice checklist",
+  "status": "passed",
+  "duration_ms": 3309
+ },
+ {
+  "case_id": "L-040",
+  "suite_id": "local",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "booking PDF downloads and is a real PDF",
+  "status": "passed",
+  "duration_ms": 3826
+ },
+ {
+  "case_id": "L-041",
+  "suite_id": "local",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "full report PDF covers every booking",
+  "status": "passed",
+  "duration_ms": 3368
+ },
+ {
+  "case_id": "L-042",
+  "suite_id": "local",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "share link opens the saved results and the booking",
+  "status": "passed",
+  "duration_ms": 6443
+ },
+ {
+  "case_id": "L-043",
+  "suite_id": "local",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "unknown results link shows a friendly message",
+  "status": "passed",
+  "duration_ms": 405
+ },
+ {
+  "case_id": "L-044",
+  "suite_id": "local",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "phone width (375px): no horizontal scroll, results readable",
+  "status": "passed",
+  "duration_ms": 3712
+ },
+ {
+  "case_id": "L-045",
+  "suite_id": "local",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "dark mode follows the system setting",
+  "status": "passed",
+  "duration_ms": 185
+ },
+ {
+  "case_id": "L-046",
+  "suite_id": "local",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "reduced motion: content is visible without animation",
+  "status": "passed",
+  "duration_ms": 3357
+ },
+ {
+  "case_id": "L-047",
+  "suite_id": "local",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "keyboard: a booking card opens with Enter",
+  "status": "passed",
+  "duration_ms": 3677
+ },
+ {
+  "case_id": "L-048",
+  "suite_id": "local",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "accessibility: no serious issues on the home page (light + dark)",
+  "status": "passed",
+  "duration_ms": 1133
+ },
+ {
+  "case_id": "L-049",
+  "suite_id": "local",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "accessibility: no serious issues on an open booking card",
+  "status": "passed",
+  "duration_ms": 4164
+ },
+ {
+  "case_id": "L-050",
+  "suite_id": "local",
+  "area": "Resilience",
+  "group": "Resilience",
+  "name": "without the database: results still work, sharing explains why it's off",
+  "status": "skipped",
+  "duration_ms": 46
+ },
+ {
+  "case_id": "L-051",
+  "suite_id": "local",
+  "area": "Resilience",
+  "group": "Resilience",
+  "name": "without AI: explanations come straight from the rule engine",
+  "status": "skipped",
+  "duration_ms": 44
+ },
+ {
+  "case_id": "P-001",
+  "suite_id": "production",
+  "area": "Smoke test",
+  "group": "Smoke",
+  "name": "sample file → summary, RED card blocked, AMBER card needs acknowledgement",
+  "status": "passed",
+  "duration_ms": 5839
+ },
+ {
+  "case_id": "P-002",
+  "suite_id": "production",
+  "area": "API rules",
+  "group": "API",
+  "name": "RED booking is refused (409)",
+  "status": "passed",
+  "duration_ms": 349
+ },
+ {
+  "case_id": "P-003",
+  "suite_id": "production",
+  "area": "API rules",
+  "group": "API",
+  "name": "INCOMPLETE booking is refused (409)",
+  "status": "passed",
+  "duration_ms": 329
+ },
+ {
+  "case_id": "P-004",
+  "suite_id": "production",
+  "area": "API rules",
+  "group": "API",
+  "name": "AMBER without acknowledgement is refused; with it, confirmed",
+  "status": "passed",
+  "duration_ms": 607
+ },
+ {
+  "case_id": "P-005",
+  "suite_id": "production",
+  "area": "API rules",
+  "group": "API",
+  "name": "saved RED booking can't be confirmed by claiming GREEN",
+  "status": "passed",
+  "duration_ms": 582
+ },
+ {
+  "case_id": "P-006",
+  "suite_id": "production",
+  "area": "API rules",
+  "group": "API",
+  "name": "malformed request is rejected (400)",
+  "status": "passed",
+  "duration_ms": 303
+ },
+ {
+  "case_id": "P-007",
+  "suite_id": "production",
+  "area": "API rules",
+  "group": "API",
+  "name": "upload is saved and the shared page shows it",
+  "status": "passed",
+  "duration_ms": 790
+ },
+ {
+  "case_id": "P-008",
+  "suite_id": "production",
+  "area": "API rules",
+  "group": "API",
+  "name": "invalid upload body is rejected (400)",
+  "status": "passed",
+  "duration_ms": 396
+ },
+ {
+  "case_id": "P-009",
+  "suite_id": "production",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "R-06 second opinion answers yes/no per item (or reports unavailable)",
+  "status": "passed",
+  "duration_ms": 2308
+ },
+ {
+  "case_id": "P-010",
+  "suite_id": "production",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "R-06 with no items returns no verdicts; bad body is 400",
+  "status": "passed",
+  "duration_ms": 585
+ },
+ {
+  "case_id": "P-011",
+  "suite_id": "production",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "explanation uses only the engine's numbers, within the time-box",
+  "status": "passed",
+  "duration_ms": 577
+ },
+ {
+  "case_id": "P-012",
+  "suite_id": "production",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "blocked booking is explained as 'once the issues are fixed'",
+  "status": "passed",
+  "duration_ms": 525
+ },
+ {
+  "case_id": "P-013",
+  "suite_id": "production",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "bad explain body is rejected (400)",
+  "status": "passed",
+  "duration_ms": 324
+ },
+ {
+  "case_id": "P-014",
+  "suite_id": "production",
+  "area": "Security",
+  "group": "Security",
+  "name": "no API key or database URL in the page or its scripts",
+  "status": "passed",
+  "duration_ms": 285
+ },
+ {
+  "case_id": "P-015",
+  "suite_id": "production",
+  "area": "Pages",
+  "group": "Page",
+  "name": "hero, how-it-works, rules and carriers sections render",
+  "status": "passed",
+  "duration_ms": 412
+ },
+ {
+  "case_id": "P-016",
+  "suite_id": "production",
+  "area": "Pages",
+  "group": "Page",
+  "name": "Download template serves the Excel template",
+  "status": "passed",
+  "duration_ms": 482
+ },
+ {
+  "case_id": "P-017",
+  "suite_id": "production",
+  "area": "Pages",
+  "group": "Page",
+  "name": "Conversation tab shows Chat and Voice as 'Coming in V2' with no input",
+  "status": "passed",
+  "duration_ms": 438
+ },
+ {
+  "case_id": "P-018",
+  "suite_id": "production",
+  "area": "Pages",
+  "group": "Page",
+  "name": "'Check a file' returns to the upload tab",
+  "status": "passed",
+  "duration_ms": 416
+ },
+ {
+  "case_id": "P-019",
+  "suite_id": "production",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "sample file: 16 bookings, totals add up, checked-against date shown",
+  "status": "passed",
+  "duration_ms": 5451
+ },
+ {
+  "case_id": "P-020",
+  "suite_id": "production",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "file-level notices: grey example row skipped, orphan item (V-11)",
+  "status": "passed",
+  "duration_ms": 2872
+ },
+ {
+  "case_id": "P-021",
+  "suite_id": "production",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "original template: example checked as demo → BK-001 GREEN, Carrier A £540.00",
+  "status": "passed",
+  "duration_ms": 1247
+ },
+ {
+  "case_id": "P-022",
+  "suite_id": "production",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "a non-Excel file is rejected with a clear message",
+  "status": "passed",
+  "duration_ms": 1138
+ },
+ {
+  "case_id": "P-023",
+  "suite_id": "production",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "a workbook with one sheet is rejected (needs Bookings and Items)",
+  "status": "passed",
+  "duration_ms": 1161
+ },
+ {
+  "case_id": "P-024",
+  "suite_id": "production",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "missing column is reported and bookings become Incomplete",
+  "status": "passed",
+  "duration_ms": 2110
+ },
+ {
+  "case_id": "P-025",
+  "suite_id": "production",
+  "area": "Results",
+  "group": "Results",
+  "name": "rule heat-strip lists R-01 … R-10",
+  "status": "passed",
+  "duration_ms": 3339
+ },
+ {
+  "case_id": "P-026",
+  "suite_id": "production",
+  "area": "Results",
+  "group": "Results",
+  "name": "status filter shows only that status",
+  "status": "passed",
+  "duration_ms": 3593
+ },
+ {
+  "case_id": "P-027",
+  "suite_id": "production",
+  "area": "Results",
+  "group": "Results",
+  "name": "search by Booking ID and by seller",
+  "status": "passed",
+  "duration_ms": 2789
+ },
+ {
+  "case_id": "P-028",
+  "suite_id": "production",
+  "area": "Results",
+  "group": "Results",
+  "name": "cards are ordered Red → Incomplete → Amber → Green",
+  "status": "passed",
+  "duration_ms": 3372
+ },
+ {
+  "case_id": "P-029",
+  "suite_id": "production",
+  "area": "Results",
+  "group": "Results",
+  "name": "each issue shows rule, severity, numbers and a fix",
+  "status": "passed",
+  "duration_ms": 3904
+ },
+ {
+  "case_id": "P-030",
+  "suite_id": "production",
+  "area": "Results",
+  "group": "Results",
+  "name": "'Show cells' highlights the exact spreadsheet cell",
+  "status": "passed",
+  "duration_ms": 3673
+ },
+ {
+  "case_id": "P-031",
+  "suite_id": "production",
+  "area": "Results",
+  "group": "Results",
+  "name": "rule table: the many-errors booking fails 9 rules",
+  "status": "passed",
+  "duration_ms": 3460
+ },
+ {
+  "case_id": "P-032",
+  "suite_id": "production",
+  "area": "Results",
+  "group": "Results",
+  "name": "tips are separate and collapsed",
+  "status": "passed",
+  "duration_ms": 3456
+ },
+ {
+  "case_id": "P-033",
+  "suite_id": "production",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "RED: R-05 shown, 'Recommended once fixed', Confirm locked with reason",
+  "status": "passed",
+  "duration_ms": 4118
+ },
+ {
+  "case_id": "P-034",
+  "suite_id": "production",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "INCOMPLETE: missing pallets, R-05 not evaluable, Confirm locked",
+  "status": "passed",
+  "duration_ms": 3622
+ },
+ {
+  "case_id": "P-035",
+  "suite_id": "production",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "AMBER: needs 'I understand these warnings' before confirming",
+  "status": "passed",
+  "duration_ms": 3545
+ },
+ {
+  "case_id": "P-036",
+  "suite_id": "production",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "GREEN: confirms directly with a reference number",
+  "status": "passed",
+  "duration_ms": 3126
+ },
+ {
+  "case_id": "P-037",
+  "suite_id": "production",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "overweight for every carrier: 'No carrier fits'",
+  "status": "passed",
+  "duration_ms": 3731
+ },
+ {
+  "case_id": "P-038",
+  "suite_id": "production",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "carrier card: cost, transit, dates, reason, trade-off and all 3 options",
+  "status": "passed",
+  "duration_ms": 3511
+ },
+ {
+  "case_id": "P-039",
+  "suite_id": "production",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "confirmation paragraph, next steps and invoice checklist",
+  "status": "passed",
+  "duration_ms": 3510
+ },
+ {
+  "case_id": "P-040",
+  "suite_id": "production",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "booking PDF downloads and is a real PDF",
+  "status": "passed",
+  "duration_ms": 4486
+ },
+ {
+  "case_id": "P-041",
+  "suite_id": "production",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "full report PDF covers every booking",
+  "status": "passed",
+  "duration_ms": 4165
+ },
+ {
+  "case_id": "P-042",
+  "suite_id": "production",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "share link opens the saved results and the booking",
+  "status": "passed",
+  "duration_ms": 6386
+ },
+ {
+  "case_id": "P-043",
+  "suite_id": "production",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "unknown results link shows a friendly message",
+  "status": "passed",
+  "duration_ms": 569
+ },
+ {
+  "case_id": "P-044",
+  "suite_id": "production",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "phone width (375px): no horizontal scroll, results readable",
+  "status": "passed",
+  "duration_ms": 3371
+ },
+ {
+  "case_id": "P-045",
+  "suite_id": "production",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "dark mode follows the system setting",
+  "status": "passed",
+  "duration_ms": 324
+ },
+ {
+  "case_id": "P-046",
+  "suite_id": "production",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "reduced motion: content is visible without animation",
+  "status": "passed",
+  "duration_ms": 3317
+ },
+ {
+  "case_id": "P-047",
+  "suite_id": "production",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "keyboard: a booking card opens with Enter",
+  "status": "passed",
+  "duration_ms": 3340
+ },
+ {
+  "case_id": "P-048",
+  "suite_id": "production",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "accessibility: no serious issues on the home page (light + dark)",
+  "status": "passed",
+  "duration_ms": 1325
+ },
+ {
+  "case_id": "P-049",
+  "suite_id": "production",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "accessibility: no serious issues on an open booking card",
+  "status": "passed",
+  "duration_ms": 4218
+ },
+ {
+  "case_id": "P-050",
+  "suite_id": "production",
+  "area": "Resilience",
+  "group": "Resilience",
+  "name": "without the database: results still work, sharing explains why it's off",
+  "status": "skipped",
+  "duration_ms": 46
+ },
+ {
+  "case_id": "P-051",
+  "suite_id": "production",
+  "area": "Resilience",
+  "group": "Resilience",
+  "name": "without AI: explanations come straight from the rule engine",
+  "status": "skipped",
+  "duration_ms": 43
+ },
+ {
+  "case_id": "R-001",
+  "suite_id": "resilience",
+  "area": "Smoke test",
+  "group": "Smoke",
+  "name": "sample file → summary, RED card blocked, AMBER card needs acknowledgement",
+  "status": "passed",
+  "duration_ms": 3109
+ },
+ {
+  "case_id": "R-002",
+  "suite_id": "resilience",
+  "area": "API rules",
+  "group": "API",
+  "name": "RED booking is refused (409)",
+  "status": "passed",
+  "duration_ms": 101
+ },
+ {
+  "case_id": "R-003",
+  "suite_id": "resilience",
+  "area": "API rules",
+  "group": "API",
+  "name": "INCOMPLETE booking is refused (409)",
+  "status": "passed",
+  "duration_ms": 11
+ },
+ {
+  "case_id": "R-004",
+  "suite_id": "resilience",
+  "area": "API rules",
+  "group": "API",
+  "name": "AMBER without acknowledgement is refused; with it, confirmed",
+  "status": "passed",
+  "duration_ms": 16
+ },
+ {
+  "case_id": "R-005",
+  "suite_id": "resilience",
+  "area": "API rules",
+  "group": "API",
+  "name": "saved RED booking can't be confirmed by claiming GREEN",
+  "status": "skipped",
+  "duration_ms": 21
+ },
+ {
+  "case_id": "R-006",
+  "suite_id": "resilience",
+  "area": "API rules",
+  "group": "API",
+  "name": "malformed request is rejected (400)",
+  "status": "passed",
+  "duration_ms": 10
+ },
+ {
+  "case_id": "R-007",
+  "suite_id": "resilience",
+  "area": "API rules",
+  "group": "API",
+  "name": "upload is saved and the shared page shows it",
+  "status": "skipped",
+  "duration_ms": 13
+ },
+ {
+  "case_id": "R-008",
+  "suite_id": "resilience",
+  "area": "API rules",
+  "group": "API",
+  "name": "invalid upload body is rejected (400)",
+  "status": "passed",
+  "duration_ms": 12
+ },
+ {
+  "case_id": "R-009",
+  "suite_id": "resilience",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "R-06 second opinion answers yes/no per item (or reports unavailable)",
+  "status": "passed",
+  "duration_ms": 42
+ },
+ {
+  "case_id": "R-010",
+  "suite_id": "resilience",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "R-06 with no items returns no verdicts; bad body is 400",
+  "status": "passed",
+  "duration_ms": 13
+ },
+ {
+  "case_id": "R-011",
+  "suite_id": "resilience",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "explanation uses only the engine's numbers, within the time-box",
+  "status": "passed",
+  "duration_ms": 31
+ },
+ {
+  "case_id": "R-012",
+  "suite_id": "resilience",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "blocked booking is explained as 'once the issues are fixed'",
+  "status": "passed",
+  "duration_ms": 8
+ },
+ {
+  "case_id": "R-013",
+  "suite_id": "resilience",
+  "area": "AI guardrails",
+  "group": "AI",
+  "name": "bad explain body is rejected (400)",
+  "status": "passed",
+  "duration_ms": 8
+ },
+ {
+  "case_id": "R-014",
+  "suite_id": "resilience",
+  "area": "Security",
+  "group": "Security",
+  "name": "no API key or database URL in the page or its scripts",
+  "status": "passed",
+  "duration_ms": 68
+ },
+ {
+  "case_id": "R-015",
+  "suite_id": "resilience",
+  "area": "Pages",
+  "group": "Page",
+  "name": "hero, how-it-works, rules and carriers sections render",
+  "status": "passed",
+  "duration_ms": 443
+ },
+ {
+  "case_id": "R-016",
+  "suite_id": "resilience",
+  "area": "Pages",
+  "group": "Page",
+  "name": "Download template serves the Excel template",
+  "status": "passed",
+  "duration_ms": 259
+ },
+ {
+  "case_id": "R-017",
+  "suite_id": "resilience",
+  "area": "Pages",
+  "group": "Page",
+  "name": "Conversation tab shows Chat and Voice as 'Coming in V2' with no input",
+  "status": "passed",
+  "duration_ms": 293
+ },
+ {
+  "case_id": "R-018",
+  "suite_id": "resilience",
+  "area": "Pages",
+  "group": "Page",
+  "name": "'Check a file' returns to the upload tab",
+  "status": "passed",
+  "duration_ms": 287
+ },
+ {
+  "case_id": "R-019",
+  "suite_id": "resilience",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "sample file: 16 bookings, totals add up, checked-against date shown",
+  "status": "passed",
+  "duration_ms": 3283
+ },
+ {
+  "case_id": "R-020",
+  "suite_id": "resilience",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "file-level notices: grey example row skipped, orphan item (V-11)",
+  "status": "passed",
+  "duration_ms": 1133
+ },
+ {
+  "case_id": "R-021",
+  "suite_id": "resilience",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "original template: example checked as demo → BK-001 GREEN, Carrier A £540.00",
+  "status": "passed",
+  "duration_ms": 1101
+ },
+ {
+  "case_id": "R-022",
+  "suite_id": "resilience",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "a non-Excel file is rejected with a clear message",
+  "status": "passed",
+  "duration_ms": 1003
+ },
+ {
+  "case_id": "R-023",
+  "suite_id": "resilience",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "a workbook with one sheet is rejected (needs Bookings and Items)",
+  "status": "passed",
+  "duration_ms": 1020
+ },
+ {
+  "case_id": "R-024",
+  "suite_id": "resilience",
+  "area": "Upload",
+  "group": "Upload",
+  "name": "missing column is reported and bookings become Incomplete",
+  "status": "passed",
+  "duration_ms": 1782
+ },
+ {
+  "case_id": "R-025",
+  "suite_id": "resilience",
+  "area": "Results",
+  "group": "Results",
+  "name": "rule heat-strip lists R-01 … R-10",
+  "status": "passed",
+  "duration_ms": 1134
+ },
+ {
+  "case_id": "R-026",
+  "suite_id": "resilience",
+  "area": "Results",
+  "group": "Results",
+  "name": "status filter shows only that status",
+  "status": "passed",
+  "duration_ms": 1190
+ },
+ {
+  "case_id": "R-027",
+  "suite_id": "resilience",
+  "area": "Results",
+  "group": "Results",
+  "name": "search by Booking ID and by seller",
+  "status": "passed",
+  "duration_ms": 1144
+ },
+ {
+  "case_id": "R-028",
+  "suite_id": "resilience",
+  "area": "Results",
+  "group": "Results",
+  "name": "cards are ordered Red → Incomplete → Amber → Green",
+  "status": "passed",
+  "duration_ms": 1132
+ },
+ {
+  "case_id": "R-029",
+  "suite_id": "resilience",
+  "area": "Results",
+  "group": "Results",
+  "name": "each issue shows rule, severity, numbers and a fix",
+  "status": "passed",
+  "duration_ms": 1216
+ },
+ {
+  "case_id": "R-030",
+  "suite_id": "resilience",
+  "area": "Results",
+  "group": "Results",
+  "name": "'Show cells' highlights the exact spreadsheet cell",
+  "status": "passed",
+  "duration_ms": 1178
+ },
+ {
+  "case_id": "R-031",
+  "suite_id": "resilience",
+  "area": "Results",
+  "group": "Results",
+  "name": "rule table: the many-errors booking fails 9 rules",
+  "status": "passed",
+  "duration_ms": 1198
+ },
+ {
+  "case_id": "R-032",
+  "suite_id": "resilience",
+  "area": "Results",
+  "group": "Results",
+  "name": "tips are separate and collapsed",
+  "status": "passed",
+  "duration_ms": 1252
+ },
+ {
+  "case_id": "R-033",
+  "suite_id": "resilience",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "RED: R-05 shown, 'Recommended once fixed', Confirm locked with reason",
+  "status": "passed",
+  "duration_ms": 1215
+ },
+ {
+  "case_id": "R-034",
+  "suite_id": "resilience",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "INCOMPLETE: missing pallets, R-05 not evaluable, Confirm locked",
+  "status": "passed",
+  "duration_ms": 1201
+ },
+ {
+  "case_id": "R-035",
+  "suite_id": "resilience",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "AMBER: needs 'I understand these warnings' before confirming",
+  "status": "passed",
+  "duration_ms": 1538
+ },
+ {
+  "case_id": "R-036",
+  "suite_id": "resilience",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "GREEN: confirms directly with a reference number",
+  "status": "passed",
+  "duration_ms": 1295
+ },
+ {
+  "case_id": "R-037",
+  "suite_id": "resilience",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "overweight for every carrier: 'No carrier fits'",
+  "status": "passed",
+  "duration_ms": 1201
+ },
+ {
+  "case_id": "R-038",
+  "suite_id": "resilience",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "carrier card: cost, transit, dates, reason, trade-off and all 3 options",
+  "status": "passed",
+  "duration_ms": 1254
+ },
+ {
+  "case_id": "R-039",
+  "suite_id": "resilience",
+  "area": "Booking card",
+  "group": "Booking",
+  "name": "confirmation paragraph, next steps and invoice checklist",
+  "status": "passed",
+  "duration_ms": 1259
+ },
+ {
+  "case_id": "R-040",
+  "suite_id": "resilience",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "booking PDF downloads and is a real PDF",
+  "status": "passed",
+  "duration_ms": 1303
+ },
+ {
+  "case_id": "R-041",
+  "suite_id": "resilience",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "full report PDF covers every booking",
+  "status": "passed",
+  "duration_ms": 1319
+ },
+ {
+  "case_id": "R-042",
+  "suite_id": "resilience",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "share link opens the saved results and the booking",
+  "status": "skipped",
+  "duration_ms": 45
+ },
+ {
+  "case_id": "R-043",
+  "suite_id": "resilience",
+  "area": "PDF & sharing",
+  "group": "Export",
+  "name": "unknown results link shows a friendly message",
+  "status": "passed",
+  "duration_ms": 215
+ },
+ {
+  "case_id": "R-044",
+  "suite_id": "resilience",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "phone width (375px): no horizontal scroll, results readable",
+  "status": "passed",
+  "duration_ms": 1230
+ },
+ {
+  "case_id": "R-045",
+  "suite_id": "resilience",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "dark mode follows the system setting",
+  "status": "passed",
+  "duration_ms": 187
+ },
+ {
+  "case_id": "R-046",
+  "suite_id": "resilience",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "reduced motion: content is visible without animation",
+  "status": "passed",
+  "duration_ms": 457
+ },
+ {
+  "case_id": "R-047",
+  "suite_id": "resilience",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "keyboard: a booking card opens with Enter",
+  "status": "passed",
+  "duration_ms": 1149
+ },
+ {
+  "case_id": "R-048",
+  "suite_id": "resilience",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "accessibility: no serious issues on the home page (light + dark)",
+  "status": "passed",
+  "duration_ms": 1133
+ },
+ {
+  "case_id": "R-049",
+  "suite_id": "resilience",
+  "area": "Accessibility & layout",
+  "group": "Quality",
+  "name": "accessibility: no serious issues on an open booking card",
+  "status": "passed",
+  "duration_ms": 1670
+ },
+ {
+  "case_id": "R-050",
+  "suite_id": "resilience",
+  "area": "Resilience",
+  "group": "Resilience",
+  "name": "without the database: results still work, sharing explains why it's off",
+  "status": "passed",
+  "duration_ms": 4341
+ },
+ {
+  "case_id": "R-051",
+  "suite_id": "resilience",
+  "area": "Resilience",
+  "group": "Resilience",
+  "name": "without AI: explanations come straight from the rule engine",
+  "status": "passed",
+  "duration_ms": 1198
+ }
+]

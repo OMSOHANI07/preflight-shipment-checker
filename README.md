@@ -64,6 +64,17 @@ Excel ─► lib/parseExcel.ts (SheetJS, raw cells)
 
 Plus input checks V-01…V-11, which make a booking **Incomplete**, and tips A-01…A-09 from the UK government export-invoice guide. Tips never change a booking's status. The full spec is in [`docs/RULEBOOK.md`](docs/RULEBOOK.md), [`docs/RECOMMENDATION_RULES.md`](docs/RECOMMENDATION_RULES.md) and [`docs/CALCULATIONS_FORMULAS.pdf`](docs/CALCULATIONS_FORMULAS.pdf).
 
+## Testing (V1)
+
+| Run | What | Result |
+|---|---|---|
+| Rule engine & parser | `npm test` — 153 Vitest cases: every rule and boundary, V-01…V-11, A-01…A-09, the 9 carrier reference outcomes, parser edge cases, explanation guardrails | 153 / 153 pass |
+| Local build | `npm run build && npm run e2e` — 51 Playwright cases: upload, filters, highlights, confirm rules, PDFs, share links, API rules, AI guardrails, secrets, phone width, dark mode, axe (WCAG AA) | 49 pass, 2 skipped by design |
+| Production | `E2E_BASE_URL=https://preflight-shipment-checker-omega.vercel.app npm run e2e` | 49 pass, 2 skipped by design |
+| No database, no AI | same suite with `E2E_NO_DB=1 E2E_NO_AI=1` against a server with Neon unreachable and no Gemini key | 48 pass, 3 skipped by design |
+
+`npx tsx scripts/collect-metrics.ts` measures speed and AI success on the live site; `npx tsx scripts/build-report-data.ts` turns all of it into `reports/data/*.json`, the datasets behind the test report dashboard (`reports/dashboard/index.html`).
+
 ## Run locally
 
 ```bash
@@ -86,7 +97,7 @@ npm run dev
 | Script | What it does |
 |---|---|
 | `npm run dev` / `build` / `start` | Next.js |
-| `npm test` | Vitest: engine, Excel parser and the stress workbook (53 tests) |
+| `npm test` | Vitest: engine, Excel parser, stress workbook and the V1 case matrix (153 tests) |
 | `npm run e2e` | Playwright smoke test (run `npm run build` first). Add `E2E_BASE_URL=https://…` to test a deployment. |
 | `npm run make:stress` | Regenerates `public/samples/stress-test.xlsx` from the real template |
 | `npm run db:generate` / `db:migrate` / `db:seed` | Drizzle migrations and the idempotent seed |

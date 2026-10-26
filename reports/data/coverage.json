@@ -1,0 +1,302 @@
+[
+ {
+  "code": "R-01",
+  "title": "Every item must have an HS code of at least 6 digits",
+  "tier": "Official rule",
+  "severity": "Red",
+  "tests": 12,
+  "passed": 12,
+  "sample_bookings": "BK-T02, BK-T12",
+  "result": "Verified"
+ },
+ {
+  "code": "R-02",
+  "title": "Total declared value must equal the sum of quantity × unit price across all items (within 1%)",
+  "tier": "Official rule",
+  "severity": "Red",
+  "tests": 9,
+  "passed": 9,
+  "sample_bookings": "BK-T03, BK-T12",
+  "result": "Verified"
+ },
+ {
+  "code": "R-03",
+  "title": "For each item, units per carton × cartons must equal quantity",
+  "tier": "Official rule",
+  "severity": "Red",
+  "tests": 6,
+  "passed": 6,
+  "sample_bookings": "BK-T04, BK-T12",
+  "result": "Verified"
+ },
+ {
+  "code": "R-04",
+  "title": "Total cartons on the booking must equal the sum of cartons across all items",
+  "tier": "Official rule",
+  "severity": "Red",
+  "tests": 5,
+  "passed": 5,
+  "sample_bookings": "BK-T05, BK-T12",
+  "result": "Verified"
+ },
+ {
+  "code": "R-05",
+  "title": "Weight per pallet (total gross weight ÷ pallets) must not exceed the chosen carrier's max weight per pallet",
+  "tier": "Official rule",
+  "severity": "Red",
+  "tests": 17,
+  "passed": 17,
+  "sample_bookings": "BK-T06, BK-T12, BK-T15",
+  "result": "Verified"
+ },
+ {
+  "code": "R-06",
+  "title": "No lithium batteries, aerosols or flammable liquids",
+  "tier": "Official rule",
+  "severity": "Red",
+  "tests": 20,
+  "passed": 20,
+  "sample_bookings": "BK-T07, BK-T12",
+  "result": "Verified"
+ },
+ {
+  "code": "R-07",
+  "title": "Total gross weight must be at least the sum of unit weight × quantity across all items",
+  "tier": "Official rule",
+  "severity": "Amber",
+  "tests": 5,
+  "passed": 5,
+  "sample_bookings": "BK-T08, BK-T14",
+  "result": "Verified"
+ },
+ {
+  "code": "R-08",
+  "title": "Shipments to a warehouse must have a delivery appointment booked",
+  "tier": "Official rule",
+  "severity": "Amber",
+  "tests": 5,
+  "passed": 5,
+  "sample_bookings": "BK-T09, BK-T12, BK-T14",
+  "result": "Verified"
+ },
+ {
+  "code": "R-09",
+  "title": "Every item must have a country of origin",
+  "tier": "Official rule",
+  "severity": "Amber",
+  "tests": 4,
+  "passed": 4,
+  "sample_bookings": "BK-T10, BK-T12",
+  "result": "Verified"
+ },
+ {
+  "code": "R-10",
+  "title": "Ready to ship date must not be in the past",
+  "tier": "Official rule",
+  "severity": "Amber",
+  "tests": 9,
+  "passed": 9,
+  "sample_bookings": "BK-T11, BK-T12",
+  "result": "Verified"
+ },
+ {
+  "code": "V-01",
+  "title": "Booking ID present and unique",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 13,
+  "passed": 13,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-02",
+  "title": "Required booking fields present",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 2,
+  "passed": 2,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-03",
+  "title": "Value in the allowed list",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-04",
+  "title": "City matches country",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-05",
+  "title": "Booking numbers sensible",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-06",
+  "title": "Booking has items",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-07",
+  "title": "Required item fields present",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 3,
+  "passed": 3,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-08",
+  "title": "Item numbers sensible",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-09",
+  "title": "Country of origin allowed",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-10",
+  "title": "SKU not repeated",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "V-11",
+  "title": "Item belongs to a real booking",
+  "tier": "Input check",
+  "severity": "Data",
+  "tests": 18,
+  "passed": 18,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "A-01",
+  "title": "Plain-English description",
+  "tier": "Tip",
+  "severity": "Advisory",
+  "tests": 5,
+  "passed": 5,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "A-02",
+  "title": "Non-UK origin may pay duty",
+  "tier": "Tip",
+  "severity": "Advisory",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "A-03",
+  "title": "Gross includes packaging",
+  "tier": "Tip",
+  "severity": "Advisory",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "A-04",
+  "title": "Tell a business address",
+  "tier": "Tip",
+  "severity": "Advisory",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "A-05",
+  "title": "Weekend ready date",
+  "tier": "Tip",
+  "severity": "Advisory",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "A-06",
+  "title": "Full commodity code",
+  "tier": "Tip",
+  "severity": "Advisory",
+  "tests": 2,
+  "passed": 2,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "A-07",
+  "title": "Declared value close, not exact",
+  "tier": "Tip",
+  "severity": "Advisory",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "A-08",
+  "title": "Commercial invoice checklist",
+  "tier": "Tip",
+  "severity": "Advisory",
+  "tests": 1,
+  "passed": 1,
+  "sample_bookings": "—",
+  "result": "Verified"
+ },
+ {
+  "code": "A-09",
+  "title": "Confirm possible restricted item",
+  "tier": "Tip",
+  "severity": "Advisory",
+  "tests": 8,
+  "passed": 8,
+  "sample_bookings": "—",
+  "result": "Verified"
+ }
+]

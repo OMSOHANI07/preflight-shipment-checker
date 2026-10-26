@@ -1,0 +1,92 @@
+[
+ {
+  "bug_id": "B-01",
+  "title": "AI restricted-goods answers leaked across bookings",
+  "area": "Rule engine",
+  "severity": "High",
+  "found_by": "Code review of runFile()",
+  "fix": "Verdicts are now scoped per booking (geminiR06VerdictsByBooking) with a test.",
+  "status": "Fixed"
+ },
+ {
+  "bug_id": "B-02",
+  "title": "Every AI explanation timed out",
+  "area": "AI",
+  "severity": "High",
+  "found_by": "Server logs on the first live run",
+  "fix": "Thinking set to low and issue text kept from the engine: about 3 s per booking instead of 12 s.",
+  "status": "Fixed"
+ },
+ {
+  "bug_id": "B-03",
+  "title": "AI text arrived but never showed",
+  "area": "Results page",
+  "severity": "High",
+  "found_by": "Browser check: 'built straight from the rule engine' after AI replied",
+  "fix": "Saving the upload no longer cancels the screen update for explanations in flight.",
+  "status": "Fixed"
+ },
+ {
+  "bug_id": "B-04",
+  "title": "Shared results page crashed on incomplete saved rows",
+  "area": "Sharing",
+  "severity": "High",
+  "found_by": "Server error during the API save test",
+  "fix": "Data tables tolerate missing raw cells; the test now requires HTTP 200.",
+  "status": "Fixed"
+ },
+ {
+  "bug_id": "B-05",
+  "title": "Page scrolled sideways on phones (1,520 px wide)",
+  "area": "Layout",
+  "severity": "Medium",
+  "found_by": "Phone-width test at 375 px",
+  "fix": "Screen-reader labels contained inside the table scroller; hidden tooltips take no space; shorter sub-nav button.",
+  "status": "Fixed"
+ },
+ {
+  "bug_id": "B-06",
+  "title": "Text below WCAG AA contrast (63 elements)",
+  "area": "Accessibility",
+  "severity": "Medium",
+  "found_by": "axe scan, light and dark",
+  "fix": "Removed opacity dimming, dark-section status colours, deeper button blue.",
+  "status": "Fixed"
+ },
+ {
+  "bug_id": "B-07",
+  "title": "Data tables couldn't be scrolled with the keyboard",
+  "area": "Accessibility",
+  "severity": "Medium",
+  "found_by": "axe: scrollable-region-focusable",
+  "fix": "Table scrollers are focusable, labelled regions.",
+  "status": "Fixed"
+ },
+ {
+  "bug_id": "B-08",
+  "title": "\"? pallets\" and \"Freight: —\" in confirmations",
+  "area": "Explanations",
+  "severity": "Medium",
+  "found_by": "Reading AI output for the Incomplete booking",
+  "fix": "Says the cost comes once the pallet count is added; tests for missing pallets and destination.",
+  "status": "Fixed"
+ },
+ {
+  "bug_id": "B-09",
+  "title": "PDF dropped dashes, bullets and quotes",
+  "area": "PDF",
+  "severity": "Low",
+  "found_by": "Text extracted from a generated PDF",
+  "fix": "Characters the PDF font can't draw are swapped for plain ones.",
+  "status": "Fixed"
+ },
+ {
+  "bug_id": "B-10",
+  "title": "Deep link to a booking didn't scroll to it",
+  "area": "Sharing",
+  "severity": "Low",
+  "found_by": "Opening /results/…#BK-T12",
+  "fix": "Scroll retried after the card expands.",
+  "status": "Fixed"
+ }
+]

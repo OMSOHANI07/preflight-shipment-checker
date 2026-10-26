@@ -1,0 +1,95 @@
+{
+  "baseUrl": "https://preflight-shipment-checker-omega.vercel.app",
+  "collectedAt": "2026-10-26T08:05:11.298Z",
+  "pages": [
+    {
+      "path": "/",
+      "ms": 144,
+      "status": 200
+    },
+    {
+      "path": "/",
+      "ms": 103,
+      "status": 200
+    },
+    {
+      "path": "/samples/stress-test.xlsx",
+      "ms": 69,
+      "status": 200
+    }
+  ],
+  "explain": {
+    "chunks": [
+      {
+        "size": 6,
+        "ms": 528
+      },
+      {
+        "size": 6,
+        "ms": 817
+      },
+      {
+        "size": 4,
+        "ms": 4453
+      }
+    ],
+    "sources": {
+      "BK-T01": "ai",
+      "BK-T02": "ai",
+      "BK-T03": "ai",
+      "BK-T04": "ai",
+      "BK-T05": "ai",
+      "BK-T06": "ai",
+      "BK-T07": "ai",
+      "BK-T08": "ai",
+      "BK-T09": "ai",
+      "BK-T10": "ai",
+      "BK-T11": "ai",
+      "BK-T12": "ai",
+      "BK-T13": "ai",
+      "BK-T14": "ai",
+      "BK-T15": "ai",
+      "BK-T16": "ai"
+    },
+    "aiCount": 16,
+    "total": 16
+  },
+  "r06": {
+    "items": 1,
+    "ms": 1788,
+    "source": "ai",
+    "verdicts": [
+      {
+        "key": "BK-T16::0",
+        "restricted": true,
+        "reason": "Bluetooth speakers typically contain rechargeable lithium batteries."
+      }
+    ]
+  },
+  "engine": {
+    "bookings": 1000,
+    "items": 2000,
+    "fileKb": 1223,
+    "parseMs": 145,
+    "checkMs": 285,
+    "statuses": {
+      "total": 1000,
+      "red": 0,
+      "incomplete": 0,
+      "amber": 143,
+      "green": 857,
+      "ruleFailCounts": {
+        "R-01": 0,
+        "R-02": 0,
+        "R-03": 0,
+        "R-04": 0,
+        "R-05": 0,
+        "R-06": 0,
+        "R-07": 0,
+        "R-08": 143,
+        "R-09": 0,
+        "R-10": 0
+      }
+    }
+  }
+}

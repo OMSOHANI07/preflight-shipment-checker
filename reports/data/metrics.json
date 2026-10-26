@@ -1,0 +1,66 @@
+[
+ {
+  "metric_id": "home_ms",
+  "label": "Home page response",
+  "value": 103,
+  "unit": "ms",
+  "group": "Speed",
+  "note": "Warm request to the live URL"
+ },
+ {
+  "metric_id": "sample_ms",
+  "label": "Sample file download",
+  "value": 69,
+  "unit": "ms",
+  "group": "Speed",
+  "note": "16-booking workbook"
+ },
+ {
+  "metric_id": "engine_bookings",
+  "label": "Bookings in load test",
+  "value": 1000,
+  "unit": "bookings",
+  "group": "Load",
+  "note": "2000 item rows, 1223 KB file"
+ },
+ {
+  "metric_id": "parse_ms",
+  "label": "Read 1,000-booking file",
+  "value": 145,
+  "unit": "ms",
+  "group": "Load",
+  "note": "SheetJS parse + normalise"
+ },
+ {
+  "metric_id": "check_ms",
+  "label": "Check 1,000 bookings",
+  "value": 285,
+  "unit": "ms",
+  "group": "Load",
+  "note": "All 10 rules + carrier choice"
+ },
+ {
+  "metric_id": "ai_explained",
+  "label": "Bookings explained by AI",
+  "value": 16,
+  "unit": "of 16",
+  "group": "AI",
+  "note": "Production, one user at a time"
+ },
+ {
+  "metric_id": "r06_ms",
+  "label": "AI restricted-goods check",
+  "value": 1788,
+  "unit": "ms",
+  "group": "AI",
+  "note": "One batched call per file"
+ },
+ {
+  "metric_id": "ai_timebox_s",
+  "label": "AI time limit per call",
+  "value": 8,
+  "unit": "s",
+  "group": "AI",
+  "note": "Then the rule engine's own text is shown"
+ }
+]

@@ -15,6 +15,7 @@ async function loadSample(page: Page) {
   await page.goto("/");
   await page.getByTestId("use-sample").click();
   await expect(page.getByTestId("summary")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator("ol[aria-live=polite]")).toHaveCount(0); // progress steps have finished fading out
 }
 async function openCard(page: Page, id: string): Promise<Locator> {
   const card = page.locator(`article#${id}`);
