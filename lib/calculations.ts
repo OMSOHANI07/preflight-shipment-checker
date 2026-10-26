@@ -627,6 +627,8 @@ export function explainUnreadableDate(raw: string): string {
 /** Group items under bookings; returns orphans (items whose Booking ID is not on Sheet 1). */
 /** Booking IDs are matched ignoring case and surrounding spaces (" ec-63 " on Items = "EC-63" on Bookings). */
 export const bookingKey = (id: unknown) => String(id ?? "").trim().toUpperCase();
+/** Booking ID as the seller would see it: trimmed, inner spaces collapsed (case kept). Compare with bookingKey(). */
+export const normaliseId = (id: unknown) => String(id ?? "").trim().replace(/\s+/g, " ");
 export function groupItems(bookings: Booking[], items: Item[]) {
   const byId = new Map<string, Item[]>();
   bookings.forEach((b) => byId.set(bookingKey(b.bookingId), []));

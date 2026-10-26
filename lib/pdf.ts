@@ -10,12 +10,28 @@ import type { Explanation } from "@/lib/schema";
 import type { BookingView, CheckedFile } from "@/lib/types";
 import { STATUS_LABEL, STATUS_MEANING } from "@/lib/ui";
 
-/** Standard PDF fonts are WinAnsi: swap characters they can't draw. */
-const pdfText = (s: string) =>
-  s.replace(/→/g, "->").replace(/×/g, "x").replace(/÷/g, "/").replace(/≠/g, "!=").replace(/≤/g, "<=").replace(/≥/g, ">=")
-    .replace(/…/g, "...").replace(/[✓✔]/g, "pass").replace(/[✕✗]/g, "fail")
-    .replace(/[–—]/g, "-").replace(/•/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, "\"")
+/**
+ * Text goes into the PDF in an embedded Unicode font (Geist, OFL — public/fonts/Geist-Regular.ttf), so
+ * £, é, ü, –, “ ” print as written. Only a few symbols the font lacks are swapped. If the font can't be
+ * loaded we fall back to Helvetica (WinAnsi) and strip what it can't draw.
+ */
+let FONT = "helvetica";
+const pdfText = (s: string) => {
+  const t = s.replace(/[✓✔]/g, "pass").replace(/[✕✗]/g, "fail").replace(/≠/g, "!=").replace(/≤/g, "<=").replace(/≥/g, ">=");
+  if (FONT !== "helvetica") return t.replace(/[\u{1F000}-\u{1FFFF}]/gu, "");
+  return t.replace(/→/g, "->").replace(/×/g, "x").replace(/÷/g, "/").replace(/…/g, "...")
+    .replace(/[–—]/g, "-").replace(/•/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"')
     .replace(/[^\x09\x0A\x0D\x20-\x7E\u00A0-\u00FF]/g, "");
+};
+
+let fontB64: Promise<string | null> | null = null;
+function loadFont(): Promise<string | null> {
+  fontB64 ??= fetch("/fonts/Geist-Regular.ttf")
+    .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+    .then((buf) => { let bin = ""; const bytes = new Uint8Array(buf); for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000)); return btoa(bin); })
+    .catch(() => { fontB64 = null; return null; });
+  return fontB64;
+}
 
 const STATUS_RGB: Record<string, [number, number, number]> = { RED: [215, 0, 21], INCOMPLETE: [99, 99, 102], AMBER: [160, 90, 0], GREEN: [31, 122, 53] };
 
@@ -29,12 +45,12 @@ function ensure(ctx: Ctx, h: number) {
 }
 function heading(ctx: Ctx, text: string, size = 13) {
   ensure(ctx, 30);
-  ctx.doc.setFont("helvetica", "bold").setFontSize(size).setTextColor(29, 29, 31);
+  ctx.doc.setFont(FONT, "bold").setFontSize(size).setTextColor(29, 29, 31);
   ctx.doc.text(pdfText(text), M, ctx.y);
   ctx.y += size + 6;
 }
 function para(ctx: Ctx, text: string, size = 10, color: [number, number, number] = [60, 60, 67]) {
-  ctx.doc.setFont("helvetica", "normal").setFontSize(size).setTextColor(...color);
+  ctx.doc.setFont(FONT, "normal").setFontSize(size).setTextColor(...color);
   const lines = ctx.doc.splitTextToSize(pdfText(text), W - 2 * M) as string[];
   for (const l of lines) { ensure(ctx, size + 4); ctx.doc.text(l, M, ctx.y); ctx.y += size + 4; }
   ctx.y += 4;
@@ -42,7 +58,7 @@ function para(ctx: Ctx, text: string, size = 10, color: [number, number, number]
 function table(ctx: Ctx, head: string[], body: string[][], widths?: number[]) {
   ctx.autoTable(ctx.doc, {
     startY: ctx.y, head: [head.map(pdfText)], body: body.map((r) => r.map(pdfText)), margin: { left: M, right: M },
-    styles: { font: "helvetica", fontSize: 8.5, cellPadding: 4, overflow: "linebreak", textColor: [29, 29, 31] },
+    styles: { font: FONT, fontSize: 8.5, cellPadding: 4, overflow: "linebreak", textColor: [29, 29, 31] },
     headStyles: { fillColor: [245, 245, 247], textColor: [29, 29, 31], fontStyle: "bold" },
     columnStyles: widths ? Object.fromEntries(widths.map((w, i) => [i, { cellWidth: w }])) : undefined,
   });
@@ -53,7 +69,7 @@ function bookingSection(ctx: Ctx, v: BookingView, ex: Explanation) {
   const { booking: b, result: r } = v;
   const rec = r.recommendation;
   heading(ctx, `${b.bookingId || "(no ID)"} · ${b.sellerName ?? "—"}`, 16);
-  ctx.doc.setFont("helvetica", "bold").setFontSize(11).setTextColor(...STATUS_RGB[r.status]);
+  ctx.doc.setFont(FONT, "bold").setFontSize(11).setTextColor(...STATUS_RGB[r.status]);
   ctx.doc.text(pdfText(`${STATUS_LABEL[r.status]} — ${STATUS_MEANING[r.status]}`), M, ctx.y);
   ctx.y += 16;
   para(ctx, `${b.originCity ?? "—"} → ${b.destinationCity ?? "—"} (${b.destinationCountry ?? "—"}) · ${b.destinationType ?? "—"} · priority ${b.sellerPriority ?? "—"} · checked against ${formatDDMMYYYY(r.checkedAgainstDate)}`, 9, [110, 110, 115]);
@@ -92,13 +108,21 @@ function bookingSection(ctx: Ctx, v: BookingView, ex: Explanation) {
 }
 
 async function newDoc(): Promise<Ctx> {
-  const [{ jsPDF }, autoTableMod] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
+  const [{ jsPDF }, autoTableMod, font] = await Promise.all([import("jspdf"), import("jspdf-autotable"), loadFont()]);
   const doc = new jsPDF({ unit: "pt", format: "a4" });
+  FONT = "helvetica";
+  if (font) {
+    doc.addFileToVFS("Geist-Regular.ttf", font);
+    // One weight is embedded; "bold" maps to it so headings stay in the same font (hierarchy comes from size).
+    doc.addFont("Geist-Regular.ttf", "Geist", "normal");
+    doc.addFont("Geist-Regular.ttf", "Geist", "bold");
+    FONT = "Geist";
+  }
   return { doc, autoTable: autoTableMod.default as unknown as AutoTable, y: M };
 }
 
 function header(ctx: Ctx, title: string, sub: string) {
-  ctx.doc.setFont("helvetica", "bold").setFontSize(20).setTextColor(29, 29, 31).text(pdfText(title), M, ctx.y + 6);
+  ctx.doc.setFont(FONT, "bold").setFontSize(20).setTextColor(29, 29, 31).text(pdfText(title), M, ctx.y + 6);
   ctx.y += 26;
   para(ctx, sub, 9, [110, 110, 115]);
   ctx.doc.setDrawColor(220, 220, 225).line(M, ctx.y, W - M, ctx.y);
@@ -109,7 +133,7 @@ function footer(doc: JsPDF) {
   const n = doc.getNumberOfPages();
   for (let p = 1; p <= n; p++) {
     doc.setPage(p);
-    doc.setFont("helvetica", "normal").setFontSize(8).setTextColor(140, 140, 145);
+    doc.setFont(FONT, "normal").setFontSize(8).setTextColor(140, 140, 145);
     doc.text(pdfText(`Pre-Flight Shipment Checker · estimates only · page ${p} of ${n}`), M, 825);
   }
 }

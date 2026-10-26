@@ -6,6 +6,7 @@ import ExcelJS from "exceljs";
 import * as XLSX from "xlsx";
 import * as C from "@/lib/calculations";
 import { BOOKING_COLUMNS, ITEM_COLUMNS, parseWorkbook } from "@/lib/parseExcel";
+import { csvLine, safeCell } from "@/lib/safeCell";
 
 const now = new Date("2026-10-26T10:00:00Z");
 const TEMPLATE = path.resolve(__dirname, "../data/Case2_Shipment_Booking_Test_Data_Format.xlsx");
@@ -109,5 +110,23 @@ describe("parseWorkbook", () => {
     const p = parseWorkbook(plainBook({ bookings: [BK_ROW, [null, null], ["BK-103"]] }), "x.xlsx");
     expect(p.bookings.map((b) => b.bookingId)).toEqual(["BK-101", "BK-103"]);
     expect(C.runFile(p.bookings, p.items, { now }).results[1].status).toBe("INCOMPLETE");
+  });
+});
+
+describe("parseWorkbook warnings and export safety", () => {
+  it("warns about formulas with no saved value and merged cells", () => {
+    const wb = XLSX.utils.book_new();
+    const b = XLSX.utils.aoa_to_sheet([[...BOOKING_COLUMNS], BK_ROW, ["BK-102", ...BK_ROW.slice(1)]]);
+    b["L2"] = { t: "n", f: "J2*1800" } as XLSX.CellObject; // declared value as a formula, never calculated
+    b["!merges"] = [XLSX.utils.decode_range("B2:B3")];
+    XLSX.utils.book_append_sheet(wb, b, "Bookings");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([[...ITEM_COLUMNS], IT_ROW]), "Items");
+    const p = parseWorkbook(new Uint8Array(XLSX.write(wb, { type: "array", bookType: "xlsx" })), "x.xlsx");
+    expect(p.notices.some((n) => n.level === "warning" && /formula with no saved value \(L2\)/.test(n.message))).toBe(true);
+    expect(p.notices.some((n) => n.level === "warning" && /merged cells \(B2:B3\)/.test(n.message))).toBe(true);
+  });
+  it("safeCell prefixes formula-like text with an apostrophe", () => {
+    expect(['=HYPERLINK("x")', "+44 20", "-5", "@SUM(A1)", "Acme"].map(safeCell)).toEqual(["'=HYPERLINK(\"x\")", "'+44 20", "'-5", "'@SUM(A1)", "Acme"]);
+    expect(csvLine(["=1+1", 'say "hi"'])).toBe('"\'=1+1","say ""hi"""');
   });
 });

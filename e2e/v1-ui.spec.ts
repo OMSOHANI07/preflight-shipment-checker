@@ -83,6 +83,11 @@ test.describe("[Upload] Files", () => {
     expect([8, 9]).toContain(red); // 9 when the AI confirms the Bluetooth speaker has a lithium battery
     await expect(page.getByText(/Checked against \d{2}-\d{2}-\d{4} \(UK date\)/)).toBeVisible();
   });
+  test("[Upload] 'Try edge cases' loads the 76-booking edge-case file", async ({ page }) => {
+    await page.goto("/");
+    await page.getByTestId("try-edge-cases").click();
+    await expect(page.getByTestId("summary").getByText("Total bookings").locator("..")).toContainText("76", { timeout: 40_000 });
+  });
   test("[Upload] file-level notices: grey example row skipped, orphan item (V-11)", async ({ page }) => {
     await loadSample(page);
     await expect(page.getByText(/Skipped the template's grey example row/)).toBeVisible();
@@ -186,7 +191,9 @@ test.describe("[Booking] Status rules and confirmation", () => {
     await loadSample(page);
     const card = await openCard(page, "BK-T13");
     await expect(card).toContainText("Pallets missing");
-    await expect(card.getByText("Not evaluable").first()).toBeVisible();
+    // A rule that can't be checked yet shows "—", never a tick
+    await expect(card.locator("tr", { hasText: "Weight per pallet" }).locator("td").last()).toHaveText(/—/);
+    await expect(card.locator("tr", { hasText: "Weight per pallet" })).not.toContainText("Pass");
     await expect(card.getByRole("button", { name: /Confirm booking/ })).toBeDisabled();
   });
   test("[Booking] AMBER: needs 'I understand these warnings' before confirming", async ({ page }) => {
@@ -238,6 +245,7 @@ test.describe("[Export] PDF and share link", () => {
     const buf = fs.readFileSync((await dl.path())!);
     expect(buf.subarray(0, 4).toString()).toBe("%PDF");
     expect(buf.length).toBeGreaterThan(10_000);
+    expect(buf.toString("latin1")).toMatch(/\/FontFile2/); // Unicode font embedded (£, é, ü, – print correctly)
   });
   test("[Export] full report PDF covers every booking", async ({ page }) => {
     await loadSample(page);

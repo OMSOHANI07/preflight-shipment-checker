@@ -73,7 +73,7 @@ function RuleTable({ results }: { results: Record<RuleId, "pass" | "fail" | "not
                 <td className={cx(cls, "w-32 px-3 py-2 text-right font-semibold")} style={{ color: "var(--sev-text)" }}>
                   <span className="inline-flex items-center gap-1">
                     {r === "pass" ? <Check size={14} aria-hidden /> : r === "fail" ? <X size={14} aria-hidden /> : <Minus size={14} aria-hidden />}
-                    {r === "pass" ? "Pass" : r === "fail" ? "Fail" : "Not evaluable"}
+                    {r === "pass" ? "Pass" : r === "fail" ? "Fail" : <><span aria-hidden>—</span><span className="sr-only">Not evaluable (missing information)</span></>}
                   </span>
                 </td>
               </tr>

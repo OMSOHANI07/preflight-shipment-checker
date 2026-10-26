@@ -5,8 +5,7 @@
       "/Users/omsohani/Documents/MESA/Projects/AI_X_Ops_Hackathon/node_modules/.bin/playwright",
       "test",
       "e2e/v1-ui.spec.ts",
-      "e2e/v1-api.spec.ts",
-      "e2e/smoke.spec.ts"
+      "e2e/edge-cases.spec.ts"
     ],
     "configFile": "/Users/omsohani/Documents/MESA/Projects/AI_X_Ops_Hackathon/playwright.config.ts",
     "rootDir": "/Users/omsohani/Documents/MESA/Projects/AI_X_Ops_Hackathon/e2e",
@@ -20,7 +19,7 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 3
+      "actualWorkers": 2
     },
     "preserveOutput": "always",
     "projects": [
@@ -29,7 +28,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 3
+          "actualWorkers": 2
         },
         "id": "chromium",
         "name": "chromium",
@@ -49,7 +48,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 3
+          "actualWorkers": 2
         },
         "name": "chromium",
         "testDir": "/Users/omsohani/Documents/MESA/Projects/AI_X_Ops_Hackathon/e2e",
@@ -112,62 +111,20 @@
   },
   "suites": [
     {
-      "title": "smoke.spec.ts",
-      "file": "smoke.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [
-        {
-          "title": "sample file → summary, RED card blocked, AMBER card needs acknowledgement",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "chromium",
-              "projectName": "chromium",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 5501,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-10-26T10:14:25.597Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "4219922fea2e2bd3c691-ecf724dd19ea1ee1aeec",
-          "file": "smoke.spec.ts",
-          "line": 7,
-          "column": 5
-        }
-      ]
-    },
-    {
-      "title": "v1-api.spec.ts",
-      "file": "v1-api.spec.ts",
+      "title": "edge-cases.spec.ts",
+      "file": "edge-cases.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "[API] Confirm enforces the status rules on the server",
-          "file": "v1-api.spec.ts",
-          "line": 16,
+          "title": "[Edge] Edge-case workbook in the browser",
+          "file": "edge-cases.spec.ts",
+          "line": 24,
           "column": 6,
           "specs": [
             {
-              "title": "[API] RED booking is refused (409)",
+              "title": "[Edge] summary: 76 bookings, grey row skipped, orphan EC-99 reported",
               "ok": true,
               "tags": [],
               "tests": [
@@ -179,15 +136,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 72,
+                      "duration": 7819,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:25.712Z",
+                      "startTime": "2026-10-26T10:30:04.018Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -195,13 +152,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "eafe29249fbbc1ed12de-a76d4972d3ae4e0b1266",
-              "file": "v1-api.spec.ts",
-              "line": 17,
+              "id": "db200a91ff2226597e25-55c1efd719b7f50c167f",
+              "file": "edge-cases.spec.ts",
+              "line": 25,
               "column": 7
             },
             {
-              "title": "[API] INCOMPLETE booking is refused (409)",
+              "title": "[Edge] HTML in a description is shown as text, never run",
               "ok": true,
               "tags": [],
               "tests": [
@@ -213,15 +170,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 7,
+                      "duration": 4461,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:25.802Z",
+                      "startTime": "2026-10-26T10:30:12.069Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -229,13 +186,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "eafe29249fbbc1ed12de-2bf59541f84ab9b60502",
-              "file": "v1-api.spec.ts",
-              "line": 21,
+              "id": "db200a91ff2226597e25-851021fb33fd035e90ff",
+              "file": "edge-cases.spec.ts",
+              "line": 37,
               "column": 7
             },
             {
-              "title": "[API] AMBER without acknowledgement is refused; with it, confirmed",
+              "title": "[Edge] prompt injection in a description doesn't change the result",
               "ok": true,
               "tags": [],
               "tests": [
@@ -247,15 +204,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 787,
+                      "duration": 4486,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:25.817Z",
+                      "startTime": "2026-10-26T10:30:16.533Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -263,123 +220,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "eafe29249fbbc1ed12de-04375560fdf3929c00cd",
-              "file": "v1-api.spec.ts",
-              "line": 24,
-              "column": 7
-            },
-            {
-              "title": "[API] saved RED booking can't be confirmed by claiming GREEN",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 479,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-26T10:14:26.608Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "eafe29249fbbc1ed12de-75997d032326292fbe21",
-              "file": "v1-api.spec.ts",
-              "line": 29,
-              "column": 7
-            },
-            {
-              "title": "[API] malformed request is rejected (400)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 3,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-26T10:14:27.090Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "eafe29249fbbc1ed12de-8920ffe0b90de1a74b77",
-              "file": "v1-api.spec.ts",
-              "line": 40,
-              "column": 7
-            }
-          ]
-        },
-        {
-          "title": "[API] Saving and sharing",
-          "file": "v1-api.spec.ts",
-          "line": 45,
-          "column": 6,
-          "specs": [
-            {
-              "title": "[API] upload is saved and the shared page shows it",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 1576,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-26T10:14:27.096Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "eafe29249fbbc1ed12de-58201fe0e1bd1454f109",
-              "file": "v1-api.spec.ts",
+              "id": "db200a91ff2226597e25-1700d209eba700418e8d",
+              "file": "edge-cases.spec.ts",
               "line": 46,
               "column": 7
             },
             {
-              "title": "[API] invalid upload body is rejected (400)",
+              "title": "[Edge] formula-looking seller name stays plain text",
               "ok": true,
               "tags": [],
               "tests": [
@@ -391,15 +238,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4,
+                      "duration": 4958,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:28.675Z",
+                      "startTime": "2026-10-26T10:30:21.023Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -407,21 +254,157 @@
                   "status": "expected"
                 }
               ],
-              "id": "eafe29249fbbc1ed12de-5bfd317e1aea4dca7888",
-              "file": "v1-api.spec.ts",
-              "line": 58,
+              "id": "db200a91ff2226597e25-9232718a456ddafd2a06",
+              "file": "edge-cases.spec.ts",
+              "line": 53,
+              "column": 7
+            },
+            {
+              "title": "[Edge] 25-item booking renders and confirms",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5831,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T10:30:25.983Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "db200a91ff2226597e25-f6ac87c8717788e7b109",
+              "file": "edge-cases.spec.ts",
+              "line": 59,
+              "column": 7
+            },
+            {
+              "title": "[Edge] fixed parsing cases show GREEN: date+time, decimal comma, float noise, ID case",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6616,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T10:30:31.818Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "db200a91ff2226597e25-05d9b1683dc3cd07731b",
+              "file": "edge-cases.spec.ts",
+              "line": 66,
+              "column": 7
+            },
+            {
+              "title": "[Edge] false-positive traps are not Red: perfume-free, lithium grease, SKU-only keyword",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4052,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T10:30:38.438Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "db200a91ff2226597e25-410f63a7c883cab0e134",
+              "file": "edge-cases.spec.ts",
+              "line": 73,
+              "column": 7
+            },
+            {
+              "title": "[Edge] understated gross weight shows tip A-10",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3076,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T10:30:42.493Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "db200a91ff2226597e25-941f3b95ac527ebed1e9",
+              "file": "edge-cases.spec.ts",
+              "line": 81,
               "column": 7
             }
           ]
         },
         {
-          "title": "[AI] Gemini routes with guardrails",
-          "file": "v1-api.spec.ts",
-          "line": 63,
+          "title": "[Edge] Clearer messages",
+          "file": "edge-cases.spec.ts",
+          "line": 90,
           "column": 6,
           "specs": [
             {
-              "title": "[AI] R-06 second opinion answers yes/no per item (or reports unavailable)",
+              "title": "[Edge] unreadable dates explain why (US order, impossible date)",
               "ok": true,
               "tags": [],
               "tests": [
@@ -433,15 +416,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2540,
+                      "duration": 4997,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:28.682Z",
+                      "startTime": "2026-10-26T10:30:45.572Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -449,13 +432,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "eafe29249fbbc1ed12de-a81c3f6f95f7b8fed92f",
-              "file": "v1-api.spec.ts",
-              "line": 64,
+              "id": "db200a91ff2226597e25-736923e39bce517f0281",
+              "file": "edge-cases.spec.ts",
+              "line": 91,
               "column": 7
             },
             {
-              "title": "[AI] R-06 with no items returns no verdicts; bad body is 400",
+              "title": "[Edge] scientific-notation HS code and all-zero HS code are explained",
               "ok": true,
               "tags": [],
               "tests": [
@@ -467,15 +450,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4,
+                      "duration": 4543,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:31.225Z",
+                      "startTime": "2026-10-26T10:30:50.572Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -483,13 +466,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "eafe29249fbbc1ed12de-b242f1c112c356eaf572",
-              "file": "v1-api.spec.ts",
-              "line": 74,
+              "id": "db200a91ff2226597e25-3cae549eae026cb13174",
+              "file": "edge-cases.spec.ts",
+              "line": 96,
               "column": 7
             },
             {
-              "title": "[AI] explanation uses only the engine's numbers, within the time-box",
+              "title": "[Edge] a 300-character description wraps instead of stretching the table",
               "ok": true,
               "tags": [],
               "tests": [
@@ -501,15 +484,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3457,
+                      "duration": 4466,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:31.233Z",
+                      "startTime": "2026-10-26T10:30:55.118Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -517,119 +500,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "eafe29249fbbc1ed12de-5ef8e0b486c8a9033f0c",
-              "file": "v1-api.spec.ts",
-              "line": 78,
-              "column": 7
-            },
-            {
-              "title": "[AI] blocked booking is explained as 'once the issues are fixed'",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 3213,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-26T10:14:34.693Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "eafe29249fbbc1ed12de-3cc26580029d4fded52d",
-              "file": "v1-api.spec.ts",
-              "line": 89,
-              "column": 7
-            },
-            {
-              "title": "[AI] bad explain body is rejected (400)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 3,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-26T10:14:37.909Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "eafe29249fbbc1ed12de-dd0ff1703127fb49fd6f",
-              "file": "v1-api.spec.ts",
-              "line": 94,
-              "column": 7
-            }
-          ]
-        },
-        {
-          "title": "[Security] Secrets stay on the server",
-          "file": "v1-api.spec.ts",
-          "line": 99,
-          "column": 6,
-          "specs": [
-            {
-              "title": "[Security] no API key or database URL in the page or its scripts",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 60000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "passed",
-                      "duration": 18,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-26T10:14:37.914Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "eafe29249fbbc1ed12de-6c40e66e35834bc62a68",
-              "file": "v1-api.spec.ts",
-              "line": 100,
+              "id": "db200a91ff2226597e25-86d974ad05f39ffe2dbd",
+              "file": "edge-cases.spec.ts",
+              "line": 103,
               "column": 7
             }
           ]
@@ -662,15 +535,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 150,
+                      "duration": 455,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:25.662Z",
+                      "startTime": "2026-10-26T10:30:04.139Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -696,15 +569,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 142,
+                      "duration": 318,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:25.895Z",
+                      "startTime": "2026-10-26T10:30:04.719Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -730,15 +603,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 173,
+                      "duration": 341,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:26.043Z",
+                      "startTime": "2026-10-26T10:30:05.045Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -764,15 +637,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 178,
+                      "duration": 346,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:26.219Z",
+                      "startTime": "2026-10-26T10:30:05.391Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -806,15 +679,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 5061,
+                      "duration": 5800,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:26.400Z",
+                      "startTime": "2026-10-26T10:30:05.742Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -825,6 +698,40 @@
               "id": "7e06c2cabfa700ebcb33-1f69386364085942b2b0",
               "file": "v1-ui.spec.ts",
               "line": 77,
+              "column": 7
+            },
+            {
+              "title": "[Upload] 'Try edge cases' loads the 76-booking edge-case file",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 5019,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T10:30:11.547Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7e06c2cabfa700ebcb33-98e20b8ba059d1928fba",
+              "file": "v1-ui.spec.ts",
+              "line": 86,
               "column": 7
             },
             {
@@ -840,15 +747,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3503,
+                      "duration": 3513,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:31.464Z",
+                      "startTime": "2026-10-26T10:30:16.570Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -858,7 +765,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-c7ca389bdc92fb0d89b2",
               "file": "v1-ui.spec.ts",
-              "line": 86,
+              "line": 91,
               "column": 7
             },
             {
@@ -874,15 +781,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 954,
+                      "duration": 972,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:34.971Z",
+                      "startTime": "2026-10-26T10:30:20.088Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -892,7 +799,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-f10dd44de7cffce87022",
               "file": "v1-ui.spec.ts",
-              "line": 91,
+              "line": 96,
               "column": 7
             },
             {
@@ -908,15 +815,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 900,
+                      "duration": 915,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:35.928Z",
+                      "startTime": "2026-10-26T10:30:21.065Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -926,7 +833,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-9c3f15703248759e2281",
               "file": "v1-ui.spec.ts",
-              "line": 100,
+              "line": 105,
               "column": 7
             },
             {
@@ -942,15 +849,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 914,
+                      "duration": 918,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:36.831Z",
+                      "startTime": "2026-10-26T10:30:21.984Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -960,7 +867,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-80b7a567ea399638e51a",
               "file": "v1-ui.spec.ts",
-              "line": 104,
+              "line": 109,
               "column": 7
             },
             {
@@ -976,15 +883,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 1654,
+                      "duration": 1659,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:37.748Z",
+                      "startTime": "2026-10-26T10:30:22.905Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -994,7 +901,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-51d2425d693ec9014a93",
               "file": "v1-ui.spec.ts",
-              "line": 110,
+              "line": 115,
               "column": 7
             }
           ]
@@ -1002,7 +909,7 @@
         {
           "title": "[Results] Summary, filters and cards",
           "file": "v1-ui.spec.ts",
-          "line": 121,
+          "line": 126,
           "column": 6,
           "specs": [
             {
@@ -1018,15 +925,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 2491,
+                      "duration": 3507,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:39.406Z",
+                      "startTime": "2026-10-26T10:30:24.567Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1036,7 +943,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-2557f37f7d0a1ebeaefe",
               "file": "v1-ui.spec.ts",
-              "line": 122,
+              "line": 127,
               "column": 7
             },
             {
@@ -1052,15 +959,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3527,
+                      "duration": 3748,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:41.901Z",
+                      "startTime": "2026-10-26T10:30:28.078Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1070,7 +977,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-f832a7b4394e067fe178",
               "file": "v1-ui.spec.ts",
-              "line": 126,
+              "line": 131,
               "column": 7
             },
             {
@@ -1086,15 +993,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3004,
+                      "duration": 3013,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:45.431Z",
+                      "startTime": "2026-10-26T10:30:31.830Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1104,7 +1011,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-c8364ea472e0cfa4858c",
               "file": "v1-ui.spec.ts",
-              "line": 132,
+              "line": 137,
               "column": 7
             },
             {
@@ -1120,15 +1027,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3997,
+                      "duration": 2996,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:48.438Z",
+                      "startTime": "2026-10-26T10:30:34.845Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1138,7 +1045,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-c1bb43f11ee15dc378b6",
               "file": "v1-ui.spec.ts",
-              "line": 139,
+              "line": 144,
               "column": 7
             },
             {
@@ -1154,15 +1061,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3768,
+                      "duration": 3551,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:52.437Z",
+                      "startTime": "2026-10-26T10:30:37.844Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1172,7 +1079,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-b0db830200ae0ca5fdb8",
               "file": "v1-ui.spec.ts",
-              "line": 145,
+              "line": 150,
               "column": 7
             },
             {
@@ -1188,15 +1095,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3878,
+                      "duration": 3754,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:14:56.208Z",
+                      "startTime": "2026-10-26T10:30:41.398Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1206,7 +1113,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-64d7a5313818e29c7d7c",
               "file": "v1-ui.spec.ts",
-              "line": 153,
+              "line": 158,
               "column": 7
             },
             {
@@ -1222,15 +1129,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3386,
+                      "duration": 3546,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:00.089Z",
+                      "startTime": "2026-10-26T10:30:45.156Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1240,7 +1147,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-1a52bf721072a99cfcc7",
               "file": "v1-ui.spec.ts",
-              "line": 160,
+              "line": 165,
               "column": 7
             },
             {
@@ -1256,15 +1163,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 4097,
+                      "duration": 3084,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:03.478Z",
+                      "startTime": "2026-10-26T10:30:48.707Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1274,7 +1181,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-4543c2c097e091a27739",
               "file": "v1-ui.spec.ts",
-              "line": 165,
+              "line": 170,
               "column": 7
             }
           ]
@@ -1282,7 +1189,7 @@
         {
           "title": "[Booking] Status rules and confirmation",
           "file": "v1-ui.spec.ts",
-          "line": 176,
+          "line": 181,
           "column": 6,
           "specs": [
             {
@@ -1298,15 +1205,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3547,
+                      "duration": 3086,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:07.578Z",
+                      "startTime": "2026-10-26T10:30:51.795Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1316,7 +1223,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-c50c9008ff6ee9f8678c",
               "file": "v1-ui.spec.ts",
-              "line": 177,
+              "line": 182,
               "column": 7
             },
             {
@@ -1332,15 +1239,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3576,
+                      "duration": 3418,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:11.128Z",
+                      "startTime": "2026-10-26T10:30:54.884Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1350,7 +1257,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-b92de1af72eae9a9c723",
               "file": "v1-ui.spec.ts",
-              "line": 185,
+              "line": 190,
               "column": 7
             },
             {
@@ -1366,15 +1273,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 6246,
+                      "duration": 6482,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:14.706Z",
+                      "startTime": "2026-10-26T10:30:58.305Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1384,7 +1291,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-37d76bcdf8e6a13a932f",
               "file": "v1-ui.spec.ts",
-              "line": 192,
+              "line": 199,
               "column": 7
             },
             {
@@ -1400,15 +1307,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3892,
+                      "duration": 5431,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:20.956Z",
+                      "startTime": "2026-10-26T10:31:04.792Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1418,7 +1325,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-996e069fd22e61306f9f",
               "file": "v1-ui.spec.ts",
-              "line": 201,
+              "line": 208,
               "column": 7
             },
             {
@@ -1434,15 +1341,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3558,
+                      "duration": 3409,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:24.852Z",
+                      "startTime": "2026-10-26T10:31:10.229Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1452,7 +1359,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-e9bbdffc1281042318f1",
               "file": "v1-ui.spec.ts",
-              "line": 207,
+              "line": 214,
               "column": 7
             },
             {
@@ -1468,15 +1375,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3568,
+                      "duration": 3577,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:28.413Z",
+                      "startTime": "2026-10-26T10:31:13.643Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1486,7 +1393,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-778b5e93b9472aa5b1c9",
               "file": "v1-ui.spec.ts",
-              "line": 215,
+              "line": 222,
               "column": 7
             },
             {
@@ -1502,15 +1409,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3810,
+                      "duration": 3080,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:31.985Z",
+                      "startTime": "2026-10-26T10:31:17.223Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1520,7 +1427,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-8eedfbf6faf838b53af3",
               "file": "v1-ui.spec.ts",
-              "line": 222,
+              "line": 229,
               "column": 7
             }
           ]
@@ -1528,7 +1435,7 @@
         {
           "title": "[Export] PDF and share link",
           "file": "v1-ui.spec.ts",
-          "line": 232,
+          "line": 239,
           "column": 6,
           "specs": [
             {
@@ -1544,15 +1451,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 4161,
+                      "duration": 4572,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:35.798Z",
+                      "startTime": "2026-10-26T10:31:20.306Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1562,7 +1469,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-a871deb734cb6c9087bf",
               "file": "v1-ui.spec.ts",
-              "line": 233,
+              "line": 240,
               "column": 7
             },
             {
@@ -1578,15 +1485,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3145,
+                      "duration": 3844,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:39.961Z",
+                      "startTime": "2026-10-26T10:31:24.881Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1596,7 +1503,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-dae8de09a0d42fb7764b",
               "file": "v1-ui.spec.ts",
-              "line": 242,
+              "line": 250,
               "column": 7
             },
             {
@@ -1612,15 +1519,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 6950,
+                      "duration": 7436,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:43.109Z",
+                      "startTime": "2026-10-26T10:31:28.728Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1630,7 +1537,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-2266fd90e0c3814e09a7",
               "file": "v1-ui.spec.ts",
-              "line": 249,
+              "line": 257,
               "column": 7
             },
             {
@@ -1646,15 +1553,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 342,
+                      "duration": 370,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:50.063Z",
+                      "startTime": "2026-10-26T10:31:36.167Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1664,7 +1571,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-3c3f17a067a88da52f1e",
               "file": "v1-ui.spec.ts",
-              "line": 263,
+              "line": 271,
               "column": 7
             }
           ]
@@ -1672,7 +1579,7 @@
         {
           "title": "[Quality] Responsive, themes, accessibility",
           "file": "v1-ui.spec.ts",
-          "line": 269,
+          "line": 277,
           "column": 6,
           "specs": [
             {
@@ -1688,15 +1595,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3413,
+                      "duration": 4938,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:50.409Z",
+                      "startTime": "2026-10-26T10:31:36.541Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1706,7 +1613,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-1d347163c1c47e793fa5",
               "file": "v1-ui.spec.ts",
-              "line": 270,
+              "line": 278,
               "column": 7
             },
             {
@@ -1722,15 +1629,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 104,
+                      "duration": 120,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:53.825Z",
+                      "startTime": "2026-10-26T10:31:41.482Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1740,7 +1647,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-02d4da70b5e979d63b15",
               "file": "v1-ui.spec.ts",
-              "line": 279,
+              "line": 287,
               "column": 7
             },
             {
@@ -1756,15 +1663,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3087,
+                      "duration": 2781,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:53.933Z",
+                      "startTime": "2026-10-26T10:31:41.605Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1774,7 +1681,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-46564450fc8517842d4e",
               "file": "v1-ui.spec.ts",
-              "line": 286,
+              "line": 294,
               "column": 7
             },
             {
@@ -1790,15 +1697,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
                       "duration": 3507,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:15:57.023Z",
+                      "startTime": "2026-10-26T10:31:44.388Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1808,7 +1715,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-5e7af46ce396066f5e85",
               "file": "v1-ui.spec.ts",
-              "line": 291,
+              "line": 299,
               "column": 7
             },
             {
@@ -1824,15 +1731,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 608,
+                      "duration": 634,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:16:00.533Z",
+                      "startTime": "2026-10-26T10:31:47.899Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1842,7 +1749,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-3d12b7b19be1f5dc36eb",
               "file": "v1-ui.spec.ts",
-              "line": 298,
+              "line": 306,
               "column": 7
             },
             {
@@ -1858,15 +1765,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "passed",
-                      "duration": 3715,
+                      "duration": 3490,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:16:01.143Z",
+                      "startTime": "2026-10-26T10:31:48.536Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -1876,7 +1783,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-9d570f81b56004003210",
               "file": "v1-ui.spec.ts",
-              "line": 307,
+              "line": 315,
               "column": 7
             }
           ]
@@ -1884,7 +1791,7 @@
         {
           "title": "[Resilience] Database and AI unavailable",
           "file": "v1-ui.spec.ts",
-          "line": 317,
+          "line": 325,
           "column": 6,
           "specs": [
             {
@@ -1900,7 +1807,7 @@
                       "description": "only in the no-database run",
                       "location": {
                         "file": "/Users/omsohani/Documents/MESA/Projects/AI_X_Ops_Hackathon/e2e/v1-ui.spec.ts",
-                        "line": 319,
+                        "line": 327,
                         "column": 10
                       }
                     }
@@ -1910,22 +1817,22 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "skipped",
                       "duration": 26,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:16:04.861Z",
+                      "startTime": "2026-10-26T10:31:52.029Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "only in the no-database run",
                           "location": {
                             "file": "/Users/omsohani/Documents/MESA/Projects/AI_X_Ops_Hackathon/e2e/v1-ui.spec.ts",
-                            "line": 319,
+                            "line": 327,
                             "column": 10
                           }
                         }
@@ -1938,7 +1845,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-cf63c5951b54a723dff1",
               "file": "v1-ui.spec.ts",
-              "line": 318,
+              "line": 326,
               "column": 7
             },
             {
@@ -1954,7 +1861,7 @@
                       "description": "only in the no-AI run",
                       "location": {
                         "file": "/Users/omsohani/Documents/MESA/Projects/AI_X_Ops_Hackathon/e2e/v1-ui.spec.ts",
-                        "line": 331,
+                        "line": 339,
                         "column": 10
                       }
                     }
@@ -1964,22 +1871,22 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "skipped",
-                      "duration": 23,
+                      "duration": 25,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-26T10:16:04.890Z",
+                      "startTime": "2026-10-26T10:31:52.058Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "only in the no-AI run",
                           "location": {
                             "file": "/Users/omsohani/Documents/MESA/Projects/AI_X_Ops_Hackathon/e2e/v1-ui.spec.ts",
-                            "line": 331,
+                            "line": 339,
                             "column": 10
                           }
                         }
@@ -1992,7 +1899,7 @@
               ],
               "id": "7e06c2cabfa700ebcb33-3aa686da39144785cec0",
               "file": "v1-ui.spec.ts",
-              "line": 330,
+              "line": 338,
               "column": 7
             }
           ]
@@ -2002,9 +1909,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-26T10:14:24.859Z",
-    "duration": 100132.515,
-    "expected": 49,
+    "startTime": "2026-10-26T10:30:03.131Z",
+    "duration": 109023.758,
+    "expected": 47,
     "skipped": 2,
     "unexpected": 0,
     "flaky": 0

@@ -71,11 +71,15 @@ interface SheetRead {
   rows: RawRow[];
   exampleRow: RawRow | null;
   headerFound: boolean;
+  /** Cells like "Bookings!H7" that hold a formula with no saved value (shown blank). */
+  uncachedFormulas: string[];
+  /** Merged ranges inside the data area, e.g. "A5:A6". */
+  mergedRanges: string[];
 }
 
 function readSheet(ws: XLSX.WorkSheet): SheetRead {
   const ref = ws["!ref"];
-  if (!ref) return { headers: [], rows: [], exampleRow: null, headerFound: false };
+  if (!ref) return { headers: [], rows: [], exampleRow: null, headerFound: false, uncachedFormulas: [], mergedRanges: [] };
   const range = XLSX.utils.decode_range(ref);
   const cell = (r: number, c: number) => ws[XLSX.utils.encode_cell({ r, c })] as XLSX.CellObject | undefined;
 
@@ -84,7 +88,7 @@ function readSheet(ws: XLSX.WorkSheet): SheetRead {
   for (let r = range.s.r; r <= Math.min(range.e.r, range.s.r + 20) && headerRow < 0; r++) {
     for (let c = range.s.c; c <= range.e.c; c++) if (norm(cell(r, c)?.v) === "booking id") { headerRow = r; break; }
   }
-  if (headerRow < 0) return { headers: [], rows: [], exampleRow: null, headerFound: false };
+  if (headerRow < 0) return { headers: [], rows: [], exampleRow: null, headerFound: false, uncachedFormulas: [], mergedRanges: [] };
 
   const cols: { c: number; header: string }[] = [];
   for (let c = range.s.c; c <= range.e.c; c++) {
@@ -95,12 +99,15 @@ function readSheet(ws: XLSX.WorkSheet): SheetRead {
 
   const rows: RawRow[] = [];
   let exampleRow: RawRow | null = null;
+  const uncachedFormulas: string[] = [];
+  const mergedRanges = (ws["!merges"] ?? []).filter((m) => m.e.r > headerRow).map((m) => XLSX.utils.encode_range(m));
   for (let r = headerRow + 1; r <= range.e.r; r++) {
     const values: Record<string, CellValue> = {};
     const display: Record<string, string> = {};
     let any = false;
     for (const { c, header } of cols) {
       const ce = cell(r, c);
+      if (ce?.f && ce.v == null) uncachedFormulas.push(XLSX.utils.encode_cell({ r, c }));
       let v: CellValue = ce == null || ce.v == null ? null : (ce.v as CellValue);
       if (typeof v === "string" && v.trim() === "") v = null;
       if (v != null) any = true;
@@ -113,7 +120,7 @@ function readSheet(ws: XLSX.WorkSheet): SheetRead {
     if (r === headerRow + 1 && isGreyFill(cell(r, idCol))) { exampleRow = row; continue; }
     rows.push(row);
   }
-  return { headers: cols.map((x) => x.header), rows, exampleRow, headerFound: true };
+  return { headers: cols.map((x) => x.header), rows, exampleRow, headerFound: true, uncachedFormulas, mergedRanges };
 }
 
 function findSheet(wb: XLSX.WorkBook, name: string): string | null {
@@ -135,7 +142,7 @@ export function parseWorkbook(data: ArrayBuffer | Uint8Array, fileName = "upload
   let wb: XLSX.WorkBook;
   try {
     // Raw values only: dates stay as Excel serial numbers / text, HS codes stay as typed.
-    wb = XLSX.read(data, { type: "array", cellStyles: true, cellDates: false, cellNF: false });
+    wb = XLSX.read(data, { type: "array", cellStyles: true, cellDates: false, cellNF: false, cellFormula: true });
   } catch {
     return { ...empty, fatal: "We couldn't read this file. Make sure it's a real Excel workbook (.xlsx or .xls) and not password-protected." };
   }
@@ -155,6 +162,13 @@ export function parseWorkbook(data: ArrayBuffer | Uint8Array, fileName = "upload
   if (!b.headerFound) return { ...empty, notices, fatal: `No header row with "Booking ID" was found on the "${bName}" sheet. Use the template's column headings.` };
   if (!it.headerFound) return { ...empty, notices, fatal: `No header row with "Booking ID" was found on the "${iName}" sheet. Use the template's column headings.` };
 
+  const list = (xs: string[]) => xs.slice(0, 6).join(", ") + (xs.length > 6 ? ` and ${xs.length - 6} more` : "");
+  for (const [name, sheet] of [[bName, b], [iName, it]] as const) {
+    if (sheet.uncachedFormulas.length)
+      notices.push({ level: "warning", message: `${name}: ${sheet.uncachedFormulas.length} cell(s) contain a formula with no saved value (${list(sheet.uncachedFormulas)}), so they read as blank. Open the file in Excel, let it recalculate, save, and upload again — or paste the values.` });
+    if (sheet.mergedRanges.length)
+      notices.push({ level: "warning", message: `${name}: merged cells (${list(sheet.mergedRanges)}). Only the first cell of a merge holds the value, so the other rows read as blank. Unmerge them and fill every row.` });
+  }
   const mb = missingColumns(b.headers, BOOKING_COLUMNS);
   const mi = missingColumns(it.headers, ITEM_COLUMNS);
   if (mb.length) notices.push({ level: "error", message: `Column not found on the Bookings sheet: ${mb.join(", ")}. Every booking will show these fields as missing (V-02).` });
