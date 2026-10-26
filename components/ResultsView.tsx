@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, FileDown, Info, Link2, Search, Sparkles, TriangleAlert } from "lucide-react";
+import { AlertCircle, FileSpreadsheet, Info, Link2, Search, Sparkles, TriangleAlert } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { formatDDMMYYYY, RULES, type BookingStatus, type RuleId } from "@/lib/calculations";
 import { useExplanations } from "@/lib/useExplanations";
@@ -54,11 +54,11 @@ export function ResultsView({ file, saveState }: { file: CheckedFile; saveState:
   const aiCount = file.views.filter((v, i) => explanations.get(v.booking.bookingId + "#" + i)?.source === "ai").length;
   const maxFail = Math.max(1, ...Object.values(s.ruleFailCounts));
 
-  async function fullPdf() {
+  async function correctedExcel() {
     setPdfBusy(true);
     try {
-      const { downloadFullReportPdf } = await import("@/lib/pdf");
-      await downloadFullReportPdf(file, (v, i) => explanations.get(v.booking.bookingId + "#" + i)!);
+      const { downloadCorrectedExcel } = await import("@/lib/workbook");
+      await downloadCorrectedExcel(file.views, `Corrected_${file.fileName.replace(/\.xlsx?$/i, "").replace(/[^\w.-]+/g, "_") || "bookings"}.xlsx`);
     } finally { setPdfBusy(false); }
   }
   async function copyLink() {
@@ -102,10 +102,10 @@ export function ResultsView({ file, saveState }: { file: CheckedFile; saveState:
             <p className="text-[14px] text-muted">{file.fileName} · Checked against {checked} (UK date)</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className="btn btn-ghost btn-sm" onClick={fullPdf} disabled={pdfBusy}><FileDown size={15} aria-hidden />{pdfBusy ? "Preparing…" : "Full report PDF"}</button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={correctedExcel} disabled={pdfBusy} data-testid="download-all-xlsx"><FileSpreadsheet size={15} aria-hidden />{pdfBusy ? "Preparing…" : "Corrected Excel (all bookings)"}</button>
             <span className={cx(!file.uploadId && "tip")}>
               <button type="button" className="btn btn-ghost btn-sm" onClick={copyLink} disabled={!file.uploadId}><Link2 size={15} aria-hidden />{copied ? "Link copied" : "Copy results link"}</button>
-              {!file.uploadId && <span role="tooltip" className="tip-body">{saveState === "saving" ? "Saving…" : "The database isn't reachable, so there's no shareable link. Use the PDF instead."}</span>}
+              {!file.uploadId && <span role="tooltip" className="tip-body">{saveState === "saving" ? "Saving…" : "The database isn't reachable, so there's no shareable link. Use the corrected Excel instead."}</span>}
             </span>
           </div>
         </div>

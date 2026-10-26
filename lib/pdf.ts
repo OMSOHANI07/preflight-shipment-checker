@@ -1,14 +1,12 @@
 /**
- * PDF export (jsPDF + autotable), loaded on demand in the browser.
- * Per booking: status, confirmation, next steps, issues, rule table, recommendation, invoice checklist.
- * Full report: summary + every booking.
+ * Purchase order PDF (jsPDF + autotable), loaded on demand in the browser — one per booking.
+ * Buyer = the seller; supplier = the recommended carrier. Goods lines, freight charge, totals and a
+ * status banner (a booking that can't ship yet is marked DRAFT). No rules or checker output in here:
+ * the seller gets that in the corrected Excel.
  */
 import type { jsPDF as JsPDF } from "jspdf";
-import { formatDDMMYYYY, gbp, RULES, type RuleId } from "@/lib/calculations";
-import { invoiceChecklist, longDate, nextSteps } from "@/lib/explain";
-import type { Explanation } from "@/lib/schema";
-import type { BookingView, CheckedFile } from "@/lib/types";
-import { SEVERITY_LABEL, STATUS_LABEL, STATUS_MEANING } from "@/lib/ui";
+import { formatDDMMYYYY, gbp, isNum, round, weekdayName } from "@/lib/calculations";
+import type { BookingView } from "@/lib/types";
 
 /**
  * Text goes into the PDF in an embedded Unicode font (Geist, OFL — public/fonts/Geist-Regular.ttf), so
@@ -33,7 +31,6 @@ function loadFont(): Promise<string | null> {
   return fontB64;
 }
 
-const STATUS_RGB: Record<string, [number, number, number]> = { RED: [215, 0, 21], INCOMPLETE: [99, 99, 102], AMBER: [122, 92, 0], GREEN: [31, 122, 53] };
 
 type AutoTable = (doc: JsPDF, opts: Record<string, unknown>) => void;
 interface Ctx { doc: JsPDF; autoTable: AutoTable; y: number }
@@ -65,48 +62,6 @@ function table(ctx: Ctx, head: string[], body: string[][], widths?: number[]) {
   ctx.y = lastY(ctx.doc) + 16;
 }
 
-function bookingSection(ctx: Ctx, v: BookingView, ex: Explanation) {
-  const { booking: b, result: r } = v;
-  const rec = r.recommendation;
-  heading(ctx, `${b.bookingId || "(no ID)"} · ${b.sellerName ?? "—"}`, 16);
-  ctx.doc.setFont(FONT, "bold").setFontSize(11).setTextColor(...STATUS_RGB[r.status]);
-  ctx.doc.text(pdfText(`${STATUS_LABEL[r.status]} — ${STATUS_MEANING[r.status]}`), M, ctx.y);
-  ctx.y += 16;
-  para(ctx, `${b.originCity ?? "—"} → ${b.destinationCity ?? "—"} (${b.destinationCountry ?? "—"}) · ${b.destinationType ?? "—"} · priority ${b.sellerPriority ?? "—"} · checked against ${formatDDMMYYYY(r.checkedAgainstDate)}`, 9, [110, 110, 115]);
-
-  heading(ctx, "Confirmation");
-  para(ctx, ex.confirmation);
-  heading(ctx, "What happens next");
-  nextSteps(b, r).forEach((s, i) => para(ctx, `${i + 1}. ${s}`));
-
-  const main = r.issues.filter((i) => i.severity !== "Advisory");
-  heading(ctx, main.length ? `Issues (${main.length})` : "Issues");
-  if (main.length) {
-    table(ctx, ["Rule", "Type", "What is wrong", "How to fix"],
-      main.map((i) => [i.code, SEVERITY_LABEL[i.severity], i.whatIsWrong, i.howToFix.map((f) => `• ${f}`).join("\n")]), [40, 50, 200, 224]);
-  } else para(ctx, "No problems found against the 10 rules.");
-
-  heading(ctx, "Rule results");
-  table(ctx, ["Rule", "Check", "Result"], (Object.keys(RULES) as RuleId[]).map((id) => [id, RULES[id].text, r.ruleResults[id] === "not_evaluable" ? "not evaluable" : r.ruleResults[id]]), [40, 394, 80]);
-
-  heading(ctx, `Carrier — ${rec.label}`);
-  if (rec.recommended) {
-    const best = rec.recommended;
-    para(ctx, `${best.carrier.carrier} ${best.carrier.service}: ${gbp(best.cost)} · ${best.carrier.transitDays} working days · ${best.carrier.onTimePct}% on time · collection ${longDate(best.collectionDate)} · estimated delivery ${longDate(best.etaDate)}.`, 10, [29, 29, 31]);
-  }
-  para(ctx, [ex.reason, ex.tradeoff, ex.caveat].filter(Boolean).join(" "));
-  table(ctx, ["Option", "Cost", "Transit", "On time", "Max kg/pallet", "Est. delivery", "Eligible"],
-    rec.allOptions.map((e) => [`${e.carrier.carrier} ${e.carrier.service}`, gbp(e.cost), `${e.carrier.transitDays} days`, `${e.carrier.onTimePct}%`, `${e.carrier.maxKgPerPallet}`, formatDDMMYYYY(e.etaDate), e.eligible ? "Yes" : `No — ${e.ineligibleReasons.join("; ")}`]));
-
-  const tips = r.issues.filter((i) => i.severity === "Advisory" && i.code !== "A-08");
-  if (tips.length) {
-    heading(ctx, "Tips (UK export guidance)");
-    tips.forEach((t) => para(ctx, `${t.code} ${t.title}: ${t.whatIsWrong}`, 9));
-  }
-  heading(ctx, "Commercial invoice checklist (A-08)");
-  table(ctx, ["Invoice element", "Status", "Detail"], invoiceChecklist(b, v.items, r).map((c) => [c.element, c.status, c.detail]), [170, 55, 289]);
-}
-
 async function newDoc(): Promise<Ctx> {
   const [{ jsPDF }, autoTableMod, font] = await Promise.all([import("jspdf"), import("jspdf-autotable"), loadFont()]);
   const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -121,48 +76,126 @@ async function newDoc(): Promise<Ctx> {
   return { doc, autoTable: autoTableMod.default as unknown as AutoTable, y: M };
 }
 
-function header(ctx: Ctx, title: string, sub: string) {
-  ctx.doc.setFont(FONT, "bold").setFontSize(20).setTextColor(29, 29, 31).text(pdfText(title), M, ctx.y + 6);
-  ctx.y += 26;
-  para(ctx, sub, 9, [110, 110, 115]);
-  ctx.doc.setDrawColor(220, 220, 225).line(M, ctx.y, W - M, ctx.y);
-  ctx.y += 18;
+const INK: [number, number, number] = [29, 29, 31], GREY: [number, number, number] = [110, 110, 115];
+const BANNER: Record<string, { fill: [number, number, number]; ink: [number, number, number] }> = {
+  RED: { fill: [255, 228, 226], ink: [180, 20, 20] }, INCOMPLETE: { fill: [235, 235, 238], ink: [70, 70, 75] },
+  AMBER: { fill: [255, 243, 176], ink: [110, 82, 0] }, GREEN: { fill: [216, 245, 223], ink: [25, 105, 45] },
+};
+/** "HS code missing" stays as is; "Pallets too heavy" → "pallets too heavy" mid-sentence. */
+const midSentence = (t: string) => (/^[A-Z]{2}/.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1));
+const longDay = (iso: string | null | undefined) => (iso ? `${weekdayName(iso)} ${formatDDMMYYYY(iso)}` : "—");
+const safeName = (s: string) => s.replace(/[^\w.-]+/g, "_").slice(0, 60) || "booking";
+
+function box(ctx: Ctx, x: number, w: number, title: string, lines: string[]) {
+  const h = 22 + lines.length * 13;
+  ctx.doc.setDrawColor(225, 225, 230).roundedRect(x, ctx.y, w, h, 6, 6);
+  ctx.doc.setFont(FONT, "bold").setFontSize(8).setTextColor(...GREY).text(pdfText(title.toUpperCase()), x + 10, ctx.y + 14);
+  ctx.doc.setFont(FONT, "normal").setFontSize(10).setTextColor(...INK);
+  lines.forEach((l, i) => ctx.doc.text(pdfText(l), x + 10, ctx.y + 29 + i * 13));
+  return h;
 }
 
-function footer(doc: JsPDF) {
+function footer(doc: JsPDF, po: string) {
   const n = doc.getNumberOfPages();
   for (let p = 1; p <= n; p++) {
     doc.setPage(p);
     doc.setFont(FONT, "normal").setFontSize(8).setTextColor(140, 140, 145);
-    doc.text(pdfText(`Pre-Flight Shipment Checker · estimates only · page ${p} of ${n}`), M, 825);
+    doc.text(pdfText(`Ship Eazy · ${po} · prices and dates are estimates from the carrier rate card · page ${p} of ${n}`), M, 825);
   }
 }
 
-const safeName = (s: string) => s.replace(/[^\w.-]+/g, "_").slice(0, 60) || "booking";
-
-export async function downloadBookingPdf(v: BookingView, ex: Explanation) {
-  const ctx = await newDoc();
-  header(ctx, "Pre-Flight booking report", `Booking ${v.booking.bookingId} · generated ${new Date().toLocaleString("en-GB", { timeZone: "Europe/London" })} (UK time)`);
-  bookingSection(ctx, v, ex);
-  footer(ctx.doc);
-  ctx.doc.save(`preflight-${safeName(v.booking.bookingId)}.pdf`);
+/** The purchase order for one booking. `reference` = the confirmation reference once booked. */
+export async function downloadPurchaseOrder(v: BookingView, reference?: string | null) {
+  const { doc, fileName } = await buildPurchaseOrder(v, reference);
+  doc.save(fileName);
 }
 
-export async function downloadFullReportPdf(file: CheckedFile, explanationFor: (v: BookingView, i: number) => Explanation) {
+export async function buildPurchaseOrder(v: BookingView, reference?: string | null): Promise<{ doc: JsPDF; fileName: string; po: string }> {
   const ctx = await newDoc();
-  const s = file.summary;
-  header(ctx, "Pre-Flight full report", `${file.fileName} · ${s.total} bookings · checked against ${formatDDMMYYYY(file.views[0]?.result.checkedAgainstDate ?? null)}`);
-  table(ctx, ["Total", STATUS_LABEL.RED, STATUS_LABEL.INCOMPLETE, STATUS_LABEL.AMBER, STATUS_LABEL.GREEN], [[String(s.total), String(s.red), String(s.incomplete), String(s.amber), String(s.green)]]);
-  table(ctx, ["Rule", "Bookings failing"], (Object.keys(RULES) as RuleId[]).map((id) => [`${id} ${RULES[id].text}`, String(s.ruleFailCounts[id] ?? 0)]), [430, 84]);
-  if (file.fileIssues.length) {
-    heading(ctx, "File-level problems");
-    file.fileIssues.forEach((i) => para(ctx, `${i.code}: ${i.whatIsWrong} ${i.howToFix.join(" ")}`));
-  }
-  table(ctx, ["Booking", "Seller", "Status", "Carrier", "Cost", "Est. delivery"], file.views.map((v) => {
-    const best = v.result.recommendation.recommended;
-    return [v.booking.bookingId, v.booking.sellerName ?? "—", STATUS_LABEL[v.result.status], best ? `${best.carrier.carrier} ${best.carrier.service}` : "No carrier fits", gbp(best?.cost), formatDDMMYYYY(best?.etaDate ?? null)];
-  }));
-  file.views.forEach((v, i) => { ctx.doc.addPage(); ctx.y = M; bookingSection(ctx, v, explanationFor(v, i)); });
-  footer(ctx.doc);
-  ctx.doc.save(`preflight-report-${safeName(file.fileName.replace(/\.xlsx?$/i, ""))}.pdf`);
+  const { doc } = ctx;
+  const { booking: b, items, result: r } = v;
+  const best = r.recommendation.recommended;
+  const po = reference ? `PO-${reference.replace(/^PF-/, "")}` : `PO-${safeName(b.bookingId || "DRAFT").toUpperCase()}`;
+  const issued = new Date().toLocaleDateString("en-GB", { timeZone: "Europe/London" }).replace(/\//g, "-");
+
+  // title block
+  doc.setFont(FONT, "bold").setFontSize(18).setTextColor(...INK).text("Ship Eazy", M, ctx.y + 8);
+  doc.setFont(FONT, "normal").setFontSize(9).setTextColor(...GREY).text(pdfText("Road freight, UK → Europe"), M, ctx.y + 22);
+  doc.setFont(FONT, "bold").setFontSize(22).setTextColor(...INK).text("PURCHASE ORDER", W - M, ctx.y + 10, { align: "right" });
+  doc.setFont(FONT, "normal").setFontSize(10).setTextColor(...GREY);
+  doc.text(pdfText(`PO number: ${po}`), W - M, ctx.y + 26, { align: "right" });
+  doc.text(pdfText(`Date issued: ${issued}`), W - M, ctx.y + 39, { align: "right" });
+  if (reference) doc.text(pdfText(`Booking reference: ${reference}`), W - M, ctx.y + 52, { align: "right" });
+  ctx.y += reference ? 66 : 56;
+
+  // status banner
+  const blocking = r.issues.filter((i) => i.severity === "Red" || i.severity === "Data");
+  const yellow = r.issues.filter((i) => i.severity === "Amber");
+  const bannerText = r.status === "RED" || r.status === "INCOMPLETE"
+    ? `DRAFT — not ready to ship. ${blocking.length} thing${blocking.length === 1 ? "" : "s"} must be fixed first: ${blocking.slice(0, 3).map((i) => midSentence(i.title)).join("; ")}${blocking.length > 3 ? "; …" : ""}.`
+    : r.status === "AMBER"
+      ? `Ready to ship — but check first: ${yellow.map((i) => midSentence(i.title)).join("; ")}.`
+      : "Ready to ship — every check passed.";
+  const c = BANNER[r.status];
+  const bl = doc.setFont(FONT, "bold").setFontSize(10).splitTextToSize(pdfText(bannerText), W - 2 * M - 20) as string[];
+  doc.setFillColor(...c.fill).roundedRect(M, ctx.y, W - 2 * M, 14 + bl.length * 13, 6, 6, "F");
+  doc.setTextColor(...c.ink);
+  bl.forEach((l, i) => doc.text(l, M + 10, ctx.y + 16 + i * 13));
+  ctx.y += 26 + bl.length * 13;
+
+  // parties
+  const half = (W - 2 * M - 12) / 2;
+  const h1 = box(ctx, M, half, "Buyer (shipper)", [b.sellerName ?? "—", `Collection: ${b.originCity ?? "—"}, ${b.originCountry ?? "United Kingdom"}`]);
+  const h2 = box(ctx, M + half + 12, half, "Supplier (carrier)", best
+    ? [`${best.carrier.carrier} — ${best.carrier.service}`, `${best.carrier.transitDays} working days · ${best.carrier.onTimePct}% on time`]
+    : ["No carrier fits this load yet", "Fix the booking to get a quote"]);
+  ctx.y += Math.max(h1, h2) + 16;
+
+  // shipment
+  table(ctx, ["Booking ID", "Deliver to", "Ready for collection", "Estimated delivery"], [[
+    b.bookingId || "—",
+    `${b.destinationCity ?? "—"}, ${b.destinationCountry ?? "—"} (${(b.destinationType ?? "—").toLowerCase()})`,
+    longDay(b.readyToShipDate),
+    best?.etaDate ? longDay(best.etaDate) : "—",
+  ]]);
+  const sumCartons = items.every((it) => isNum(it.cartons)) ? items.reduce((n, it) => n + (it.cartons as number), 0) : b.cartons;
+  table(ctx, ["Pallets", "Cartons", "Gross weight", "Delivery slot booked"], [[
+    String(b.pallets ?? "—"), String(sumCartons ?? "—"), isNum(b.totalGrossWeightKg) ? `${b.totalGrossWeightKg.toLocaleString("en-GB")} kg` : "—",
+    b.deliveryAppointmentBooked == null ? "—" : b.deliveryAppointmentBooked ? "Yes" : "No",
+  ]]);
+
+  // goods
+  let goods = 0, allPriced = true;
+  const rows = items.map((it, i) => {
+    const line = isNum(it.quantity) && isNum(it.unitPrice) ? round(it.quantity * it.unitPrice, 2) : null;
+    if (line == null) allPriced = false; else goods += line;
+    const hs = it.hsCodeRaw == null ? "—" : String(it.hsCodeRaw).replace(/\D/g, "") || String(it.hsCodeRaw);
+    return [String(i + 1), it.sku ?? "—", it.description ?? "—", hs, it.countryOfOrigin ?? "—", isNum(it.quantity) ? it.quantity.toLocaleString("en-GB") : "—", isNum(it.unitPrice) ? gbp(it.unitPrice) : "—", line != null ? gbp(line) : "—"];
+  });
+  heading(ctx, "Goods");
+  table(ctx, ["#", "SKU", "Description", "HS code", "Made in", "Qty", "Unit price", "Line total"], [...rows, ["", "", "", "", "", "", "Goods value", allPriced ? gbp(round(goods, 2)) : "—"]], [20, 60, 140, 55, 60, 45, 60, 75]);
+  para(ctx, "The goods value is for the customs declaration and commercial invoice. It is not payable to the carrier.", 8.5, GREY);
+
+  // freight
+  heading(ctx, "Freight charges");
+  if (best && isNum(best.cost) && isNum(b.pallets) && b.pallets > 0) {
+    const rate = round(best.cost / b.pallets, 2);
+    table(ctx, ["Service", "Pallets", "Rate per pallet", "Amount"], [
+      [`${best.carrier.carrier} ${best.carrier.service}: ${b.originCity ?? "—"} → ${b.destinationCity ?? "—"}`, String(b.pallets), gbp(rate), gbp(best.cost)],
+      ["", "", "Total to pay (estimate)", gbp(best.cost)],
+    ], [260, 50, 100, 105]);
+  } else para(ctx, "No carrier can take this load as it stands, so there is no freight charge yet. Fix the booking and download the purchase order again.");
+
+  // terms + sign-off
+  heading(ctx, "Terms", 11);
+  para(ctx, "Prices are from the carrier rate card and are estimates until the carrier accepts this order. Delivery dates are estimated in working days and exclude weekends. Goods must be packed, labelled and ready for collection on the date above.", 9);
+  ensure(ctx, 60);
+  ctx.y += 20;
+  doc.setDrawColor(180, 180, 185);
+  doc.line(M, ctx.y, M + 200, ctx.y); doc.line(W - M - 160, ctx.y, W - M, ctx.y);
+  doc.setFont(FONT, "normal").setFontSize(8.5).setTextColor(...GREY);
+  doc.text("Authorised by (buyer)", M, ctx.y + 12); doc.text("Date", W - M - 160, ctx.y + 12);
+
+  footer(doc, po);
+  return { doc, fileName: `Purchase_Order_${safeName(b.bookingId || "draft")}.pdf`, po };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Check, ChevronDown, CircleCheck, FileDown, Lightbulb, Link2, Lock, Minus, Share2, X } from "lucide-react";
+import { Check, ChevronDown, CircleCheck, FileDown, FileSpreadsheet, Lightbulb, Link2, Lock, Minus, Share2, X } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { RULES, type Issue, type RuleId } from "@/lib/calculations";
 import { invoiceChecklist, nextSteps } from "@/lib/explain";
@@ -97,6 +97,8 @@ export function BookingCard({ view, ex, uploadId, saveState, bookingHeaders, ite
   const [confirm, setConfirm] = useState<{ state: "idle" | "busy" | "done" | "error"; ref?: string; saved?: boolean; msg?: string }>({ state: "idle" });
   const [shareMsg, setShareMsg] = useState<string | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [xlsBusy, setXlsBusy] = useState(false);
+  const [dlError, setDlError] = useState<string | null>(null);
 
   const cellIssues = useMemo(() => cellIssueMap(r.issues, view.items), [r.issues, view.items]);
   const main = r.issues.filter((i) => i.severity !== "Advisory");
@@ -144,15 +146,23 @@ export function BookingCard({ view, ex, uploadId, saveState, bookingHeaders, ite
     const url = `${window.location.origin}/results/${uploadId}#${encodeURIComponent(anchorId)}`;
     const coarse = window.matchMedia("(pointer: coarse)").matches;
     if (coarse && navigator.share) {
-      try { await navigator.share({ title: `Pre-Flight check · ${b.bookingId}`, url }); return; } catch { /* fall through to copy */ }
+      try { await navigator.share({ title: `Ship Eazy · ${b.bookingId}`, url }); return; } catch { /* fall through to copy */ }
     }
     try { await navigator.clipboard.writeText(url); setShareMsg("Link copied"); } catch { setShareMsg(url); }
     window.setTimeout(() => setShareMsg(null), 4000);
   }
 
-  async function pdf() {
-    setPdfBusy(true);
-    try { const { downloadBookingPdf } = await import("@/lib/pdf"); await downloadBookingPdf(view, ex); } finally { setPdfBusy(false); }
+  async function purchaseOrder() {
+    setPdfBusy(true); setDlError(null);
+    try { const { downloadPurchaseOrder } = await import("@/lib/pdf"); await downloadPurchaseOrder(view, confirm.state === "done" ? confirm.ref : confirmedRef ?? null); }
+    catch { setDlError("Couldn't make the purchase order — please try again."); }
+    finally { setPdfBusy(false); }
+  }
+  async function correctedExcel() {
+    setXlsBusy(true); setDlError(null);
+    try { const { downloadCorrectedExcel } = await import("@/lib/workbook"); await downloadCorrectedExcel([view], `Corrected_${b.bookingId.replace(/[^\w.-]+/g, "_") || "booking"}.xlsx`); }
+    catch { setDlError("Couldn't make the corrected Excel — please try again."); }
+    finally { setXlsBusy(false); }
   }
 
   const route = `${b.originCity ?? "—"} → ${b.destinationCity ?? "—"}`;
@@ -282,16 +292,18 @@ export function BookingCard({ view, ex, uploadId, saveState, bookingHeaders, ite
                       {blocked && <span id={`${anchorId}-why`} role="tooltip" className="tip-body">{blockedWhy}</span>}
                     </span>
                   )}
-                  <button type="button" className="btn btn-ghost" onClick={pdf} disabled={pdfBusy}><FileDown size={16} aria-hidden />{pdfBusy ? "Preparing…" : "Download PDF"}</button>
+                  <button type="button" className="btn btn-ghost" onClick={purchaseOrder} disabled={pdfBusy} data-testid="download-po"><FileDown size={16} aria-hidden />{pdfBusy ? "Preparing…" : "Purchase order (PDF)"}</button>
+                  <button type="button" className="btn btn-ghost" onClick={correctedExcel} disabled={xlsBusy} data-testid="download-xlsx"><FileSpreadsheet size={16} aria-hidden />{xlsBusy ? "Preparing…" : "Corrected Excel"}</button>
                   <span className={cx(!uploadId && "tip")}>
                     <button type="button" className="btn btn-ghost" onClick={share} disabled={!uploadId}>
                       {shareMsg ? <Link2 size={16} aria-hidden /> : <Share2 size={16} aria-hidden />}{shareMsg ?? "Share"}
                     </button>
-                    {!uploadId && <span role="tooltip" className="tip-body">{saveState === "saving" ? "Saving your results so they can be shared…" : "Sharing needs the database, which isn't reachable right now. Download the PDF instead."}</span>}
+                    {!uploadId && <span role="tooltip" className="tip-body">{saveState === "saving" ? "Saving your results so they can be shared…" : "Sharing needs the database, which isn't reachable right now. Download the purchase order or corrected Excel instead."}</span>}
                   </span>
                 </div>
                 {blocked && <p className="text-[13px] text-muted">{blockedWhy}</p>}
                 {r.status === "AMBER" && !ack && confirm.state !== "done" && <p className="text-[13px] text-muted">Tick the box above to enable Confirm.</p>}
+                {dlError && <p role="alert" className="text-[14px] text-[var(--red-text)]">{dlError}</p>}
                 {confirm.state === "error" && <p role="alert" className="text-[14px] text-[var(--red-text)]">{confirm.msg}</p>}
               </section>
             </div>

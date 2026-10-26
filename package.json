@@ -14,7 +14,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx db/seed.ts",
     "typecheck": "tsc --noEmit",
-    "edge:report": "tsx scripts/run-edge-cases.ts && tsx scripts/edge-ai-check.ts && tsx scripts/build-edge-report.ts"
+    "edge:report": "tsx scripts/run-edge-cases.ts && tsx scripts/edge-ai-check.ts && tsx scripts/build-edge-report.ts",
+    "make:template": "tsx scripts/make-template.ts"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",
@@ -30,7 +31,8 @@
     "react-dom": "19.3.0",
     "server-only": "^0.0.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
@@ -43,7 +45,6 @@
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
-    "exceljs": "^4.4.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",

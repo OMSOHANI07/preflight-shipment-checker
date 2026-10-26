@@ -6,7 +6,7 @@ import type { ConversationApi } from "@/lib/conversation/useConversation";
 import type { Turn } from "@/lib/conversation/types";
 import { cx } from "@/lib/ui";
 import { DiffToast } from "./DiffToast";
-import { ReviewCard } from "./ReviewCard";
+import { DOWNLOAD_CHIPS, ReviewCard, runDownload } from "./ReviewCard";
 
 const time = (iso: string) => new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
@@ -86,13 +86,21 @@ export function ChatTab({ api }: { api: ConversationApi }) {
     await api.send(msg, "chat");
     input.current?.focus();
   };
+  const [dlError, setDlError] = useState<string | null>(null);
+  const pick = (o: string) => {
+    if ((DOWNLOAD_CHIPS as readonly string[]).includes(o) && api.result) {
+      setDlError(null);
+      runDownload(o, s, api.result).catch(() => setDlError("That download didn't work — please try again."));
+    } else void send(o);
+  };
   const review = !!api.result && (s.confirmed || ["review", "blocked", "amber", "done"].includes(s.pending?.kind ?? ""));
   return (
     <div className="space-y-4">
       <div className="card p-4 sm:p-6">
         <MessageList history={s.history} busy={api.busy} />
         <div className="mt-4 space-y-3">
-          <QuickReplies options={api.quickReplies} onPick={send} disabled={api.busy} />
+          <QuickReplies options={api.quickReplies} onPick={pick} disabled={api.busy} />
+          {dlError && <p role="alert" className="text-[13px] text-[var(--red-text)]">{dlError}</p>}
           <DiffToast diff={api.lastDiff} onClose={api.clearDiff} />
           {api.error && <p role="alert" className="text-[13px] text-[var(--red-text)]">{api.error}</p>}
           <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); void send(text); }}>

@@ -72,7 +72,7 @@ export function FileUploadTab() {
             <FileSpreadsheet size={17} aria-hidden /> Choose file
           </button>
         </div>
-        <p className="mt-4 text-[13px] text-muted">No file to hand? Download the template from the top of the page, or describe the shipment in Conversation.</p>
+        <p className="mt-4 text-[13px] text-muted">No file to hand? Use the Excel template download at the top of the page, or describe the shipment in Conversation.</p>
         <input ref={input} type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" className="sr-only" aria-label="Choose an Excel file" onChange={(e) => { void onFiles(e.target.files); e.target.value = ""; }} />
 
         <AnimatePresence>
@@ -96,7 +96,7 @@ export function FileUploadTab() {
         <div role="alert" className="sev-red rounded-[20px] p-5" style={{ background: "var(--sev-tint)" }}>
           <p className="flex items-start gap-2 font-semibold" style={{ color: "var(--sev-text)" }}><TriangleAlert size={18} className="mt-0.5 flex-none" aria-hidden />{error.message}</p>
           {error.notices.map((n, i) => <p key={i} className="mt-2 text-[14px] text-muted">{n.message}</p>)}
-          <p className="mt-3 text-[14px]">Need the format? <a className="text-accent-text underline" href="/samples/template.xlsx" download="Case2_Shipment_Booking_Test_Data_Format.xlsx">Download the template</a>.</p>
+          <p className="mt-3 text-[14px]">Need the format? <a className="text-accent-text underline" href="/samples/template.xlsx" download="Ship_Eazy_Excel_Template.xlsx">Excel template download</a>.</p>
         </div>
       )}
 

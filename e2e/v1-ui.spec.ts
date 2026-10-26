@@ -48,12 +48,18 @@ test.describe("[Page] Home and navigation", () => {
     await expect(page.locator("#carriers")).toContainText("£180");
     await expect(page.getByRole("link", { name: "GitHub" })).toHaveAttribute("href", /github\.com/);
   });
-  test("[Page] Download template serves the Excel template", async ({ page, request }) => {
+  test("[Page] Excel template download: Bookings and Items sheets, headings only", async ({ page, request }) => {
     await page.goto("/");
-    const href = await page.getByRole("link", { name: /Download template/ }).first().getAttribute("href");
+    const href = await page.getByRole("link", { name: /Excel template download/ }).first().getAttribute("href");
     const res = await request.get(href!);
     expect(res.status()).toBe(200);
-    expect((await res.body()).subarray(0, 2).toString()).toBe("PK"); // xlsx = zip
+    const wb = XLSX.read(await res.body());
+    expect(wb.SheetNames).toEqual(["Bookings", "Items"]);
+    const rows = (n: string) => XLSX.utils.sheet_to_json<unknown[]>(wb.Sheets[n], { header: 1 });
+    expect(rows("Bookings")).toHaveLength(1);
+    expect(rows("Items")).toHaveLength(1);
+    expect(rows("Bookings")[0]).toContain("Booking ID");
+    expect(rows("Items")[0]).toContain("HS code");
   });
   test("[Page] Conversation tab is live: Chat and Voice enabled, no 'Coming in V2' badge", async ({ page }) => {
     await page.goto("/");
@@ -233,23 +239,32 @@ test.describe("[Booking] Status rules and confirmation", () => {
   });
 });
 
-test.describe("[Export] PDF and share link", () => {
-  test("[Export] booking PDF downloads and is a real PDF", async ({ page }) => {
+test.describe("[Export] purchase order, corrected Excel and share link", () => {
+  test("[Export] purchase order PDF downloads (no rule report inside)", async ({ page }) => {
     await loadSample(page);
     const card = await openCard(page, "BK-T01");
-    const [dl] = await Promise.all([page.waitForEvent("download"), card.getByRole("button", { name: /Download PDF/ }).click()]);
-    expect(dl.suggestedFilename()).toBe("preflight-BK-T01.pdf");
+    const [dl] = await Promise.all([page.waitForEvent("download"), card.getByTestId("download-po").click()]);
+    expect(dl.suggestedFilename()).toBe("Purchase_Order_BK-T01.pdf");
     const buf = fs.readFileSync((await dl.path())!);
     expect(buf.subarray(0, 4).toString()).toBe("%PDF");
     expect(buf.length).toBeGreaterThan(10_000);
     expect(buf.toString("latin1")).toMatch(/\/FontFile2/); // Unicode font embedded (£, é, ü, – print correctly)
   });
-  test("[Export] full report PDF covers every booking", async ({ page }) => {
+  test("[Export] corrected Excel for one booking: Bookings + Items only", async ({ page }) => {
     await loadSample(page);
-    const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: /Full report PDF/ }).click()]);
-    const buf = fs.readFileSync((await dl.path())!);
-    expect(buf.subarray(0, 4).toString()).toBe("%PDF");
-    expect((buf.toString("latin1").match(/\/Type \/Page\b/g) ?? []).length).toBeGreaterThan(16);
+    const card = await openCard(page, "BK-T01");
+    const [dl] = await Promise.all([page.waitForEvent("download"), card.getByTestId("download-xlsx").click()]);
+    expect(dl.suggestedFilename()).toBe("Corrected_BK-T01.xlsx");
+    const wb = XLSX.read(fs.readFileSync((await dl.path())!));
+    expect(wb.SheetNames).toEqual(["Bookings", "Items"]);
+    expect(XLSX.utils.sheet_to_json(wb.Sheets.Bookings)).toHaveLength(1);
+  });
+  test("[Export] corrected Excel for the whole file has every booking", async ({ page }) => {
+    await loadSample(page);
+    const [dl] = await Promise.all([page.waitForEvent("download"), page.getByTestId("download-all-xlsx").click()]);
+    const wb = XLSX.read(fs.readFileSync((await dl.path())!));
+    expect(wb.SheetNames).toEqual(["Bookings", "Items"]);
+    expect(XLSX.utils.sheet_to_json(wb.Sheets.Bookings)).toHaveLength(16);
   });
   test("[Export] share link opens the saved results and the booking", async ({ page, context }) => {
     test.skip(!!process.env.E2E_NO_DB, "sharing needs the database");

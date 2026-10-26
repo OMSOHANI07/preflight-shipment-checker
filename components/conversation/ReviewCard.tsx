@@ -2,7 +2,7 @@
 
 /**
  * End of the conversation: the SAME BookingCard as V1 (issues, rule table, data, carrier card,
- * confirmation, next steps, invoice checklist, Confirm / PDF / Share). Confirm goes through the
+ * confirmation, next steps, invoice checklist, Confirm / purchase order / corrected Excel / Share). Confirm goes through the
  * conversation so its rules and reference stay in one place; Share saves the booking as an upload.
  */
 import { useEffect, useMemo, useState } from "react";
@@ -31,6 +31,14 @@ export function buildView(s: ConversationState, result: BookingResult): BookingV
     raw: rawRow(booking as unknown as Record<string, unknown>, BOOKING_COLUMNS, BOOKING_FIELD_BY_COLUMN, 1),
     itemRaws: items.map((it, i) => rawRow(it as unknown as Record<string, unknown>, ITEM_COLUMNS, ITEM_FIELD_BY_COLUMN, i + 1)),
   };
+}
+
+/** Chips that download instead of being sent as a message. */
+export const DOWNLOAD_CHIPS = ["Purchase order (PDF)", "Corrected Excel"] as const;
+export async function runDownload(chip: string, s: ConversationState, result: BookingResult) {
+  const view = buildView(s, result);
+  if (chip === DOWNLOAD_CHIPS[0]) { const { downloadPurchaseOrder } = await import("@/lib/pdf"); await downloadPurchaseOrder(view, s.confirmed?.reference ?? null); }
+  else { const { downloadCorrectedExcel } = await import("@/lib/workbook"); await downloadCorrectedExcel([view], `Corrected_${view.booking.bookingId}.xlsx`); }
 }
 
 export function ReviewCard({ state, result, onConfirm }: { state: ConversationState; result: BookingResult; onConfirm: (ack: boolean) => Promise<string | null> }) {

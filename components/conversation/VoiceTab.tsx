@@ -12,7 +12,7 @@ import type { ConversationApi } from "@/lib/conversation/useConversation";
 import { cx } from "@/lib/ui";
 import { MessageList, QuickReplies, UndoStartOver } from "./ChatTab";
 import { DiffToast } from "./DiffToast";
-import { ReviewCard } from "./ReviewCard";
+import { DOWNLOAD_CHIPS, ReviewCard, runDownload } from "./ReviewCard";
 
 type Phase = "idle" | "listening" | "review" | "thinking" | "speaking";
 
@@ -190,7 +190,7 @@ export function VoiceTab({ api, onSwitchToChat }: { api: ConversationApi; onSwit
       <div className="card p-4 sm:p-6">
         <MessageList history={s.history} busy={api.busy && phase !== "thinking"} />
         <div className="mt-4 space-y-3">
-          <QuickReplies options={api.quickReplies} onPick={(t) => void sendVoice(t)} disabled={api.busy || phase === "listening"} />
+          <QuickReplies options={api.quickReplies} onPick={(t) => ((DOWNLOAD_CHIPS as readonly string[]).includes(t) && api.result ? void runDownload(t, s, api.result).catch(() => setProblem("That download didn't work — please try again.")) : void sendVoice(t))} disabled={api.busy || phase === "listening"} />
           <DiffToast diff={api.lastDiff} onClose={api.clearDiff} />
           {api.error && <p role="alert" className="text-[13px] text-[var(--red-text)]">{api.error}</p>}
           <form className="flex items-end gap-2" onSubmit={(e) => { e.preventDefault(); const t = typed.trim(); if (t) { setTyped(""); void sendVoice(t); } }}>
