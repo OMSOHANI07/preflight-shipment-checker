@@ -32,7 +32,7 @@ const panel = (page: Page) => page.getByRole("complementary", { name: "Booking s
 test.describe("[V2 Chat] conversation booking", () => {
   test.skip(LIVE, "needs GEMINI_MOCK=1");
 
-  test("[V2 Chat] §7.1 vague seller → AMBER review → confirm anyway → booked, PDF downloads", async ({ page }) => {
+  test("[V2 Chat] §7.1 vague seller → AMBER review → confirm anyway → booked, purchase order and corrected Excel download", async ({ page }) => {
     await openChat(page);
     await expect(page.getByRole("tab", { name: "Chat" })).toHaveAttribute("aria-selected", "true");
     const first = await send(page, VAGUE[0]);
@@ -46,11 +46,16 @@ test.describe("[V2 Chat] conversation booking", () => {
     await page.getByRole("button", { name: "Confirm anyway" }).click();
     await expect(assistant(page).last()).toContainText(/Booked! Reference PF-/, { timeout: 20_000 });
     await expect(page.getByTestId("review-card")).toContainText(/Booking confirmed — reference PF-/);
-    const [dl] = await Promise.all([page.waitForEvent("download"), page.getByTestId("review-card").getByRole("button", { name: /Download PDF/ }).click()]);
-    expect(dl.suggestedFilename()).toMatch(/\.pdf$/);
+    const [dl] = await Promise.all([page.waitForEvent("download"), page.getByTestId("review-card").getByTestId("download-po").click()]);
+    expect(dl.suggestedFilename()).toMatch(/^Purchase_Order_BK-CHAT-.*\.pdf$/);
+    // the chips after booking download too
+    const [po] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Purchase order (PDF)" }).first().click()]);
+    expect(po.suggestedFilename()).toMatch(/\.pdf$/);
+    const [xl] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: "Corrected Excel" }).first().click()]);
+    expect(xl.suggestedFilename()).toMatch(/^Corrected_BK-CHAT-.*\.xlsx$/);
   });
 
-  test("[V2 Chat] §7.2 add a pallet: diff toast, panel highlight, Undo, refresh keeps it", async ({ page }) => {
+  test("[V2 Chat] §7.2 add a pallet: diff toast, panel highlight, Undo, refresh starts fresh", async ({ page }) => {
     await openChat(page);
     await sendAll(page, [...VAGUE, ...TO_REVIEW]);
     const heavy = await send(page, "Actually the total weight is 1,600 kg.");
@@ -59,19 +64,21 @@ test.describe("[V2 Chat] conversation booking", () => {
     await expect(page.getByRole("button", { name: "Use 4 pallets" })).toBeVisible();
 
     await send(page, "add a pallet then");
+    // the changed row flashes for a few seconds — check it first
+    await expect(panel(page).locator("[data-field=pallets]")).toHaveClass(/blue-tint/);
+    await expect(panel(page).locator("[data-field=pallets]")).toContainText("4");
     await expect(page.getByTestId("diff-toast")).toContainText("R-05 fixed");
     await expect(page.getByTestId("diff-toast")).toContainText("£660.00 → £720.00");
-    await expect(panel(page).locator("[data-field=pallets]")).toContainText("4");
-    await expect(panel(page).locator("[data-field=pallets]")).toHaveClass(/blue-tint/);
 
     await page.getByRole("button", { name: "Undo last change" }).click();
     await expect(assistant(page).last()).toContainText("Undone");
     await expect(panel(page).locator("[data-field=pallets]")).toContainText("3");
 
+    // chats are not kept: a refresh starts a new conversation
     await page.reload();
     await page.getByRole("tab", { name: "Conversation" }).click();
-    await expect(assistant(page).last()).toContainText("Undone");
-    await expect(panel(page).locator("[data-field=pallets]")).toContainText("3");
+    await expect(page.locator('[data-testid=messages] [data-role]')).toHaveCount(1);
+    expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => /conversation/i.test(k)))).toEqual([]);
   });
 
   test("[V2 Chat] plain 'confirm' on AMBER asks first; Start over clears", async ({ page }) => {

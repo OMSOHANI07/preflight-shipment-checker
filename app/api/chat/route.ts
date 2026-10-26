@@ -2,13 +2,11 @@
  * POST /api/chat — one conversation turn (prompt §3.2): { message, state, mode } →
  * { state, reply, speak, quickReplies, result, diff }. Gemini extracts and phrases; calculations.ts
  * decides everything. Works with GEMINI_API_KEY unset (regex fallback + fixed wording) and with Neon down.
+ * Conversations are not stored: the page holds the state and sends it with each message.
  */
-import { cookies } from "next/headers";
-import { after } from "next/server";
 import { z } from "zod";
 import { createConfirmation } from "@/lib/confirm";
 import { createState, runTurn, type TurnDeps } from "@/lib/conversation";
-import { loadConversation, saveConversation, SESSION_COOKIE } from "@/lib/conversation/store";
 import type { ConversationState } from "@/lib/conversation/types";
 import { geminiExtract } from "@/lib/gemini/extract";
 import { geminiMockEnabled, mockExtract } from "@/lib/gemini/mock";
@@ -17,29 +15,35 @@ import { clientIp, rateLimited } from "@/lib/rateLimit";
 
 export const maxDuration = 30;
 
+/**
+ * The page sends the conversation back each turn, so treat it as untrusted: right shape, sane sizes,
+ * short strings. Results, status and confirmation are always recomputed here, never taken from it.
+ */
+const short = (v: unknown, max: number) => v == null || (typeof v === "string" && v.length <= max) || typeof v === "number" || typeof v === "boolean";
 const StateShape = z.custom<ConversationState>((v) => {
   const s = v as ConversationState;
-  return !!s && typeof s === "object" && typeof s.id === "string" && typeof s.version === "number" && typeof s.booking === "object" && Array.isArray(s.items) && Array.isArray(s.history);
+  if (!s || typeof s !== "object" || typeof s.id !== "string" || s.id.length > 80 || typeof s.version !== "number") return false;
+  if (typeof s.booking !== "object" || s.booking === null || !Array.isArray(s.items) || !Array.isArray(s.history)) return false;
+  if (s.items.length > 30 || s.history.length > 400 || (s.undoStack?.length ?? 0) > 60) return false;
+  if (!Object.values(s.booking).every((x) => short(x, 300) || typeof x === "object")) return false;
+  if (!s.items.every((it) => it && typeof it === "object" && Object.values(it).every((x) => short(x, 300) || typeof x === "object"))) return false;
+  return s.history.every((t) => t && (t.role === "seller" || t.role === "assistant") && typeof t.text === "string" && t.text.length <= 4000);
 });
-const Body = z.object({ message: z.string().max(20_000), state: StateShape.nullable(), mode: z.enum(["chat", "voice"]).default("chat") });
+const Body = z.object({ message: z.string().max(4_000), state: StateShape.nullable(), mode: z.enum(["chat", "voice"]).default("chat") });
+const MAX_BODY = 600_000;
 
 export async function POST(req: Request) {
   if (rateLimited(clientIp(req))) return Response.json({ error: "Too many messages — please wait a moment and try again." }, { status: 429 });
-  const parsed = Body.safeParse(await req.json().catch(() => null));
+  if (Number(req.headers.get("content-length") ?? 0) > MAX_BODY) return Response.json({ error: "That conversation is too long — please start over." }, { status: 413 });
+  const raw = await req.text().catch(() => "");
+  if (raw.length > MAX_BODY) return Response.json({ error: "That conversation is too long — please start over." }, { status: 413 });
+  let body: unknown = null;
+  try { body = JSON.parse(raw); } catch { /* invalid */ }
+  const parsed = Body.safeParse(body);
   if (!parsed.success) return Response.json({ error: "Invalid request" }, { status: 400 });
 
-  const jar = await cookies();
-  let sessionId = jar.get(SESSION_COOKIE)?.value;
-  if (!sessionId || !/^[0-9a-f-]{36}$/i.test(sessionId)) {
-    sessionId = crypto.randomUUID();
-    jar.set(SESSION_COOKIE, sessionId, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 30 });
-  }
-
-  const state = parsed.data.state ?? createState();
-  // optimistic concurrency: a turn from a stale tab is rejected with the newer copy (F17)
-  const server = await loadConversation(sessionId, state.id);
-  if (server && server.version > state.version)
-    return Response.json({ error: "This conversation changed in another tab — showing the latest version.", state: server }, { status: 409 });
+  // never trust the page's copy of a result or a confirmation: drop them and recompute
+  const state = parsed.data.state ? { ...parsed.data.state, lastResult: null } : createState();
 
   const mock = geminiMockEnabled();
   const deps: TurnDeps = {
@@ -50,7 +54,5 @@ export async function POST(req: Request) {
     extractionSource: mock ? "mock" : "ai",
   };
   const res = await runTurn(state, parsed.data.message, parsed.data.mode, deps);
-  const sid = sessionId;
-  after(() => saveConversation(sid, res.state).then(() => undefined));
-  return Response.json(res);
+  return Response.json(res, { headers: { "Cache-Control": "no-store" } });
 }

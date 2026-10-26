@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * One conversation shared by the Chat and Voice tabs. Restores on load (browser copy → Neon → new),
- * saves to localStorage after every turn (Neon is saved by /api/chat), and handles the two-tab case.
+ * One conversation shared by the Chat and Voice tabs. It lives only in this page: nothing is kept in
+ * the browser or the database, so a refresh or a new visit always starts a fresh chat.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { BookingResult } from "@/lib/calculations";
@@ -10,7 +10,8 @@ import { OPENING } from "./engine";
 import { createState } from "./state";
 import type { ConversationState, Mode, TurnDiff, TurnResponse } from "./types";
 
-const KEY = "pf-conversation-v2";
+/** Where older versions kept chats in the browser — wiped on load. */
+const OLD_KEYS = ["pf-conversation-v2"];
 
 function fresh(mode: Mode = "chat"): ConversationState {
   const s = createState();
@@ -18,8 +19,6 @@ function fresh(mode: Mode = "chat"): ConversationState {
   s.history.push({ role: "assistant", text: OPENING[mode], at: new Date().toISOString(), quickReplies: [] });
   return s;
 }
-const readLocal = (): ConversationState | null => { try { const t = localStorage.getItem(KEY); return t ? (JSON.parse(t) as ConversationState) : null; } catch { return null; } };
-const writeLocal = (s: ConversationState) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* private mode etc. */ } };
 
 export interface ConversationApi {
   state: ConversationState | null;
@@ -45,31 +44,26 @@ export function useConversation(): ConversationApi {
   const [changedFields, setChanged] = useState<Set<string>>(new Set());
   // the last state the server agreed to (the optimistic seller bubble is display-only)
   const stateRef = useRef<ConversationState | null>(null);
+  const flashTimer = useRef<number | null>(null);
   const commit = useCallback((s: ConversationState) => { stateRef.current = s; setState(s); }, []);
 
+  // created after mount (ids and times differ between server and browser)
   useEffect(() => {
     let alive = true;
-    (async () => {
-      const local = readLocal();
-      let s = local;
-      try {
-        const r = await fetch("/api/conversation", { cache: "no-store" });
-        const j = (await r.json()) as { state: ConversationState | null };
-        if (j.state && (!s || (j.state.id === s.id && j.state.version > s.version))) s = j.state;
-      } catch { /* offline / no DB — the browser copy is enough */ }
-      if (alive) commit(s ?? fresh());
-    })();
+    try { OLD_KEYS.forEach((k) => localStorage.removeItem(k)); } catch { /* storage blocked */ }
+    void Promise.resolve().then(() => { if (alive) commit(fresh()); });
     return () => { alive = false; };
   }, [commit]);
 
   const apply = useCallback((res: TurnResponse) => {
     commit(res.state);
-    writeLocal(res.state);
     setLastDiff(res.diff);
     setLastSpeak(res.speak);
     const fields = new Set((res.diff?.fields ?? []).map((f) => f.field.split(":").pop()!.trim()));
+    // one highlight at a time: a newer change cancels the older one's fade-out
+    if (flashTimer.current) window.clearTimeout(flashTimer.current);
     setChanged(fields);
-    if (fields.size) window.setTimeout(() => setChanged(new Set()), 2000);
+    flashTimer.current = fields.size ? window.setTimeout(() => setChanged(new Set()), 3000) : null;
   }, [commit]);
 
   const send = useCallback(async (text: string, mode: Mode) => {
@@ -82,7 +76,6 @@ export function useConversation(): ConversationApi {
     try {
       const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text, state: cur, mode }) });
       const j = await r.json();
-      if (r.status === 409 && j.state) { commit(j.state); writeLocal(j.state); setError(j.error); return null; }
       if (!r.ok) { setState(cur); setError(j.error ?? "Something went wrong — please try again."); return null; }
       apply(j as TurnResponse);
       return j as TurnResponse;
@@ -93,14 +86,13 @@ export function useConversation(): ConversationApi {
     } finally {
       setBusy(false);
     }
-  }, [apply, commit]);
+  }, [apply]);
 
   const startOver = useCallback(async () => {
     const cur = stateRef.current;
     const s = fresh(cur?.mode ?? "chat");
     if (cur) { s.id = cur.id; s.version = cur.version + 1; }
-    commit(s); writeLocal(s); setLastDiff(null);
-    fetch("/api/conversation", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ state: s }) }).catch(() => undefined);
+    commit(s); setLastDiff(null);
   }, [commit]);
 
   const lastAssistant = state ? [...state.history].reverse().find((t) => t.role === "assistant") : undefined;
