@@ -82,7 +82,10 @@ export function date(v: unknown, today: string = todayISO()): Norm<string> {
     return fail(`"${s(v)}" could be any day from ${weekdayName(start)} ${formatDDMMYYYY(start)} to Friday ${formatDDMMYYYY(addCalendarDays(start, 4 - ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].indexOf(weekdayName(start))))} — which day exactly?`);
   }
   if (/\b(end of (the )?month|later|soon|asap|sometime|early|mid|end of next)\b/.test(t)) return fail(`"${s(v)}" isn't a specific day — what exact date will the goods be ready?`);
-  const spoken = spokenOrdinals(t).replace(/^(on|by|for)\s+/, "").replace(/^the\s+/, "").replace(/\s+of\s+/g, " ");
+  // "Thursday 5th November", "on Thu, the fifth of November 2026" → "5 november 2026"
+  const spoken = spokenOrdinals(t).replace(/^(on|by|for)\s+/, "")
+    .replace(/^(mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)[a-z]*,?\s+(?=(the\s+)?\d)/, "")
+    .replace(/^the\s+/, "").replace(/\s+of\s+/g, " ").replace(/,/g, " ").replace(/\s+/g, " ").trim();
   const iso = (isNum(v) ? parseDate(v) : null) ?? parseDate(s(v)) ?? parseSpokenDate(spoken, today);
   return iso ? ok(iso) : fail("Sorry, I didn't catch the date — could you give it as day, month and year?");
 }

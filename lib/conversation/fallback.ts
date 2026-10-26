@@ -86,3 +86,17 @@ export function cannedAnswer(question: string): string | null {
   if (/country of origin|origin/.test(q)) return "Country of origin is where the product was made, not where it ships from.";
   return null;
 }
+
+/**
+ * Deterministic safety net on top of Gemini: a "£5 each" / "£3.50 a piece" / "5 pounds per mug" unit
+ * price that the model dropped is filled in (it reliably drops it in long lists). Only fills gaps.
+ */
+export function supplementExtraction(message: string, ex: Extraction, pending: Pending | null): Extraction {
+  const m = message.match(/(£\s?\d+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?\s?(?:pounds?|quid|gbp))\s*(?:each|apiece|a piece|per (?:unit|item|piece|[a-z]+)|a (?:unit|piece|[a-z]+))\b/i);
+  if (!m) return ex;
+  const price = m[1].trim();
+  if (ex.items.some((x) => x.unitPrice != null)) return ex;
+  if (ex.items.length) ex.items[0] = { ...ex.items[0], unitPrice: price };
+  else if (pending?.field.startsWith("item.")) ex.items = [{ ref: pending.itemIndex ?? "pending", unitPrice: price }];
+  return ex;
+}

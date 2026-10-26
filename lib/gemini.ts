@@ -63,33 +63,47 @@ export function resolveModel(): Promise<string> {
 const thinkingFor = (model: string): ThinkingConfig =>
   /^gemini-[3-9]/.test(model) ? { thinkingLevel: ThinkingLevel.LOW } : { thinkingBudget: 0 };
 
-/** One JSON-mode call. Returns the parsed JSON or null (timeout, HTTP error, bad JSON, no key). */
-export async function generateJson(opts: { system: string; prompt: string; schema: unknown; timeoutMs?: number }): Promise<unknown | null> {
+/** One JSON-mode call. Returns the parsed JSON or null (timeout, HTTP error, bad JSON, no key). One retry on 429. */
+/**
+ * The conversation needs ~2 s turns, so it uses a faster Flash model with minimal thinking:
+ * GEMINI_CHAT_MODEL if set, else gemini-3.5-flash (a stable Flash model on the key's model list).
+ */
+export const chatModel = () => process.env.GEMINI_CHAT_MODEL?.trim() || "gemini-3.5-flash";
+
+export async function generateJson(opts: { system: string; prompt: string; schema: unknown; timeoutMs?: number; temperature?: number; model?: string; thinking?: ThinkingConfig }): Promise<unknown | null> {
   const ai = getClient();
   if (!ai) return null;
-  const ctl = new AbortController();
-  try {
-    const model = await resolveModel();
-    const res = await withTimeout(
-      ai.models.generateContent({
-        model,
-        contents: [{ role: "user", parts: [{ text: opts.prompt }] }],
-        config: {
-          systemInstruction: opts.system,
-          responseMimeType: "application/json",
-          responseJsonSchema: opts.schema,
-          temperature: 0.2,
-          thinkingConfig: thinkingFor(model),
-          abortSignal: ctl.signal,
-        },
-      }),
-      opts.timeoutMs ?? GEMINI_TIMEOUT_MS,
-      ctl,
-    );
-    const text = res.text;
-    return text ? JSON.parse(text) : null;
-  } catch (e) {
-    console.warn(`[gemini] call failed: ${e instanceof Error ? e.message.slice(0, 120) : "unknown error"}`);
-    return null;
+  const deadline = Date.now() + (opts.timeoutMs ?? GEMINI_TIMEOUT_MS);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const ctl = new AbortController();
+    try {
+      const model = opts.model ?? (await resolveModel());
+      const res = await withTimeout(
+        ai.models.generateContent({
+          model,
+          contents: [{ role: "user", parts: [{ text: opts.prompt }] }],
+          config: {
+            systemInstruction: opts.system,
+            responseMimeType: "application/json",
+            responseJsonSchema: opts.schema,
+            temperature: opts.temperature ?? 0.2,
+            thinkingConfig: opts.thinking ?? thinkingFor(model),
+            abortSignal: ctl.signal,
+          },
+        }),
+        Math.max(500, deadline - Date.now()),
+        ctl,
+      );
+      const text = (res.text ?? "").trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      return text ? JSON.parse(text) : null;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "";
+      const rateLimited = /\b429\b|RESOURCE_EXHAUSTED/.test(msg);
+      // never log seller data or the key: only the error kind
+      console.warn(`[gemini] call failed: ${rateLimited ? "rate limited (429)" : /timeout/.test(msg) ? "timeout" : /JSON/.test(msg) ? "invalid JSON" : "error"}`);
+      if (rateLimited && attempt === 0 && deadline - Date.now() > 1500) { await new Promise((r) => setTimeout(r, 700)); continue; }
+      return null;
+    }
   }
+  return null;
 }

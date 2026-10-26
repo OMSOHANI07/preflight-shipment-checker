@@ -57,3 +57,12 @@ export const confirmations = pgTable("confirmations", {
   carrierId: text("carrier_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** V2 conversations, keyed by an httpOnly session cookie. state = ConversationState (jsonb). */
+export const conversations = pgTable("conversations", {
+  id: uuid("id").primaryKey(),
+  sessionId: text("session_id").notNull(),
+  version: integer("version").notNull().default(0),
+  state: jsonb("state").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

@@ -5,7 +5,7 @@
 import { diffResults, runAll, todayISO, type BookingResult } from "@/lib/calculations";
 import { confirmationDraft, nextSteps } from "@/lib/explain";
 import { buildFacts, speakText, templateReply, turnDiff, validateReply, type Facts } from "./facts";
-import { cannedAnswer, fallbackExtract } from "./fallback";
+import { cannedAnswer, fallbackExtract, supplementExtraction } from "./fallback";
 import { pickNextQuestion, reviewQuestion } from "./nextQuestion";
 import * as N from "./normalise";
 import { issueDelta } from "./issues";
@@ -78,7 +78,7 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
   let extractionSource: TurnResponse["extractionSource"] = "fallback";
   if (deps.extract) {
     try { extraction = await deps.extract({ message: text, pending: state.pending, state, today }); } catch { extraction = null; }
-    if (extraction) extractionSource = deps.extractionSource ?? "ai";
+    if (extraction) { extractionSource = deps.extractionSource ?? "ai"; extraction = supplementExtraction(text, extraction, state.pending); }
   }
   if (!extraction) extraction = fallbackExtract(text, state.pending);
   // pending R-06 safety question answered "don't know" → second opinion below
@@ -133,7 +133,7 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
       state.confirmed = { at: nowIso(), reference };
       state.pending = null; state.pendingConfirm = null;
       const conf = confirmationDraft(cur!.booking, cur!.items, result);
-      const steps = nextSteps(cur!.booking, result).slice(0, 4).map((x, i) => `${i + 1}) ${x}`).join(" ");
+      const steps = nextSteps(cur!.booking, result).filter((x) => !/^(Review the warnings|Fix the)/.test(x)).slice(0, 4).map((x, i) => `${i + 1}) ${x}`).join(" ");
       const reply = `Booked! Reference ${reference}. ${conf} Next steps: ${steps} You can download the PDF below.`;
       const done: NextQuestion = { id: "Q-32", kind: "done", field: "done", text: "Anything else you'd like to change?", voiceText: "Booked! Anything else?", options: ["Download PDF"] };
       return finish(state, reply, done, result, diff, "template", extractionSource, mode === "voice" ? `Booked! Your reference is ${reference.split("-").join(" ")}. ${conf.split(". ")[0]}.` : undefined);
@@ -165,7 +165,9 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
   const showRec = (hadRec && !!(report?.recommendationChange || report?.costChange || report?.etaChange)) || next.kind === "review" || next.kind === "blocked" || next.kind === "amber";
   const facts = buildFacts({ changes: applied.changes, cascade: applied.cascade, readbacks: applied.readbacks, delta, result, next, answer, sellerQuestion: extraction.question, notes: applied.notes, mode, showRecommendation: showRec });
   let reply: string | null = null, replySource: "ai" | "template" = "template";
-  if (deps.reply) {
+  // nothing to report → the question alone (no AI rewording, faster)
+  const somethingToSay = facts.changeSummary.length || facts.cascadeNotes.length || facts.fixedRules.length || facts.newRules.length || facts.answerToQuestion || facts.sellerQuestion || facts.recommendation;
+  if (deps.reply && somethingToSay) {
     try { reply = await deps.reply(facts); } catch { reply = null; }
     if (reply && validateReply(reply, facts).ok) replySource = "ai"; else reply = null;
   }

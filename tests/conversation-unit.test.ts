@@ -12,7 +12,7 @@ import type { ConversationState, NextQuestion } from "@/lib/conversation/types";
 import { NOW, VAGUE_SELLER, ex, play } from "./conversation-helpers";
 
 const today = "2026-10-26";
-const ctx = (_s?: ConversationState) => ({ invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: null, notes: [] });
+const ctx = (..._: [ConversationState?]) => ({ invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: null, notes: [] });
 const apply = (s: ConversationState, x: Record<string, unknown>) => applyExtraction(s, ex(x), today);
 
 describe("state.ts", () => {
