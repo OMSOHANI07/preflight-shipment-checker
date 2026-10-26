@@ -90,6 +90,12 @@ export function date(v: unknown, today: string = todayISO()): Norm<string> {
   return iso ? ok(iso) : fail("Sorry, I didn't catch the date — could you give it as day, month and year?");
 }
 
+/** "Thursday" answering "next week could be any day from Monday … — which day?" → that week's Thursday. */
+export function weekdayInWeekOf(v: unknown, monday: string): string | null {
+  const m = s(v).toLowerCase().replace(/^(on|the)\s+/, "").match(/^(mon|tue|wed|thu|fri)[a-z]*$/);
+  return m ? addCalendarDays(monday, ["mon", "tue", "wed", "thu", "fri"].indexOf(m[1])) : null;
+}
+
 const NON_GBP = /€|\$|\beur(o|os)?\b|\busd\b|\bdollars?\b|\brupees?\b|\binr\b|\byen\b|\byuan\b|\brmb\b/i;
 
 /** Money in GBP. Other currencies are never converted — we ask for pounds. */
@@ -103,7 +109,9 @@ export function money(v: unknown): Norm<number> {
 
 /** Whole number ≥ 1 (units, units per carton, cartons, pallets). */
 export function wholeNumber(v: unknown, what = "number"): Norm<number> {
-  const n = parseNumber(v);
+  // "12 a box", "1,080 units", "90 cartons" → the leading number
+  const unit = s(v).toLowerCase().match(/^([\d][\d,.\s]*?)\s*(?:units?|pcs|pieces|items|each|a box|per box|in a box|per carton|a carton|to a carton|in each(?: carton| box)?|cartons?|boxes|box|pallets?)$/);
+  const n = parseNumber(unit ? unit[1] : v);
   if (n == null) return fail(`I couldn't read that — how many ${what}?`);
   if (!Number.isInteger(n) || n < 1) return fail(`That has to be a whole number of ${what} (1 or more) — how many?`);
   return ok(n);

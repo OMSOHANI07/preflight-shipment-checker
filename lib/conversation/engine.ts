@@ -9,7 +9,7 @@ import { cannedAnswer, fallbackExtract, supplementExtraction } from "./fallback"
 import { pickNextQuestion, reviewQuestion } from "./nextQuestion";
 import * as N from "./normalise";
 import { issueDelta } from "./issues";
-import { applyExtraction, productName, toRunInputs } from "./state";
+import { applyExtraction, itemComplete, productName, toRunInputs } from "./state";
 import type { ConversationState, Extraction, Mode, NextQuestion, Pending, TurnResponse } from "./types";
 
 export const MAX_MESSAGE = 1000;
@@ -162,8 +162,8 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
 
   /* Step 8 — reply (Gemini from FACTS, validated; else template) */
   const hadRec = !!prevRun?.result.recommendation.recommended;
-  const showRec = (hadRec && !!(report?.recommendationChange || report?.costChange || report?.etaChange)) || next.kind === "review" || next.kind === "blocked" || next.kind === "amber";
-  const facts = buildFacts({ changes: applied.changes, cascade: applied.cascade, readbacks: applied.readbacks, delta, result, next, answer, sellerQuestion: extraction.question, notes: applied.notes, mode, showRecommendation: showRec });
+  const showRec = (hadRec && state.items.some(itemComplete) && !!(report?.recommendationChange || report?.costChange || report?.etaChange)) || next.kind === "review" || next.kind === "blocked" || next.kind === "amber";
+  const facts = buildFacts({ changes: applied.changes, cascade: applied.cascade, readbacks: applied.readbacks, delta, result, next, answer, sellerQuestion: extraction.question, notes: applied.notes, mode, showRecommendation: showRec, prevStatus: prevRun?.result.status ?? null });
   let reply: string | null = null, replySource: "ai" | "template" = "template";
   // nothing to report → the question alone (no AI rewording, faster)
   const somethingToSay = facts.changeSummary.length || facts.cascadeNotes.length || facts.fixedRules.length || facts.newRules.length || facts.answerToQuestion || facts.sellerQuestion || facts.recommendation;

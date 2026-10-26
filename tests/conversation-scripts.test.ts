@@ -142,3 +142,27 @@ describe("Gemini down: the conversation still completes with fixed wording", () 
     expect(state.lastResult?.recommendation.recommended?.cost).toBe(540);
   });
 });
+
+describe("live-test fixes", () => {
+  it("a bare weekday answering the 'next week' range lands in that week", async () => {
+    const { state } = await play([
+      ["Ready next week", ex({ booking: { readyToShipDate: "next week" } })],
+      ["Thursday", ex({ booking: { readyToShipDate: "Thursday" } })],
+    ]);
+    expect(state.booking.readyToShipDate).toBe("2026-11-05");
+  });
+
+  it("'no deadline' is a no, not an unreadable date", async () => {
+    const { state, last } = await play([
+      ...VAGUE_SELLER.slice(0, 4),
+      ["no deadline", ex({ prefs: { requiredDeliveryDate: "no deadline" } })],
+    ]);
+    expect(last.reply).not.toMatch(/didn't catch the date/);
+    expect(state.askedOnce).toContain("requiredDeliveryDate");
+  });
+
+  it("no carrier recommendation before there is any cargo", async () => {
+    const { turns } = await play(VAGUE_SELLER.slice(0, 4));
+    expect(turns.map((t) => t.reply).join(" ")).not.toMatch(/Carrier [ABC]/);
+  });
+});

@@ -14,6 +14,8 @@ export interface Facts {
   fixedRules: string[];
   newRules: { id: string; whatIsWrong: string; howToFix: string }[];
   status: string | null;
+  /** "RED → AMBER" when this turn changed the status, else null */
+  statusChange: string | null;
   recommendation: { label: string; carrier: string | null; cost: string | null; eta: string | null; reasonFacts: string[] } | null;
   nextQuestion: { text: string; options: string[] };
   answerToQuestion: string | null;
@@ -49,7 +51,7 @@ export function turnDiff(changes: Change[], cascade: string[], d: Delta | null, 
 
 export function buildFacts(o: {
   changes: Change[]; cascade: string[]; readbacks: string[]; delta: Delta | null; result: BookingResult | null;
-  next: NextQuestion; answer: string | null; sellerQuestion: string | null; notes: string[]; mode: Mode; showRecommendation: boolean;
+  next: NextQuestion; answer: string | null; sellerQuestion: string | null; notes: string[]; mode: Mode; showRecommendation: boolean; prevStatus?: string | null;
 }): Facts {
   const r = o.result;
   // the rule the next question is about is explained by the question itself — don't say it twice
@@ -62,6 +64,7 @@ export function buildFacts(o: {
     fixedRules: o.delta?.fixed ?? [],
     newRules: added.slice(0, 3).map((i) => ({ id: i.code, whatIsWrong: i.whatIsWrong, howToFix: i.howToFix[0] ?? "" })),
     status: r?.status ?? null,
+    statusChange: o.prevStatus && r && o.prevStatus !== r.status ? `${o.prevStatus} → ${r.status}` : null,
     recommendation: r && o.showRecommendation ? {
       label: r.recommendation.label, carrier: carrierName(r), cost: best ? gbp(best.cost) : null,
       eta: best?.etaDate ? `${weekdayName(best.etaDate)} ${formatDDMMYYYY(best.etaDate)}` : null, reasonFacts: r.recommendation.reasonFacts,

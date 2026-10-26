@@ -275,7 +275,11 @@ export function applyExtraction(prev: ConversationState, ex: Extraction, today: 
       }
       continue;
     }
-    const norm = BOOKING_NORMALISERS[f]!(raw, today);
+    // a bare weekday answering the "next week could be any day from Monday DD-MM-YYYY…" question
+    const weekOf = f === "readyToShipDate" && s.pending?.field === "readyToShipDate"
+      ? [...s.history].reverse().find((t) => t.role === "assistant")?.text.match(/any day from Monday (\d{2})-(\d{2})-(\d{4})/) : null;
+    const inWeek = weekOf ? N.weekdayInWeekOf(raw, `${weekOf[3]}-${weekOf[2]}-${weekOf[1]}`) : null;
+    const norm = inWeek ? { ok: true as const, value: inWeek } : BOOKING_NORMALISERS[f]!(raw, today);
     if (!norm.ok) { out.invalid.push({ field: f, raw: String(raw), reason: norm.reason, options: norm.options }); continue; }
     if (setBooking(s, f, norm.value, out, touch)) {
       touchedSources.add(f);
@@ -352,7 +356,7 @@ export function applyExtraction(prev: ConversationState, ex: Extraction, today: 
   };
   for (const k of ["requiredDeliveryDate", "appointmentDate"] as const) {
     if (!isRaw(p[k])) continue;
-    if (N.isUnknown(p[k]) || /^no(ne)?$/i.test(String(p[k]))) { markAsked(s, k); continue; }
+    if (N.isUnknown(p[k]) || /^(no|none|nope|not really|n\/a|no (deadline|date|rush|slot|particular (date|day)))\b|^(any ?time|whenever)\b/i.test(String(p[k]).trim())) { markAsked(s, k); continue; }
     const d = N.date(p[k], today);
     if (d.ok) { setPref(k, d.value); out.readbacks.push(`${k === "requiredDeliveryDate" ? "Must arrive by" : "Slot on"} ${fmt(k, d.value)}.`); }
     else out.invalid.push({ field: `prefs.${k}`, raw: String(p[k]), reason: d.reason });

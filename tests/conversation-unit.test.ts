@@ -7,6 +7,7 @@ import {
   applyExtraction, buildFacts, createState, fallbackExtract, pickNextQuestion, readDate, readHs, readMoney, readNumber,
   resolveItemRef, spokenDigits, startOver, templateReply, toRunInputs, undo, validateReply,
 } from "@/lib/conversation";
+import { wholeNumber } from "@/lib/conversation/normalise";
 import { parseWorkbook } from "@/lib/parseExcel";
 import type { ConversationState, NextQuestion } from "@/lib/conversation/types";
 import { NOW, VAGUE_SELLER, ex, play } from "./conversation-helpers";
@@ -166,6 +167,13 @@ describe("fallback.ts", () => {
     expect(fallbackExtract("add a pallet", null).palletDelta).toBe(1);
     expect(fallbackExtract("Switch to Carrier B", null).chosenCarrier).toBe("Carrier B");
     expect(fallbackExtract("Remove the power banks", null).removeItems).toEqual(["power banks"]);
+  });
+});
+
+describe("normalise.ts", () => {
+  it("whole numbers with a unit word after them", () => {
+    expect(["12 a box", "1,080 units", "90 cartons", "12 per carton", "12"].map((v) => wholeNumber(v))).toEqual([12, 1080, 90, 12, 12].map((value) => ({ ok: true, value })));
+    expect(wholeNumber("some").ok).toBe(false);
   });
 });
 
