@@ -50,7 +50,7 @@ export function fallbackExtract(message: string, pending: Pending | null): Extra
     return ex;
   }
   if (f.startsWith("prefs.")) {
-    if (yn != null && t.split(/\s+/).length <= 2) { ex.yesNo = yn; return ex; }
+    if (yn != null && (t.split(/\s+/).length <= 2 || /^(yes|no|nope)\b/i.test(t))) { ex.yesNo = yn; return ex; }
     (ex.prefs as Record<string, unknown>)[f.slice(6)] = t;
     return ex;
   }
@@ -97,6 +97,12 @@ export function supplementExtraction(message: string, ex: Extraction, pending: P
   if (!readyKnown && due != null && ex.booking.readyToShipDate == null && pending?.field !== "prefs.requiredDeliveryDate"
     && !/\b(arrive|arrives|arriving|deadline|there by|delivered by|deliver(ed)? by|need(s)? it by|latest|no rush|no deadline)\b/i.test(message)) {
     ex = { ...ex, booking: { ...ex.booking, readyToShipDate: due }, prefs: { ...ex.prefs, requiredDeliveryDate: undefined } };
+  }
+  // "HS 691200" / "HS code 6912.00" that the model dropped from a long message
+  const hs = message.match(/\b(?:hs|commodity|customs)(?:\s*code)?\s*(?:is|:|=)?\s*(\d[\d.\s]{4,12}\d)\b/i);
+  if (hs && !ex.items.some((x) => x.hsCodeRaw != null)) {
+    if (ex.items.length) ex.items[0] = { ...ex.items[0], hsCodeRaw: hs[1].replace(/\s/g, "") };
+    else if (pending?.field.startsWith("item.")) ex.items = [{ ref: pending.itemIndex ?? "pending", hsCodeRaw: hs[1].replace(/\s/g, "") }];
   }
   const m = message.match(/(£\s?\d+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?\s?(?:pounds?|quid|gbp))\s*(?:each|apiece|a piece|per (?:unit|item|piece|[a-z]+)|a (?:unit|piece|[a-z]+))\b/i);
   if (!m) return ex;

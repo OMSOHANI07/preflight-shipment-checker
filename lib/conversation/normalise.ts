@@ -23,6 +23,14 @@ export function text(v: unknown): Norm<string> {
   return t ? ok(t.slice(0, 300)) : fail("I didn't catch that.");
 }
 
+/** A business name: letters needed — a bare number or a yes/no isn't a name. */
+export function businessName(v: unknown): Norm<string> {
+  const t = s(v);
+  if (!t) return fail("What's the name of the business sending the goods?");
+  if (!/[a-z]/i.test(t) || /^(yes|no|yep|nope|ok|okay|not yet|none|n\/a)$/i.test(t)) return fail("That doesn't look like a business name — what's the name of the business sending the goods?");
+  return ok(t.slice(0, 120));
+}
+
 export function originCity(v: unknown): Norm<string> {
   const c = normaliseCity(v);
   if (c && (ORIGIN_CITIES as readonly string[]).includes(c)) return ok(c);

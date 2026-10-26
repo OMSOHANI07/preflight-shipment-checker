@@ -147,7 +147,7 @@ describe("nextQuestion.ts", () => {
   it("review when everything is filled", async () => {
     const { last } = await play([...VAGUE_SELLER, ["Carry on", ex({ booking: { deliveryAppointmentBooked: "no" } })], ["no", ex({ prefs: { maxBudgetGbp: "no" } })]]);
     expect(last.reply).toMatch(/There is 1 warning: R-08 no delivery appointment at the warehouse\. You can still book/);
-    expect(last.quickReplies).toEqual(["Confirm anyway", "Fix the warnings"]);
+    expect(last.quickReplies).toEqual(["Confirm anyway", "Fix the warnings", "Change something"]);
   });
 });
 

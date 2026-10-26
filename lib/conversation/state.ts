@@ -104,7 +104,7 @@ const ITEM_LABEL: Record<ItemField, string> = {
 };
 const fmt = (field: string, v: unknown) => (v == null ? "—" : typeof v === "boolean" ? (v ? "yes" : "no") : readBack(field, v) ?? String(v));
 
-function newItem(s: ConversationState): ConvItem {
+export function newItem(s: ConversationState): ConvItem {
   return {
     bookingId: s.booking.bookingId, sku: null, description: null, hsCodeRaw: null, quantity: null, unitPrice: null, unitsPerCarton: null,
     cartons: null, unitWeightKg: null, countryOfOrigin: null, prov: {},
@@ -174,7 +174,7 @@ export interface ApplyResult {
 
 type BookingNormaliser = (v: unknown, today: string) => N.Norm<unknown>;
 const BOOKING_NORMALISERS: Partial<Record<BookingField, BookingNormaliser>> = {
-  sellerName: (v) => N.text(v),
+  sellerName: (v) => N.businessName(v),
   originCity: (v) => N.originCity(v),
   destinationCity: (v) => N.destinationCity(v),
   destinationCountry: (v) => N.destinationCountry(v),

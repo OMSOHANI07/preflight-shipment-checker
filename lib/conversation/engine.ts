@@ -7,11 +7,12 @@ import { confirmationDraft, nextSteps } from "@/lib/explain";
 import { buildFacts, speakText, templateReply, turnDiff, validateReply, type Facts } from "./facts";
 import { cannedAnswer, fallbackExtract, supplementExtraction } from "./fallback";
 import { forSpeech } from "./readback";
-import { pickNextQuestion, reviewQuestion } from "./nextQuestion";
+import { changeMenu, changeQuestion, fixQuestion, itemChangeQuestion, itemMenu, pickNextQuestion, reviewQuestion } from "./nextQuestion";
+import { cleanMessage, guardMessage, isOnTopic, OFF_TOPIC_REPLY } from "./guard";
 import * as N from "./normalise";
 import { issueDelta } from "./issues";
-import { applyExtraction, itemComplete, productName, toRunInputs } from "./state";
-import type { ConversationState, Extraction, Mode, NextQuestion, Pending, TurnResponse } from "./types";
+import { applyExtraction, itemComplete, newItem, productName, toRunInputs } from "./state";
+import { emptyExtraction, type ConversationState, type Extraction, type Mode, type NextQuestion, type Pending, type TurnResponse } from "./types";
 
 export const MAX_MESSAGE = 1000;
 
@@ -51,7 +52,7 @@ function setPending(s: ConversationState, q: NextQuestion) {
 export async function runTurn(prev: ConversationState, message: string, mode: Mode, deps: TurnDeps = {}, now: Date = new Date()): Promise<TurnResponse> {
   const today = todayISO(now);
   let state: ConversationState = { ...structuredClone(prev), mode };
-  const text = message.trim();
+  const text = cleanMessage(message);
   const prevRun = hasAnyData(prev) ? runFor({ ...prev, mode }, now) : null;
 
   const finish = (s: ConversationState, reply: string, q: NextQuestion | null, result: BookingResult | null, diff: TurnResponse["diff"], replySource: "ai" | "template", extractionSource: TurnResponse["extractionSource"], speak?: string): TurnResponse => {
@@ -74,14 +75,51 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
     return finish(state, `That's a lot — for many bookings, use the File Upload tab. Here, let's do one shipment at a time. ${q.text}`, q, prevRun?.result ?? null, null, "template", "fallback");
   }
 
+  /* guardrails — in code, before any AI sees the message */
+  const hit = guardMessage(text);
+  if (hit) {
+    if (hit.redact) state.history[state.history.length - 1].text = hit.redact;
+    const q = pickNextQuestion(state, { invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: prevRun?.result ?? null, notes: [] });
+    setPending(state, q);
+    return finish(state, `${hit.reply} ${q.text}`, q, prevRun?.result ?? null, null, "template", "fallback");
+  }
+
+  /* menu picks after "change something" — answered in code */
+  const pf = state.pending?.field;
+  let forced: Extraction | null = null;
+  if (pf === "change.menu") {
+    const cq = changeQuestion(state, text, mode);
+    if (cq === "add") {
+      state.items.push(newItem(state)); state.itemLoopOpen = true;
+      const q = pickNextQuestion(state, { invalid: [], conflicts: [], ambiguous: null, newlyFailing: [], result: prevRun?.result ?? null, notes: [] });
+      setPending(state, q);
+      return finish(state, `Let's add a product. ${q.text}`, q, prevRun?.result ?? null, null, "template", "fallback");
+    }
+    if (cq) { setPending(state, cq); return finish(state, cq.text, cq, prevRun?.result ?? null, null, "template", "fallback"); }
+  } else if (pf === "change.item") {
+    const low = text.toLowerCase();
+    const i = state.items.findIndex((it) => productName(it).toLowerCase() === low || (it.sku ?? "").toLowerCase() === low);
+    if (i >= 0) { const q = itemMenu(state, i); setPending(state, q); return finish(state, q.text, q, prevRun?.result ?? null, null, "template", "fallback"); }
+  } else if (pf === "change.itemField" && state.pending?.itemIndex != null) {
+    const iq = itemChangeQuestion(state, state.pending.itemIndex, text, mode);
+    if (iq === "remove") forced = { ...emptyExtraction(), intent: "change", removeItems: [state.pending.itemIndex] };
+    else if (iq) { setPending(state, iq); return finish(state, iq.text, iq, prevRun?.result ?? null, null, "template", "fallback"); }
+  }
+
   /* Step 2 — extract (Gemini, else regex on the pending field) */
-  let extraction: Extraction | null = null;
+  let extraction: Extraction | null = forced;
   let extractionSource: TurnResponse["extractionSource"] = "fallback";
-  if (deps.extract) {
+  if (deps.extract && !forced) {
     try { extraction = await deps.extract({ message: text, pending: state.pending, state, today }); } catch { extraction = null; }
     if (extraction) { extractionSource = deps.extractionSource ?? "ai"; extraction = supplementExtraction(text, extraction, state.pending, state.booking.readyToShipDate != null); }
   }
   if (!extraction) extraction = fallbackExtract(text, state.pending);
+  // off-topic questions are never answered (and never reach the reply writer)
+  let offTopic = false;
+  const pickedChip = (state.pending?.options ?? []).some((o) => o.toLowerCase() === text.toLowerCase());
+  const asksSomething = /\?\s*$|^(who|what|when|where|why|how|which|whose|can|could|would|is|are|do|does|did|will|tell me)\b/i.test(text);
+  if (extraction.question && (pickedChip || !asksSomething)) extraction = { ...extraction, question: null };
+  else if (extraction.question && !isOnTopic(extraction.question) && !cannedAnswer(extraction.question)) { extraction = { ...extraction, question: null }; offTopic = true; }
   // pending R-06 safety question answered "don't know" → second opinion below
   if (state.pending?.field === "dg" && state.pending.itemIndex != null && extraction.yesNo == null && N.isUnknown(text)) state.dgAnswers[state.pending.itemIndex] = null;
 
@@ -137,10 +175,20 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
       state.pending = null; state.pendingConfirm = null;
       const conf = confirmationDraft(cur!.booking, cur!.items, result);
       const steps = nextSteps(cur!.booking, result).filter((x) => !/^(Review the warnings|Fix the)/.test(x)).slice(0, 4).map((x, i) => `${i + 1}) ${x}`).join(" ");
-      const reply = `Booked! Reference ${reference}. ${conf} Next steps: ${steps} You can download the PDF below.`;
-      const done: NextQuestion = { id: "Q-32", kind: "done", field: "done", text: "Anything else you'd like to change?", voiceText: "Booked! Anything else?", options: ["Download PDF"] };
+      const reply = `Booked! Reference ${reference}. ${conf} Next steps: ${steps} Download your purchase order and the corrected Excel below.`;
+      const done: NextQuestion = { id: "Q-32", kind: "done", field: "done", text: "Anything else you'd like to change?", voiceText: "Booked! Anything else?", options: ["Purchase order (PDF)", "Corrected Excel"] };
       return finish(state, reply, done, result, diff, "template", extractionSource, mode === "voice" ? `Booked! Your reference is ${reference.split("-").join(" ")}. ${conf.split(". ")[0]}.` : undefined);
     }
+  }
+
+  /* review: "fix it" → the first problem's question; "change something" / "no" → the change menu */
+  const quiet = !applied.changes.length && !applied.invalid.length && !applied.cascade.length && !applied.undone && !applied.startedOver && !applied.confirmRequested && !extraction.question;
+  const atReview = ["review", "amber", "blocked", "done"].includes(prev.pending?.kind ?? "") || prev.pending?.field === "review";
+  let menuShown = false;
+  if (!next && quiet && atReview) {
+    if (/\b(fix|sort|resolve)\b/i.test(text)) next = fixQuestion(state, result, mode);
+    else if (/\b(change|edit|modify|amend|correct|update)\b/i.test(text) || /^(no|nope|not yet|wait)\b/i.test(text)) next = changeMenu();
+    menuShown = !!next;
   }
 
   /* Step 7 — next question (code, not Gemini) */
@@ -155,8 +203,11 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
   /* the seller asked something (F12) / said something unrelated (F15) */
   if (extraction.question) answer = cannedAnswer(extraction.question);
   const nothingHappened = !applied.changes.length && !applied.invalid.length && !applied.cascade.length && !applied.undone && !applied.startedOver && !applied.confirmRequested && !extraction.question && extraction.yesNo == null;
-  if (nothingHappened && prev.pending?.field === "review") answer = "Sure — what would you like to change? For example 'add a pallet' or 'the mugs are £6 each'.";
-  else if (nothingHappened && extraction.intent === "other") answer = "I can only help with booking this shipment, so let's carry on.";
+  if (offTopic) answer = OFF_TOPIC_REPLY;
+  else if (menuShown) answer = null;
+  else if (nothingHappened && prev.pending?.field === "review") answer = "Tell me what to change, or pick one below.";
+  else if (nothingHappened && extraction.intent === "other") answer = "I can only help with booking this shipment.";
+  else if (nothingHappened && !atReview && prev.pending && next.id === prev.pending.questionId && next.field === prev.pending.field && (next.itemIndex ?? null) === (prev.pending.itemIndex ?? null)) answer = "I didn't catch an answer to that.";
   if (applied.undone) answer = "Undone — back to how it was before your last change.";
   if (applied.startedOver) answer = "Starting over with a fresh booking.";
   if (applied.notes.some((n) => n.startsWith("auto-sku:"))) answer = [answer, `I've called it ${applied.notes.find((n) => n.startsWith("auto-sku:"))!.slice(9)}.`].filter(Boolean).join(" ");
@@ -166,7 +217,7 @@ export async function runTurn(prev: ConversationState, message: string, mode: Mo
   /* Step 8 — reply (Gemini from FACTS, validated; else template) */
   const hadRec = !!prevRun?.result.recommendation.recommended;
   const showRec = (hadRec && state.items.some(itemComplete) && !!(report?.recommendationChange || report?.costChange || report?.etaChange)) || next.kind === "review" || next.kind === "blocked" || next.kind === "amber";
-  const facts = buildFacts({ changes: applied.changes, cascade: applied.cascade, readbacks: applied.readbacks, delta, result, next, answer, sellerQuestion: extraction.question, notes: applied.notes, mode, showRecommendation: showRec, prevStatus: prevRun?.result.status ?? null });
+  const facts = buildFacts({ changes: applied.changes, cascade: applied.cascade, readbacks: applied.readbacks, delta, result, next, answer, sellerQuestion: extraction.question, notes: applied.notes, mode, showRecommendation: showRec, prevStatus: showRec ? prevRun?.result.status ?? null : null });
   let reply: string | null = null, replySource: "ai" | "template" = "template";
   // nothing to report → the question alone (no AI rewording, faster)
   const somethingToSay = facts.changeSummary.length || facts.cascadeNotes.length || facts.fixedRules.length || facts.newRules.length || facts.answerToQuestion || facts.sellerQuestion || facts.recommendation;

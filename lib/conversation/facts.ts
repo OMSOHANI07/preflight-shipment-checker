@@ -103,7 +103,14 @@ export function validateReply(reply: string, f: Facts): { ok: boolean; problem?:
   for (const m of reply.match(/\b[RVA]-\d{2}\b/g) ?? []) if (!factsText.includes(m)) return { ok: false, problem: `rule ${m}` };
   const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9£]+/g, " ").trim();
   if (!norm(reply).includes(norm(f.nextQuestion.text).slice(0, Math.min(60, norm(f.nextQuestion.text).length)))) return { ok: false, problem: "next question missing" };
-  if (reply.length > 1200) return { ok: false, problem: "too long" };
+  if (reply.length > 900) return { ok: false, problem: "too long" };
+  // plain status words only; no links except the UK Trade Tariff; no weights/percentages that aren't in FACTS
+  if (/\b(RED|AMBER|GREEN|INCOMPLETE)\b/.test(reply)) return { ok: false, problem: "status code" };
+  for (const m of reply.match(/\b(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(?:com|io|net|org|co|ai|dev)\b\S*/gi) ?? []) if (!/gov\.uk/i.test(m)) return { ok: false, problem: `link ${m}` };
+  for (const m of reply.match(/\b[\d,]+(?:\.\d+)?\s?(?:kg|%)/g) ?? []) if (!factsText.includes(m.replace(/\s/g, "").replace(/(kg|%)$/, "")) && !factsText.includes(m)) return { ok: false, problem: `figure ${m}` };
+  // never claims it's booked/confirmed unless it is; no AI talk; no hedging
+  if (/\b(booked|confirmed)\b/i.test(reply) && !/\b(booked|confirmed)\b/i.test(factsText)) return { ok: false, problem: "booking claim" };
+  if (/\bas an ai\b|\blanguage model\b|\bi think\b|\bmaybe\b|\bperhaps\b|\bguarantee/i.test(reply)) return { ok: false, problem: "tone" };
   return { ok: true };
 }
 

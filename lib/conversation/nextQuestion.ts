@@ -5,8 +5,8 @@
  * questions once → review. Voice asks exactly one field per turn.
  */
 import {
-  CARRIERS, ITEM_ORIGIN_COUNTRIES, ORIGIN_CITIES, PRIORITIES, deriveBookingTotals, gbp, isNum, itemExactCartons, kg, minPalletsFor,
-  round, type BookingResult, type Issue,
+  CARRIERS, DESTINATION_CITIES, ITEM_ORIGIN_COUNTRIES, ORIGIN_CITIES, PRIORITIES, addCalendarDays, deriveBookingTotals, formatDDMMYYYY, gbp, isNum,
+  itemExactCartons, kg, minPalletsFor, round, todayISO, weekdayName, type BookingResult, type Issue,
 } from "@/lib/calculations";
 import questionsJson from "./questions.json";
 import { readDate, readHs, readMoney, readNumber } from "./readback";
@@ -21,6 +21,19 @@ export const NEVER_ASK = (questionsJson as { neverAsk: string[] }).neverAsk;
 const fill = (t: string, v: Record<string, string>) => t.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? `{${k}}`);
 const asked = (s: ConversationState, key: string) => s.askedOnce.includes(key);
 const declined = (s: ConversationState, field: string, i?: number) => s.declined.includes(`${field}:${i ?? ""}`);
+
+/** The next `n` working days after today as chips, e.g. "Thursday 29-10-2026" (the date parser reads these). */
+export function workingDayChips(n = 3, from: string = todayISO(), skip = 1): string[] {
+  const out: string[] = [];
+  let d = addCalendarDays(from, skip);
+  while (out.length < n) { if (!["Saturday", "Sunday"].includes(weekdayName(d))) out.push(`${weekdayName(d)} ${formatDDMMYYYY(d)}`); d = addCalendarDays(d, 1); }
+  return out;
+}
+const fridayChips = (n = 3) => {
+  const out: string[] = []; let d = addCalendarDays(todayISO(), 1);
+  while (out.length < n) { if (weekdayName(d) === "Friday") out.push(`${weekdayName(d)} ${formatDDMMYYYY(d)}`); d = addCalendarDays(d, 1); }
+  return out;
+};
 
 function q(id: string, mode: Mode, extra: Partial<NextQuestion> & { vars?: Record<string, string> } = {}): NextQuestion {
   const d = Q(id);
@@ -164,12 +177,12 @@ function itemQuestion(s: ConversationState, i: number, mode: Mode): NextQuestion
     return { ...item("Q-11", "unitsPerCarton", { text: reason, voiceText: `So ${v} in each carton — right?`, options: ["Yes", "No"] }), kind: "confirm", confirm: { field: "item.unitsPerCarton", itemIndex: i, value: v, kind: "derive", reason } };
   }
   if (it.quantity == null) return item("Q-10", "quantity");
-  if (it.unitsPerCarton == null) return item("Q-11", "unitsPerCarton");
+  if (it.unitsPerCarton == null) return item("Q-11", "unitsPerCarton", { options: ["6", "12", "24", "48"] });
   if (it.cartons == null) return item("Q-12", "cartons", { text: `How many cartons of ${product}?`, voiceText: "How many cartons?" });
   if (it.unitPrice == null && it.unitWeightKg == null && chat)
     return item("Q-13", "unitPrice", { text: `What's the price of one ${product} in pounds, and how much does one weigh? (kg or grams)` });
   if (it.unitPrice == null) return item("Q-13", "unitPrice");
-  if (it.unitWeightKg == null) return item("Q-14", "unitWeightKg");
+  if (it.unitWeightKg == null) return item("Q-14", "unitWeightKg", { options: ["250 g", "500 g", "1 kg", "2 kg"] });
   const needHs = it.hsCodeRaw == null && !asked(s, `Q-15:${i}`), needOrigin = it.countryOfOrigin == null && !asked(s, `Q-16:${i}`);
   if (needHs && needOrigin && chat)
     return item("Q-15", "hsCodeRaw", { text: `Do you know the HS code for ${product}? It's at least 6 digits (ceramic tableware is usually 6912…). And where was it made — UK, China, India, Vietnam, Turkey or Germany? (Where it was made, not where it ships from.)`, options: ["I don't know the HS code"] });
@@ -222,16 +235,16 @@ export function pickNextQuestion(s: ConversationState, ctx: NextContext): NextQu
     return { ...q("Q-01", mode, { text: "Which business is sending the goods, and are they being collected from London, Manchester, Birmingham or Leeds?" }), options: [...ORIGIN_CITIES] };
   if (!b.sellerName) return q("Q-01", mode);
   if (!b.originCity) return q("Q-02", mode);
-  if (!b.destinationCity) return q("Q-03", mode, b.destinationCountry ? { text: `Which city in ${b.destinationCountry}? We deliver to ${({ Germany: "Berlin, Frankfurt or Hamburg", France: "Paris or Lyon", Netherlands: "Amsterdam or Rotterdam" } as Record<string, string>)[b.destinationCountry]}.` } : {});
+  if (!b.destinationCity) return q("Q-03", mode, b.destinationCountry ? { text: `Which city in ${b.destinationCountry}? We deliver to ${({ Germany: "Berlin, Frankfurt or Hamburg", France: "Paris or Lyon", Netherlands: "Amsterdam or Rotterdam" } as Record<string, string>)[b.destinationCountry]}.`, options: [...DESTINATION_CITIES[b.destinationCountry]] } : {});
   if (!b.destinationType) return q("Q-04", mode);
   // G2
-  if (!b.readyToShipDate) return q("Q-05", mode, { text: "When will the goods be packed and ready for collection? (DD-MM-YYYY, or e.g. 'next Thursday')" });
+  if (!b.readyToShipDate) return q("Q-05", mode, { text: "When will the goods be packed and ready for collection? Pick a day or type a date (DD-MM-YYYY).", options: workingDayChips(3) });
   if (!b.sellerPriority) {
     if ((s.failures.sellerPriority ?? 0) >= 2) return q("Q-06", mode); // route applies the Balanced fallback
     return q("Q-06", mode, { text: "What matters most for this shipment: cheapest, fastest, most reliable (best on-time record), or a balance of all three?" });
   }
-  if (ctx.notes.includes("ask-deadline-date")) return { ...q("Q-07", mode), text: "What date does it need to arrive by?", voiceText: "What date does it need to arrive by?", field: "prefs.requiredDeliveryDate", options: [] };
-  if (!s.prefs.requiredDeliveryDate && !asked(s, "Q-07") && !asked(s, "requiredDeliveryDate")) return { ...q("Q-07", mode), kind: "optional", options: ["No deadline"] };
+  if (ctx.notes.includes("ask-deadline-date")) return { ...q("Q-07", mode), text: "What date does it need to arrive by?", voiceText: "What date does it need to arrive by?", field: "prefs.requiredDeliveryDate", options: fridayChips(3) };
+  if (!s.prefs.requiredDeliveryDate && !asked(s, "Q-07") && !asked(s, "requiredDeliveryDate")) return { ...q("Q-07", mode), kind: "optional", options: ["No deadline", "Yes, by a date"] };
   // G3
   if (!s.items.length) return { ...q("Q-08", mode), field: "item.description", itemIndex: 0 };
   for (let i = 0; i < s.items.length; i++) {
@@ -260,7 +273,7 @@ export function pickNextQuestion(s: ConversationState, ctx: NextContext): NextQu
     }
     return { ...q("Q-20", mode), text: "What's the total declared value on your invoice, in pounds?", voiceText: "What's the total value on your invoice?", options: [] };
   }
-  if (b.pallets == null) return q("Q-21", mode, { text: "How many pallets will it be on? (Carriers take up to 400 kg (C), 500 kg (A) or 750 kg (B) per pallet.)" });
+  if (b.pallets == null) return q("Q-21", mode, { text: "How many pallets will it be on? (Carriers take up to 400 kg (C), 500 kg (A) or 750 kg (B) per pallet.)", options: ["1", "2", "3", "4"] });
   if (b.totalGrossWeightKg == null) {
     const net = t.minGrossWeightKg;
     if (ctx.notes.includes("gross-unknown") && net != null)
@@ -269,7 +282,7 @@ export function pickNextQuestion(s: ConversationState, ctx: NextContext): NextQu
   }
   // G5
   if (b.deliveryAppointmentBooked == null)
-    return q("Q-23", mode, { text: b.destinationType === "Business address" ? "Have you arranged a delivery time with the receiver?" : "Have you booked a delivery appointment (time slot) at the warehouse?", options: ["Yes", "Not yet"] });
+    return q("Q-23", mode, { text: b.destinationType === "Business address" ? "Have you arranged a delivery time with the receiver?" : "Have you booked a delivery appointment (time slot) at the warehouse?", options: ["Yes, it's booked", "Not yet"] });
   if (ctx.notes.includes("ask-appointment-date") || (b.deliveryAppointmentBooked && !s.prefs.appointmentDate && !asked(s, "Q-24")))
     return { ...q("Q-24", mode), kind: "optional", options: ["I don't know yet"] };
   // G6 (at most two, each once)
@@ -289,14 +302,87 @@ export function reviewQuestion(s: ConversationState, r: BookingResult | null, mo
     const rq = ruleQuestion(s, r, first, mode);
     const list = blocking.map((i) => `${i.code} ${i.title.toLowerCase()}`).join("; ");
     const text = `There ${blocking.length === 1 ? "is 1 issue" : `are ${blocking.length} issues`} that must be fixed before this can go: ${list}. ${rq ? rq.text : "Which would you like to fix first?"}`;
-    return { id: "Q-30", kind: "blocked", field: rq?.field ?? "review", itemIndex: rq?.itemIndex, text: mode === "voice" ? `There ${blocking.length === 1 ? "is one issue" : `are ${blocking.length} issues`} to fix first. ${rq?.voiceText ?? ""}`.trim() : text, voiceText: rq?.voiceText ?? "Which would you like to fix first?", options: rq?.options ?? [] };
+    return { id: "Q-30", kind: "blocked", field: rq?.field ?? "review", itemIndex: rq?.itemIndex, text: mode === "voice" ? `There ${blocking.length === 1 ? "is one issue" : `are ${blocking.length} issues`} to fix first. ${rq?.voiceText ?? ""}`.trim() : text, voiceText: rq?.voiceText ?? "Which would you like to fix first?", options: rq?.options?.length ? [...rq.options, "Change something"] : ["Change something"] };
   }
   const amber = r.issues.filter((i) => i.severity === "Amber");
   if (amber.length) {
     const list = amber.map((i) => `${i.code} ${i.title.toLowerCase()}`).join("; ");
-    return { id: "Q-31", kind: "review", field: "review", text: `There ${amber.length === 1 ? "is 1 warning" : `are ${amber.length} warnings`}: ${list}. You can still book — do you want to fix ${amber.length === 1 ? "it" : "them"}, or confirm anyway?`, voiceText: `There ${amber.length === 1 ? "is one warning" : `are ${amber.length} warnings`}. Fix ${amber.length === 1 ? "it" : "them"}, or confirm anyway?`, options: ["Confirm anyway", "Fix the warnings"] };
+    return { id: "Q-31", kind: "review", field: "review", text: `There ${amber.length === 1 ? "is 1 warning" : `are ${amber.length} warnings`}: ${list}. You can still book — do you want to fix ${amber.length === 1 ? "it" : "them"}, or confirm anyway?`, voiceText: `There ${amber.length === 1 ? "is one warning" : `are ${amber.length} warnings`}. Fix ${amber.length === 1 ? "it" : "them"}, or confirm anyway?`, options: ["Confirm anyway", "Fix the warnings", "Change something"] };
   }
   return { id: "Q-29", kind: "review", field: "review", text: "Here's your booking — everything checks out. Would you like to change anything, or confirm?", voiceText: "Everything checks out. Shall I confirm it?", options: ["Confirm", "Change something"] };
 }
 
 export { readHs };
+
+/* ------------------------------------------------------------------ review: "fix it" and "change something" */
+
+/** "Fix the warnings / issues" → the question for the first thing to fix, with its options. */
+export function fixQuestion(s: ConversationState, r: BookingResult | null, mode: Mode): NextQuestion | null {
+  if (!r) return null;
+  const order = { Red: 0, Data: 1, Amber: 2, Advisory: 3 } as const;
+  const issues = r.issues.filter((i) => i.severity !== "Advisory").sort((a, b) => order[a.severity] - order[b.severity]);
+  for (const i of issues) {
+    const rq = ruleQuestion(s, r, i, mode);
+    if (rq) return { ...rq, text: `Let's fix it: ${rq.text}`, voiceText: rq.voiceText };
+  }
+  const first = issues[0];
+  if (!first) return null;
+  const text = `${first.title}: ${first.whatIsWrong} ${first.howToFix[0] ?? ""}`.trim();
+  return { id: `fix:${first.code}`, kind: "ask", field: "change.menu", text: `${text} What would you like to change?`, voiceText: `${first.title}. What would you like to change?`, options: CHANGE_MENU };
+}
+
+export const CHANGE_MENU = ["Pallets", "Gross weight", "Ready date", "Delivery slot", "Priority", "Destination", "A product", "Add a product"];
+export const ITEM_MENU = ["Quantity", "Units per carton", "Unit price", "Unit weight", "HS code", "Made in", "Remove it"];
+
+export function changeMenu(): NextQuestion {
+  return { id: "change", kind: "ask", field: "change.menu", text: "What would you like to change? Pick one, or just tell me (e.g. 'make it 4 pallets').", voiceText: "What would you like to change — pallets, weight, date, the slot, priority, destination or a product?", options: CHANGE_MENU };
+}
+
+export function itemMenu(s: ConversationState, i: number): NextQuestion {
+  const name = productName(s.items[i]);
+  return { id: "change.item", kind: "ask", field: "change.itemField", itemIndex: i, text: `What should change for ${name}?`, voiceText: `What should change for ${name}?`, options: ITEM_MENU };
+}
+
+const now = (v: unknown, unit = "") => (v == null ? "" : ` It's ${typeof v === "number" ? readNumber(v) : String(v)}${unit} now.`);
+
+/** The question for a menu choice. null = not a menu option. */
+export function changeQuestion(s: ConversationState, choice: string, mode: Mode): NextQuestion | "add" | null {
+  const c = choice.trim().toLowerCase();
+  const b = s.booking;
+  const ask = (field: string, text: string, voice: string, options: string[] = [], itemIndex?: number): NextQuestion =>
+    ({ id: `change:${field}`, kind: "ask", field, itemIndex, text: mode === "voice" ? voice : text, voiceText: voice, options });
+  switch (c) {
+    case "pallets": {
+      const p = b.pallets ?? 1;
+      return ask("pallets", `How many pallets should it be?${now(b.pallets)}`, "How many pallets should it be?", [...new Set([p - 1, p + 1, p + 2].filter((x) => x > 0))].map(String));
+    }
+    case "gross weight": return ask("totalGrossWeightKg", `What's the total gross weight in kg (goods, cartons and pallets)?${now(b.totalGrossWeightKg, " kg")}`, "What's the total weight in kilos?");
+    case "ready date": return ask("readyToShipDate", `When will the goods be ready for collection?${b.readyToShipDate ? ` It's ${readDate(b.readyToShipDate)} now.` : ""}`, "When will the goods be ready?", workingDayChips(3));
+    case "delivery slot": return ask("deliveryAppointmentBooked", "Is a delivery slot booked at the receiver?", "Is a delivery slot booked?", ["Yes, it's booked", "Not yet"]);
+    case "priority": return ask("sellerPriority", `What matters most?${now(b.sellerPriority)}`, "Cheapest, fastest, most reliable, or balanced?", [...PRIORITIES]);
+    case "destination": return ask("destinationCity", `Which city should it go to?${now(b.destinationCity)}`, "Which city should it go to?", Object.values(DESTINATION_CITIES).flat());
+    case "a product":
+      if (s.items.length === 1) return itemMenu(s, 0);
+      return { id: "change.which", kind: "ask", field: "change.item", text: "Which product?", voiceText: "Which product?", options: s.items.map((it) => productName(it)) };
+    case "add a product": return "add";
+    default: return null;
+  }
+}
+
+export function itemChangeQuestion(s: ConversationState, i: number, choice: string, mode: Mode): NextQuestion | "remove" | null {
+  const it = s.items[i];
+  if (!it) return null;
+  const name = productName(it);
+  const ask = (field: string, text: string, voice: string, options: string[] = []): NextQuestion =>
+    ({ id: `change:item.${field}`, kind: "ask", field: `item.${field}`, itemIndex: i, text: mode === "voice" ? voice : text, voiceText: voice, options });
+  switch (choice.trim().toLowerCase()) {
+    case "quantity": return ask("quantity", `How many units of ${name} in total?${now(it.quantity)}`, "How many units in total?");
+    case "units per carton": return ask("unitsPerCarton", `How many ${name} in each carton?${now(it.unitsPerCarton)}`, "How many in each carton?", ["6", "12", "24", "48"]);
+    case "unit price": return ask("unitPrice", `What's the price of one ${name}, in pounds?${it.unitPrice != null ? ` It's ${gbp(it.unitPrice)} now.` : ""}`, "What's the price of one, in pounds?");
+    case "unit weight": return ask("unitWeightKg", `How much does one ${name} weigh?${now(it.unitWeightKg, " kg")}`, "How much does one weigh?", ["250 g", "500 g", "1 kg", "2 kg"]);
+    case "hs code": return ask("hsCodeRaw", `What's the HS code for ${name}? At least 6 digits.${it.hsCodeRaw != null ? ` It's ${it.hsCodeRaw} now.` : ""}`, "What's the HS code?", ["I don't know"]);
+    case "made in": return ask("countryOfOrigin", `Where was ${name} made?${now(it.countryOfOrigin)}`, "Which country was it made in?", [...ITEM_ORIGIN_COUNTRIES]);
+    case "remove it": return "remove";
+    default: return null;
+  }
+}

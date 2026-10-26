@@ -4,7 +4,11 @@
  * the server and is never logged.
  */
 import "server-only";
-import { GoogleGenAI, ThinkingLevel, type ThinkingConfig } from "@google/genai";
+import { GoogleGenAI, HarmBlockThreshold, HarmCategory, ThinkingLevel, type ThinkingConfig } from "@google/genai";
+
+/** Block harmful content at medium and above on every call (the app only ever needs shipping text). */
+const SAFETY = [HarmCategory.HARM_CATEGORY_HARASSMENT, HarmCategory.HARM_CATEGORY_HATE_SPEECH, HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT]
+  .map((category) => ({ category, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE }));
 
 export const GEMINI_TIMEOUT_MS = 8000;
 const FALLBACK_MODEL = "gemini-2.5-flash";
@@ -88,6 +92,7 @@ export async function generateJson(opts: { system: string; prompt: string; schem
             responseJsonSchema: opts.schema,
             temperature: opts.temperature ?? 0.2,
             thinkingConfig: opts.thinking ?? thinkingFor(model),
+            safetySettings: SAFETY,
             abortSignal: ctl.signal,
           },
         }),
