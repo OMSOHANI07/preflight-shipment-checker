@@ -19,8 +19,8 @@ const none = { type: "object", properties: {}, required: [] as string[] };
 /** What each tool is for — the agent reads these descriptions to decide when to call them. */
 const TOOLS: Record<(typeof VOICE_TOOL_NAMES)[number], { description: string; parameters: object }> = {
   update_booking: {
-    description: "ALWAYS call this with everything the seller says about their shipment (destination, products, numbers, dates, answers to your questions, changes, 'undo', 'fix it'). Pass their words as closely as possible. Ship Eazy's booking engine checks the rules and replies. Then say EXACTLY the text after 'SAY:' and nothing that contradicts it. If it lists OPTIONS, offer them. Never set or calculate values yourself.",
-    parameters: { type: "object", properties: { message: str("What the seller said, in their own words (max 1000 characters).") }, required: ["message"] },
+    description: "Call this for EVERY seller reply about the shipment — including short answers like 'yes', 'no', 'that's right', numbers, dates, changes, 'undo' and 'fix it'. Pass the seller's EXACT words in 'message' (do not summarise, rephrase or add labels). Ship Eazy's booking engine checks the rules and replies. Then say EXACTLY the text after 'SAY:' — never answer from memory, never set or calculate values yourself. If it lists OPTIONS, offer them.",
+    parameters: { type: "object", properties: { message: str("The seller's exact words from their last reply, unchanged (max 1000 characters).") }, required: ["message"] },
   },
   get_booking_summary: {
     description: "Get the current booking: route, products, totals, status, problems, recommended carrier and price. Use it when the seller asks for a summary or what's left to do.",

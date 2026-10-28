@@ -107,7 +107,17 @@ export function weekdayInWeekOf(v: unknown, monday: string): string | null {
 const NON_GBP = /€|\$|\beur(o|os)?\b|\busd\b|\bdollars?\b|\brupees?\b|\binr\b|\byen\b|\byuan\b|\brmb\b/i;
 
 /** Money in GBP. Other currencies are never converted — we ask for pounds. */
+/** "half a kilo (0.5 kg)" → try the words first, then what's in the brackets. */
+function withBrackets<T>(v: unknown, parse: (x: string) => Norm<T>): Norm<T> {
+  const t = s(v);
+  const inner = t.match(/\(([^)]+)\)/)?.[1];
+  if (!inner) return parse(t);
+  const outer = parse(t.replace(/\s*\([^)]*\)\s*/g, " ").trim());
+  return outer.ok ? outer : parse(inner.trim());
+}
+
 export function money(v: unknown): Norm<number> {
+  if (/\(/.test(s(v))) return withBrackets(v, (x) => money(x));
   if (NON_GBP.test(s(v))) return fail("All prices need to be in GBP — what's the price in pounds?");
   const n = parseNumber(s(v).toLowerCase().replace(EACH, ""));
   if (n == null) return fail("I couldn't read that amount — what is it in pounds, e.g. 5.50?");
@@ -129,6 +139,7 @@ export function wholeNumber(v: unknown, what = "number"): Norm<number> {
 const EACH = /\s*(each|apiece|a piece|per (unit|item|piece|one)|a unit|for one)$/;
 
 export function unitWeightKg(v: unknown): Norm<number> {
+  if (/\(/.test(s(v))) return withBrackets(v, (x) => unitWeightKg(x));
   const t = s(v).toLowerCase().replace(EACH, "");
   if (/^(half|a half)( a)? (kilo|kg|kilogram)s?$/.test(t)) return ok(0.5);
   if (/^(a )?quarter( of)?( a)? (kilo|kg)s?$/.test(t)) return ok(0.25);
@@ -143,6 +154,7 @@ export function unitWeightKg(v: unknown): Norm<number> {
 
 /** Gross weight in kg; tonnes ×1000. An estimate is fine (the seller can correct it later). */
 export function grossKg(v: unknown): Norm<number> {
+  if (/\(/.test(s(v))) return withBrackets(v, (x) => grossKg(x));
   const t = s(v).toLowerCase().replace(/^(about|around|roughly|approx\.?|approximately|~)\s*/, "");
   const m = t.match(/^(.+?)\s*(t|tonnes?|tons?)$/);
   if (m) { const n = parseNumber(m[1]); return n != null && n > 0 ? ok(round(n * 1000, 3)) : fail("What's the total weight in kg?"); }

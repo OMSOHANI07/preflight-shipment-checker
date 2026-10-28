@@ -104,6 +104,12 @@ export function supplementExtraction(message: string, ex: Extraction, pending: P
     if (ex.items.length) ex.items[0] = { ...ex.items[0], hsCodeRaw: hs[1].replace(/\s/g, "") };
     else if (pending?.field.startsWith("item.")) ex.items = [{ ref: pending.itemIndex ?? "pending", hsCodeRaw: hs[1].replace(/\s/g, "") }];
   }
+  // labelled forms, e.g. a voice agent's summary: "Unit price £5. Unit weight half a kilo (0.5 kg)."
+  const target = () => (ex.items.length ? 0 : pending?.field.startsWith("item.") ? (ex.items = [{ ref: pending.itemIndex ?? "pending" }], 0) : -1);
+  const lp = message.match(/\bunit\s+price\s*(?:is|:|=|of)?\s*(£\s?\d+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?\s?(?:pounds?|gbp))/i);
+  if (lp && !ex.items.some((x) => x.unitPrice != null)) { const k = target(); if (k >= 0) ex.items[k] = { ...ex.items[k], unitPrice: lp[1].trim() }; }
+  const lw = message.match(/\bunit\s+weight\s*(?:is|:|=|of)?\s*((?:[^.;\n]|\.(?=\d))+?)(?:\.(?!\d)|;|\n|$)/i);
+  if (lw && !ex.items.some((x) => x.unitWeightKg != null)) { const k = target(); if (k >= 0) ex.items[k] = { ...ex.items[k], unitWeightKg: lw[1].trim() }; }
   const m = message.match(/(£\s?\d+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?\s?(?:pounds?|quid|gbp))\s*(?:each|apiece|a piece|per (?:unit|item|piece|[a-z]+)|a (?:unit|piece|[a-z]+))\b/i);
   if (!m) return ex;
   const price = m[1].trim();

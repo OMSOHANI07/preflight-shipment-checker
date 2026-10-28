@@ -157,3 +157,18 @@ describe("GUARDRAILS.md §6 scripted chats", () => {
     expect(state.items).toHaveLength(0); // the extraction is screened too
   });
 });
+
+describe("messages rephrased by the voice agent", () => {
+  it("'half a kilo (0.5 kg)' and labelled 'Unit price £5. Unit weight …' are understood", async () => {
+    const { unitWeightKg, money } = await import("@/lib/conversation/normalise");
+    expect(unitWeightKg("half a kilo (0.5 kg)")).toEqual({ ok: true, value: 0.5 });
+    expect(unitWeightKg("about a pound (0.45 kg)")).toEqual({ ok: true, value: 0.45 });
+    expect(money("five pounds (£5)")).toEqual({ ok: true, value: 5 });
+    const { state } = await play([
+      ["mugs", ex({ items: [{ ref: "new", description: "mugs" }] })],
+      ["Product code MUG-01. 1080 units. 12 per carton. Unit price £5. Unit weight half a kilo (0.5 kg). HS code 691200.", ex({ items: [{ ref: "pending", sku: "MUG-01", quantity: "1080", unitsPerCarton: "12" }] })],
+    ]);
+    expect(state.items[0]).toMatchObject({ unitPrice: 5, unitWeightKg: 0.5, quantity: 1080 });
+    expect(String(state.items[0].hsCodeRaw)).toBe("691200");
+  });
+});
