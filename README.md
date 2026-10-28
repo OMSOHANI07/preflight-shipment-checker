@@ -139,6 +139,7 @@ npm run dev
 | `npm run dev` / `build` / `start` | Next.js |
 | `npm test` | Vitest: engine, Excel parser, edge cases and the conversation (302 tests) |
 | `npm run e2e` | Playwright, V1 and V2 (run `npm run build` first). Add `E2E_BASE_URL=https://…` to test a deployment. |
+| `npx tsx scripts/elevenlabs-setup.ts` | Registers (or updates) the 7 client tools on the ElevenLabs agent; `--check` only reports. Reads the key from `.env.local` |
 | `npm run make:stress` | Regenerates `public/samples/stress-test.xlsx` from the real template |
 | `npm run db:generate` / `db:migrate` / `db:seed` | Drizzle migrations and the idempotent seed |
 | `npm run lint` / `typecheck` | ESLint / tsc |
